@@ -1,0 +1,1 @@
+[{"iSym":"TITN","myShares":3800000,"buyPrice":14127,"iForecast":60}]

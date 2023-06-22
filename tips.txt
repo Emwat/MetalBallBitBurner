@@ -1,0 +1,5 @@
+
+nano editor, without anything selected Ctrl + C will copy the whole line
+nano editor, Ctrl + K, Ctrl + C will comment the highlighted lines
+nano editor, Ctrl + K, Ctrl + U will uncomment the highlighted lines
+

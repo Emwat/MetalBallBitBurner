@@ -7,10 +7,27 @@ import GetTarget from "./im/target"
 import Visual from "./im/visual"
 
 let showAll = false;
+let homeCores = 0;
+
 
 export async function main(ns) {
 	const arg = ns.args[0];
 	const target = GetTarget(ns);
+	homeCores = ns.getServer("home").cpuCores;
+
+	ns.tprint(`
+growPercent(server, threads, player, cores)
+	Calculate the percent a server would grow to. 
+	Not exact due to limitations of mathematics. 
+	(Ex: 3.0 would would grow the server to 300% of its current value.)
+growThreads(server, player, targetMoney, cores) 	Calculate how many threads it will take to grow server to targetMoney. Starting money is server.moneyAvailable.
+growTime(server, player) 	Calculate grow time.
+hackChance(server, player) 	Calculate hack chance. (Ex: 0.25 would indicate a 25% chance of success.)
+hackExp(server, player) 	Calculate hack exp for one thread.
+hackPercent(server, player) 	Calculate hack percent for one thread. (Ex: 0.25 would steal 25% of the server's current value.)
+hackTime(server, player) 	Calculate hack time.
+weakenTime(server, player) 	Calculate weaken time.
+`);
 
 	if (false)
 	{
@@ -67,24 +84,33 @@ function GetAllServersO(ns){
 function PrintAllServers(ns, servers, target) {
 	const myHackingSkill = ns.getHackingLevel();
 	PrintHeaders(ns);
+	const player = ns.getPlayer();
 
 	for (var i = 0; i < servers.length; i++) {
 		var server = servers[i];
 		//server = ns.getServer(server);
 		if (server.hostname.indexOf("pserv-") == 0)
 			continue;
-
-		if (!showAll && server.requiredHackingSkill / 1.25 > myHackingSkill)
-			continue;
 		
-		PrintInfo(ns, server, target);
+		PrintInfo(ns, server, player, target);
 	}
 }
 
+
+
+
 function PrintHeaders(ns) {
 	ns.tprint(
-		" " + StrLeft("moneyAvail", 13) +
-		" " + StrLeft("moneyMax", 13) +
+		" " + StrLeft("moneyAvai", 9) +
+		" " + StrLeft("moneyMax", 9) +
+		" " + StrLeft("g%", 7) +
+		" " + StrLeft("gThrd", 7) +
+		" " + StrLeft("gTime", 7) +
+		" " + StrLeft("hChnc", 5) +
+		" " + StrLeft("hExp", 5) +
+		" " + StrLeft("h%", 5) +
+		" " + StrLeft("hTime", 7) +
+		" " + StrLeft("wTime", 7) +
 		" " + StrLeft("ramUse", 6) +
 		" " + StrLeft("ramMax", 6) +
 		" " + StrLeft("Ports", 6) +
@@ -95,12 +121,26 @@ function PrintHeaders(ns) {
 		" " + new Date().toLocaleString());
 }
 
-function PrintInfo(ns, server, target) {
+// growPercent(server, threads, player, cores)
+// growThreads(server, player, targetMoney, cores)
+
+function PrintInfo(ns, server, player, target) {
 	const myHackingSkill = ns.getHackingLevel();
+	const sGrowPercent = ns.formulas.hacking.growPercent(server, 1, player, homeCores);
+	const sGrowThreads = ns.formulas.hacking.growThreads(server, player, server.moneyMax, homeCores);
+
 	ns.tprint(
 		Visual(server, target, myHackingSkill) +
-		" " + NumLeft(server.moneyAvailable, 13) +
-		" " + NumLeft(server.moneyMax, 13) +
+		" " + NumLeft(server.moneyAvailable / 10 ** 4, 9) +
+		" " + NumLeft(server.moneyMax / 10 ** 4, 9) +
+		" " + NumLeft(sGrowPercent * 100, 7) +
+		" " + NumLeft(sGrowThreads, 7) +
+		" " + NumLeft(ns.formulas.hacking.growTime(server, player), 7) +
+		" " + NumLeft(ns.formulas.hacking.hackChance(server, player) * 100, 5) +
+		" " + NumLeft(ns.formulas.hacking.hackExp(server, player), 5) +
+		" " + NumLeft(ns.formulas.hacking.hackPercent(server, player) * 100, 5) +
+		" " + NumLeft(ns.formulas.hacking.hackTime(server, player), 7) +
+		" " + NumLeft(ns.formulas.hacking.weakenTime(server, player), 7) +
 		" " + NumLeft(server.ramUsed, 6) +
 		" " + NumLeft(server.maxRam, 6) +
 		" " + NumLeft(server.numOpenPortsRequired, 6) +

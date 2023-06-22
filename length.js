@@ -9,6 +9,7 @@ import Visual from "./im/visual"
 
 let RedTarget;
 let MyHackingSkill;
+const white = "\u001b[37m";
 
 export async function main(ns) {
 	await ns.sleep(200);
@@ -35,18 +36,23 @@ function MainHelper(ns) {
 	PrintHeaders(ns);
 	let totals = DeclareTotals();
 	stats = stats.sort((a, b) => a.moneyMax - b.moneyMax);
+	let info = [];
+	let j = 1;
 	for (let i = 0; i < stats.length; i++) {
 		const server = stats[i];
 		if (server.t == 0)
 			continue;
 
 		AddToTotal(totals, server);
-		PrintInfo(ns, server);
+		ns.tprint(PrintInfo(server, j));
+		j++;
+		// info.push(PrintInfo(server));
 	}
+	// ns.tprint(info.concat([]));
 	if (totals.count == 1)
 		return;
-	PrintLine(ns);
-	PrintInfo(ns, totals);
+	PrintLineBreak(ns);
+	ns.tprint(PrintInfo(totals));
 }
 
 function DeclareTotals() {
@@ -58,11 +64,11 @@ function DeclareTotals() {
 		minDifficulty: 0,
 		hackDifficulty: 0,
 		// requiredHackingSkill: 1,
-		t: 0,
 		a: 0,
-		g: 0,
 		w: 0,
+		g: 0,
 		h: 0,
+		t: 0,
 		i: 0,
 		hostname: "Totals",
 		count: 0
@@ -78,34 +84,13 @@ function AddToTotal(totals, server) {
 	totals.hackDifficulty += server.hackDifficulty;
 	// if (server.requiredHackingSkill > totals.requiredHackingSkill)
 	// 	totals.requiredHackingSkill = server.requiredHackingSkill;
-	totals.t += server.t;
 	totals.a += server.a;
 	totals.g += server.g;
 	totals.w += server.w;
 	totals.h += server.h;
+	totals.t += server.t;
 	totals.i += server.i;
 	totals.count += 1;
-}
-
-function PrintLine(ns) {
-	let s = 
-		" " + StrLeft("bmmmkkk000", 13) +
-		" " + StrLeft("bmmmkkk000", 13) +
-		" " + StrLeft("", 6) +
-		" " + StrLeft("", 10) +
-		" " + StrLeft("", 12) +
-		" " + StrLeft("", 6) +
-		" " + StrLeft("", 10) +
-		" " + StrLeft("", 6) +
-		" " + StrLeft("", 6) +
-		" " + StrLeft("", 6) +
-		" " + StrLeft("", 6) +
-		" " + StrLeft("bmmmkkk000", 12) +
-
-		" ";
-
-		s = s.replaceAll(" ","-");
-		ns.tprint(s);
 }
 
 function GetStats(ns) {
@@ -116,8 +101,8 @@ function GetStats(ns) {
 		const server = hosts[i];
 		let serverObject = ns.getServer(server);
 		serverObject.a = 0;
-		serverObject.g = 0;
 		serverObject.w = 0;
+		serverObject.g = 0;
 		serverObject.h = 0;
 		serverObject.t = 0;
 		serverObject.i = 0;
@@ -153,8 +138,8 @@ function GetStats(ns) {
 			if (serverObject) serverObject.t += process.threads;
 			if (process.filename == "alph.js") serverObject.a += process.threads;
 			if (process.filename == "alph.js") incrementIncome(serverObject, hosts[i], process);
-			if (process.filename == "grow.js") serverObject.g += process.threads;
 			if (process.filename == "weak.js") serverObject.w += process.threads;
+			if (process.filename == "grow.js") serverObject.g += process.threads;
 			if (process.filename == "hack.js") serverObject.h += process.threads;
 			if (process.filename == "hack.js") serverObject.i += ns.getScriptIncome("hack.js", hosts[i], process.args[0]);
 
@@ -165,42 +150,74 @@ function GetStats(ns) {
 	return stats;
 }
 
+const vertical = " |X| ";
+
 function PrintHeaders(ns) {
 	ns.tprint(
+		StrLeft("", 3) +
 		" " + StrLeft("moneyAvail", 13) +
 		" " + StrLeft("moneyMax", 13) +
 		" " + StrLeft("Thresh", 6) +
-		" " + StrLeft("use/maxRam", 10) +
+		" " + StrLeft("use/maxRam", 11) +
 		" " + StrLeft("min/HacDif", 12) +
 		" " + StrLeft("reqHac", 6) +
-		" " + StrLeft("thread", 10) +
-		" " + StrLeft("alpha", 6) +
-		" " + StrLeft("grow", 6) +
+		vertical +
+		" " + StrLeft("alph", 6) +
 		" " + StrLeft("weak", 6) +
+		" " + StrLeft("grow", 6) +
 		" " + StrLeft("hack", 6) +
+		" " + StrLeft("thread", 10) +
 		" " + StrLeft("income", 12) +
 
 		" " + "name" +
 		" " + new Date().toLocaleString());
 }
-const excludeDecimal = true;
 
-function PrintInfo(ns, server) {
-	let isAboveThresh = server.moneyAvailable > (server.moneyMax * 0.75);
+function PrintLineBreak(ns) {
+	let str =
+		StrLeft("", 3) +
+		" " + StrLeft("bmmmkkk000", 13) +
+		" " + StrLeft("bmmmkkk000", 13) +
+		" " + StrLeft("", 6) +
+		" " + StrLeft("", 11) +
+		" " + StrLeft("", 12) +
+		" " + StrLeft("", 6) +
+		vertical +
+		" " + StrLeft("", 6) +
+		" " + StrLeft("", 6) +
+		" " + StrLeft("", 6) +
+		" " + StrLeft("", 6) +
+		" " + StrLeft("", 10) +
+		" " + StrLeft("bmmmkkk000", 12) +
 
-	ns.tprint(
+		" ";
+
+		str = str.replaceAll(" ","-");
+		ns.tprint(str);
+		return str;
+}
+
+function PrintInfo(server, i) {
+	let hasMoneyPercentage = server.moneyAvailable / server.moneyMax * 100;
+	let hasNoMoneyScripts = server.a == 0 && server.h == 0 && (server.w + server.g) > 0;
+
+	return "" +
+		NumLeft(i, 3) +
 		Visual(server, RedTarget, MyHackingSkill) +
+		(hasNoMoneyScripts ? white : "") +
 		" " + NumLeft(server.moneyAvailable, 13) +
 		" " + NumLeft(server.moneyMax, 13) +
-		" " + StrLeft((isAboveThresh ? "Ready" : ""), 6) +
-		" " + StrLeft(`${Math.ceil(server.ramUsed)} / ${server.maxRam}`, 10) +
-		" " + StrLeft(`${server.minDifficulty} / ${Math.floor(server.hackDifficulty)}`, 12) +
+		" " + NumLeft(hasMoneyPercentage, 6) +
+		" " + StrLeft(`${NumLeft(Math.ceil(server.ramUsed))} / ${NumLeft(server.maxRam, 4)}`, 11) +
+		" " + StrLeft(`${NumLeft(server.minDifficulty, 3)} / ${NumLeft(Math.floor(server.hackDifficulty), 3)}`, 12) +
 		" " + NumLeft(server.requiredHackingSkill, 6) +
-		" " + NumLeft(server.t, 10) +
+		vertical +
 		" " + NumLeft(server.a, 6) +
-		" " + NumLeft(server.g, 6) +
 		" " + NumLeft(server.w, 6) +
+		" " + NumLeft(server.g, 6) +
 		" " + NumLeft(server.h, 6) +
-		" " + NumLeft(server.i, 12) +
-		" " + server.hostname);
+		" " + NumLeft(server.t, 10) +
+		" " + StrLeft(ToDollars(server.i) + "", 12) +
+		" " + server.hostname +
+		"";
 }

@@ -1,10 +1,10 @@
-import exec from './im/exec' //ExecutiveFunction(ns, myScript, target)
+import AlphExec from './im/exec' //ExecutiveFunction(ns, myScript, target)
 import GetTarget from './im/target'
 import ZeroLeft from './im/zeroLeft'
 
 /** @param {NS} ns */
 
-
+// 25 servers, 8 GB, $3.2m
 
 export async function main(ns) {
 	const arg = ns.args[0];
@@ -30,7 +30,7 @@ export async function main(ns) {
 
 function FindIterator(ns) {
 	let servers = ns.scan("home");
-	servers = servers.filter(s => s.indexOf("pserv-") > 0);
+	servers = servers.filter(s => s.indexOf("pserv-") == 0);
 	return servers.length;
 }
 
@@ -43,11 +43,18 @@ async function MakePurchases(ns, ram) {
 	if (ns.args[1]) {
 		ram = ns.args[1];
 	}
+
+	if (i == ns.getPurchasedServerLimit()) {
+		ns.tprint("You already purchased all the servers.");
+		ns.exec("pserv.js", "home", 1, "info");
+		return;
+	}
+
 	while (i < ns.getPurchasedServerLimit()) {
 		if (ns.getServerMoneyAvailable("home") > ns.getPurchasedServerCost(ram)) {
 			let hostname = ns.purchaseServer("pserv-" + ZeroLeft(i, 2), ram);
 			if (hostname)
-				exec(ns, myScript, hostname, target);
+				AlphExec(ns, hostname, target);
 			++i;
 		}
 		await ns.sleep(waitTime);

@@ -1,6 +1,18 @@
 import ToDollars from './im/carat'
 import GetMostAffordableNode from './im/nodeCosts'
 
+// 8 nodes, level 100, -$3.5m
+// 8 nodes, level 200, -$173m
+// 8 nodes, level 200, ram 16, -$178m
+// 8 nodes, level 200, ram 64, -$207m
+// 8 nodes, level 200, ram 64, 8 cores, -$304m
+
+// 20 nodes, level 200, ram 64, 16 cores. -$6.5b
+
+
+
+
+
 export async function main(ns) {
 
 	ns.disableLog("getServerMoneyAvailable");

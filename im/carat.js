@@ -32,7 +32,7 @@ function numberB(n, excludeDecimal) {
 	else return n;
 }
 
-function numberA(n, excludeDecimal) {
+function numberA(srcNumber, excludeDecimal) {
 	function ten(p) {
 		return Math.pow(10, p);
 	}
@@ -52,11 +52,13 @@ function numberA(n, excludeDecimal) {
 
 		return str.substring(0, dot + 3);
 	}
+	let n = Math.abs(srcNumber);
+	let a = srcNumber < 0 ? "-" : "";
 
 	if (false) { }
-	else if (n / ten(12) > 1) return splice(n / ten(12)) + "t";
-	else if (n / ten(9) > 1) return splice(n / ten(9)) + "b";
-	else if (n / ten(6) > 1) return splice(n / ten(6)) + "m";
-	else if (n / ten(3) > 1) return splice(n / ten(3)) + "k";
+	else if (n / ten(12) > 1) return a + splice(n / ten(12)) + "t";
+	else if (n / ten(9) > 1) return a + splice(n / ten(9)) + "b";
+	else if (n / ten(6) > 1) return a + splice(n / ten(6)) + "m";
+	else if (n / ten(3) > 1) return a + splice(n / ten(3)) + "k";
 	else return n;
 }

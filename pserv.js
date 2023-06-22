@@ -1,5 +1,5 @@
 import TopTargets from './im/topTarget';
-import CopyNukeExe from './im/exec';
+import AlphExec from './im/exec';
 import ToDollars from './im/carat'
 import NumLeft from './im/numLeft'
 import ZeroLeft from './im/zeroLeft'
@@ -63,30 +63,38 @@ function PushScriptToMany(ns) {
 
 	const coreRam = 1.75;
 	const hackjsRam = 1.7;
+	const alphjsRam = 2.2;
 	for (let i = 0; i < allServers.length; i++) {
 		const server = allServers[i];
 		const serverObject = ns.getServer(server);
 		let threads = Math.floor(serverObject.maxRam / coreRam);
-		threads = Math.floor(threads / 3);
+		
 		const target = topTargets[t]; t++; if (t >= topTargets.length) t = 0;
 		if (threads == 0)
 			continue;
 
+		function ApplyScript(myScript, server, threads, target){
+			ns.scriptKill(myScript, server);
+			ns.scp(myScript, server);
+			ns.exec(myScript, server, threads, target);
+		}
+
+		const wThreads = Math.floor(threads * 0.6);
+		const gThreads = Math.floor(threads * 0.2);
+		const hThreads = Math.floor(threads * 0.1);
+
 		ns.scriptKill("alph.js", server);
-		for (let b = 0; b < burners.length; b++) {
-			const burner = burners[b];
-			ns.scriptKill(burner, server);
-			ns.scp(burner, server);
-			ns.exec(burner, server, threads, target);
-		}
+		ApplyScript("weak.js", server, wThreads, target);
+		ApplyScript("grow.js", server, gThreads, target);
+		ApplyScript("hack.js", server, hThreads, target);
 
-		const ramLeftover = serverObject.maxRam - serverObject.ramUsed;
-		const ramLeftOverThreads = Math.floor(ramLeftover / hackjsRam);
-		if (ramLeftover > 1 && ramLeftOverThreads > 0) {
-			ns.exec(burners[2], server, ramLeftOverThreads, target);
-		}
+		// const ramLeftover = serverObject.maxRam - ns.getServer(server).ramUsed;
+		// const ramLeftOverThreads = Math.floor(ramLeftover / alphjsRam);
+		// if (ramLeftOverThreads > 0) 
+		AlphExec(ns, server, target);
+		
 
-		ns.tprint(`${server} ${target} -t ${threads} * 3`)
+		ns.tprint(`${server} ${target} -t ${wThreads} ${gThreads} ${hThreads}`)
 
 	}
 }
@@ -158,11 +166,22 @@ function PrintPServCalc(ns) {
 	ns.tprint(`You have ${servers.length} private servers. The last server has ${maxRam} ram.`);
 	for (let i = 0; i < costs.length; i++) {
 		const cost = ns.getPurchasedServerCost(costs[i]);
+		let costAllServers = cost * servers.length;
+		let readableCostAllServers = ToDollars(cost * servers.length);
+		// if (!isFinite(cost))
+		// {
+		// 	const adjCost = ns.getPurchasedServerCost(costs[0])/Math.pow(10,3) * i * 2;
+
+		// 	costAllServers = adjCost * servers.length;
+
+		// }
+
 		ns.tprint(
+			" " + NumLeft(i, 3) +
 			" " + NumLeft(costs[i], 6) +
 			" " + NumLeft(cost, 13) +
-			" " + NumLeft(cost * servers.length, 13) +
-			" " + StrLeft(ToDollars(cost * servers.length))
+			" " + NumLeft(costAllServers, 13) +
+			" " + readableCostAllServers
 		);
 	}
 }

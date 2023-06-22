@@ -2,6 +2,7 @@
 
 import GetProgramLevel from "./im/files"
 
+import AlphExec from "./im/exec"
 import NumLeft from './im/numLeft'
 import StrLeft from './im/strLeft'
 import StrRight from './im/strRight'
@@ -32,6 +33,7 @@ import Get from "get.js"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
+	// AlphExec(ns, "home", "n00dles", 1);
 	// ns.tprint(arguments); idk wtf this is
 	// ns.tprint("Your Ports: " + GetProgramLevel(ns));
 	// for(let i = 1; i < 5; i++){
@@ -62,29 +64,36 @@ export async function main(ns) {
 	// ftprint(ns, GetServers(ns));
 	// ns.tprint(GetMostAffordableNode(ns));
 	
-	const processes = ns.ps("pserv-00");
-	for (let i = 0; i < processes.length; ++i) {
-		ns.tprint(processes[i].filename + ' ' + processes[i].threads);
-		ns.tprint(processes[i].args);
-		ns.tprint(processes[i].pid);
-	}
-	jtprint(ns, processes[0]);
+	// const processes = ns.ps("pserv-00");
+	// for (let i = 0; i < processes.length; ++i) {
+	// 	ns.tprint(processes[i].filename + ' ' + processes[i].threads);
+	// 	ns.tprint(processes[i].args);
+	// 	ns.tprint(processes[i].pid);
+	// }
+	// jtprint(ns, processes[0]);
 	// ns.tprint(`ScriptIncome: ${ns.getScriptIncome(processes[0].filename, "iron-gym", ...processes[0].args)}`)
 	// ns.tprint("asdf write");
 	// ns.write("asdf.txt", JSON.stringify({"a": new Date().toLocaleString(), "b" : "hi"}), "w");
 	// ns.tprint("asdf read");
 	// ns.tprint(JSON.parse(ns.read("asdf.txt")).a);
-	ns.tprint("lolram");
-	// exec(script, hostname, threadOrOptions, args)
+	// ns.tprint("lolram");
+	// // exec(script, hostname, threadOrOptions, args)
 	
-	let lolram1 = await Get(ns, ["lolram1", "getServerBaseSecurityLevel", "the-hub", -2, -3]);
-	// jtprint(ns, lolram);
-	ns.tprint(lolram1);
-	let lolram2 = await Get(ns, ["lolram2", "getScriptRam", "test.js", "home", -2, -3]);
-	ns.tprint(lolram2)
-	ns.tprint("end lolram");
-
-
+	// let lolram1 = await Get(ns, ["lolram1", "getServerBaseSecurityLevel", "the-hub", -2, -3]);
+	// // jtprint(ns, lolram);
+	// ns.tprint(lolram1);
+	// let lolram2 = await Get(ns, ["lolram2", "getScriptRam", "test.js", "home", -2, -3]);
+	// ns.tprint(lolram2)
+	// ns.tprint("end lolram");
+	// jtprint(ns, ns);
+	// jtprint(ns, ns.heart);
+	// jtprint(ns, ns.rainbow);
+	// jtprint(ns, ns.rainbow("bitburner"));
+	// ns.openDevMenu(); // DONT DO IT
+	// jtprint(ns, ns.getPlayer());
+	// jtprint(ns, ns.formulas);
+	// ns.tprint(ns.formulas.hacking.weakenTime(ns.getServer("n00dles"), ns.getPlayer()));
+	// ns.tprint(ns.getWeakenTime("n00dles"));
 	// jtprint(ns, ns.getBitNodeMultipliers());
 
 	ns.tprint("end test.");

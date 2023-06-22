@@ -1,0 +1,15 @@
+alias crack=run crack.js
+alias divide=run afteraugs.js; run homeHelper.js many; run pserv.js script; run length.js
+alias man=run man.js
+alias len=run length.js
+alias ded=run focus.js k
+alias hunt=run hunt.js
+alias gli=run gli.js
+alias intel=run intel.js
+alias j=run pserv.js
+alias dp=scan-analyze 3
+alias dep=scan-analyze 5
+alias deep=scan-analyze 10
+global alias demon=w0r1d_d43m0n
+global alias nsec=avmnite-02h
+global alias runners=run4theh111z

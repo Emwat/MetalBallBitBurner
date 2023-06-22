@@ -10,12 +10,12 @@ export async function main(ns) {
 	//  const arg3 = ns.args[4];
 	ns.tprint(`${fnName} (${arg1},${arg2},${arg3})`)
 	let output = "uninitialized";
-	output = switchCaseFunction(fnName, arg1, arg2, arg3);
+	output = switchCaseFunction(ns, fnName, arg1, arg2, arg3);
 	
 	ns.write(`${folder}/${dpName}.txt`, JSON.stringify(output), "w");
 }
 
-function switchCaseFunction(fnName, arg1, arg2, arg3){
+function switchCaseFunction(ns, fnName, arg1, arg2, arg3){
 	
 	switch(fnName)
 	{

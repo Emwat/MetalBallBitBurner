@@ -1,10 +1,11 @@
 /** @param {NS} ns */
-
-import GetServers from './im/servers'
+import AlphExec from "./im/exec"
+import GetServers from "./im/servers"
 import GetTargets from "./im/topTarget"
 
 const hackScriptRam = 1.7;
 const coreScriptRam = 1.75;
+const alphScriptRam = 2.2;
 let myHackingLevel;
 export async function main(ns) {
 	myHackingLevel = ns.getHackingLevel();
@@ -12,28 +13,12 @@ export async function main(ns) {
 	let servers = hostnames.map(m => ns.getServer(m));
 	servers = servers.filter(f => myHackingLevel > f.requiredHackingSkill);
 
+	let serversSumMoney = GetServersSumMoney(servers);
 
-	let serversSumMoney = servers
-		.filter(f => myHackingLevel > f.requiredHackingSkill / 2)
-		.map(s => s.moneyMax)
-		.reduce((prev, next) => prev + next);
 
-	serversSumMoney = 0;
-	for (let i = 0; i < servers.length; i++) {
-		const server = servers[i];
-		const isTooStrong = server.requiredHackingSkill > myHackingLevel / 2;
 
-		if (server.moneyMax <= 0) {
-			continue;
-		}
 
-		if (isTooStrong) {
-			continue;
-		}
-		serversSumMoney += server.moneyMax;
-	}
-
-	// ns.tprint(`serversSumMoney: ${serversSumMoney}`);
+	ns.tprint(`serversSumMoney: ${serversSumMoney}`);
 
 	ns.disableLog("scp");
 	//ns.disableLog("exec");
@@ -51,13 +36,13 @@ export async function main(ns) {
 		// ns.exec("weak.js", h, threads, server);
 		// ns.exec("grow.js", h, threads, server);
 		const h = ns.getServer(home);
-		// const leftoverRam = Math.floor(h.maxRam - h.ramUsed);
-		const leftoverRam = h.maxRam - Math.floor(hackScriptRam * 10);
-		let maxHackDifficulty = 1;
+		const leftoverRam = Math.floor(h.maxRam - h.ramUsed - 10);
+		//const leftoverRam = h.maxRam - Math.floor(hackScriptRam * 10);
+
 
 		for (let i = 0; i < servers.length; i++) {
 			const server = servers[i];
-			const isTooStrong = server.requiredHackingSkill > myHackingLevel / 2;
+			let isTooStrong = server.requiredHackingSkill > myHackingLevel;
 			// ns.tprint(`${server.requiredHackingSkill} ${myHackingLevel} ${isTooStrong}`)
 
 			if (server.moneyMax <= 0) {
@@ -69,43 +54,30 @@ export async function main(ns) {
 				continue;
 			}
 
-			if (server.moneyAvailable == server.moneyMax) {
-				if (ns.kill("grow.js", home, server.hostname)) {
-					stats.k += 1;
-					continue;
-				}
-			}
+			// if (server.moneyAvailable == server.moneyMax) {
+			// 	if (ns.kill("grow.js", home, server.hostname)) {
+			// 		stats.k += 1;
+			// 		continue;
+			// 	}
+			// }
 
-			if (server.hackDifficulty > maxHackDifficulty)
-				server.hackDifficulty = maxHackDifficulty;
-
+			// DoWeakGrow(ns, server, stats)
 			let threads = 1;
 			let percentage = server.moneyMax / serversSumMoney;
-			threads = (leftoverRam / coreScriptRam) * percentage;
+			threads = (leftoverRam / alphScriptRam) * percentage;
 			threads = Math.floor(threads - 1);
-			// ns.tprint(`${leftoverRam} / ${coreScriptRam} * ${percentage} (${server.moneyMax} ${serversSumMoney})`)
-
+			
 			if (threads <= 0)
-				threads = 2;
+				threads = 1;
 
-			// ns.print(`${server.hostname} ${percentage} ${threads}`);
-
-			const threadsWeak = Math.floor(threads * 0.49);
-			if (threadsWeak > 0) {
-				if (ns.exec("weak.js", home, threadsWeak, server.hostname) == 0)
-					ns.print(`failed ns.exec(weak.js, home, ${threadsWeak}, ${server.hostname})`);
+			if (AlphExec(ns, home, server.hostname, threads) > 0) {
+				// ns.tprint(`S -- AlphExec(${home}, ${server.hostname}, ${threads})`);
+				stats.a += threads;
+				stats.t += threads;
+				stats.c += 1;
+			} else {
+				ns.tprint(`F -- AlphExec(${home}, ${server.hostname}, ${threads})`);
 			}
-
-			const threadsGrow = Math.floor(threads * 0.49);
-			if (threadsGrow > 0) {
-				if (ns.exec("grow.js", home, threadsGrow, server.hostname) == 0)
-					ns.print(`failed ns.exec(grow.js, home, ${threadsGrow}, ${server.hostname})`);
-
-			}
-			stats.w += threadsWeak;
-			stats.g += threadsGrow;
-			stats.t += threadsWeak + threadsGrow;
-			stats.c += 1;
 
 		}
 		ns.disableLog("exec");
@@ -115,6 +87,55 @@ export async function main(ns) {
 	}
 
 }
+
+function GetServersSumMoney(servers) {
+	let serversSumMoney = 0;
+	for (let i = 0; i < servers.length; i++) {
+		const server = servers[i];
+		const isTooStrong = server.requiredHackingSkill > myHackingLevel;
+
+		if (server.moneyMax <= 0) {
+			continue;
+		}
+
+		if (isTooStrong) {
+			continue;
+		}
+		serversSumMoney += server.moneyMax;
+	}
+	return serversSumMoney;
+}
+
+function DoWeakGrow(ns, server, stats, leftoverRam) {
+	let threads = 1;
+	let percentage = server.moneyMax / serversSumMoney;
+	threads = (leftoverRam / coreScriptRam) * percentage;
+	threads = Math.floor(threads - 1);
+	// ns.tprint(`${leftoverRam} / ${coreScriptRam} * ${percentage} (${server.moneyMax} ${serversSumMoney})`)
+
+	if (threads <= 0)
+		threads = 2;
+
+	// ns.print(`${server.hostname} ${percentage} ${threads}`);
+
+	const threadsWeak = Math.floor(threads * 0.69);
+	if (threadsWeak > 0) {
+		if (ns.exec("weak.js", home, threadsWeak, server.hostname) == 0)
+			ns.print(`failed ns.exec(weak.js, home, ${threadsWeak}, ${server.hostname})`);
+	}
+
+	const threadsGrow = Math.floor(threads * 0.29);
+	if (threadsGrow > 0) {
+		if (ns.exec("grow.js", home, threadsGrow, server.hostname) == 0)
+			ns.print(`failed ns.exec(grow.js, home, ${threadsGrow}, ${server.hostname})`);
+	}
+	stats.w += threadsWeak;
+	stats.g += threadsGrow;
+	stats.t += threadsWeak + threadsGrow;
+	stats.c += 1;
+}
+
+
 
 function HackSelfEverywhere(ns, servers) {
 	let j = 0;
@@ -127,9 +148,9 @@ function HackSelfEverywhere(ns, servers) {
 
 	for (let i = 0; i < servers.length; i++) {
 		let server = servers[i];
-		const myScript = "hack.js";
-		const myScriptRam = hackScriptRam; // ns.getScriptRam(myScript)
-		const threads = Math.floor(server.maxRam / myScriptRam);
+		const hackScript = "alph.js";
+		const coreThreads = Math.floor(server.maxRam / alphScriptRam);
+		const hackThreads = Math.floor(server.maxRam / alphScriptRam);
 
 		if (server.maxRam <= 0) {
 			// if (server.moneyMax > 0)
@@ -143,7 +164,7 @@ function HackSelfEverywhere(ns, servers) {
 		if (server.hostname.startsWith("pserv"))
 			continue;
 
-		if (threads <= 0)
+		if (hackThreads <= 0)
 			continue;
 
 		if (!server.hasAdminRights)
@@ -153,11 +174,13 @@ function HackSelfEverywhere(ns, servers) {
 			continue;
 
 		ns.killall(server.hostname);
-		ns.scp(myScript, server.hostname);
+		ns.scp(hackScript, server.hostname);
 
 		if (server.moneyMax <= 0 || server.requiredHackingSkill / 2 > myHackingLevel) {
 			//ns.print(serversWithMoney[j]);
-			ns.exec(myScript, server.hostname, threads, serversWithMoney[j]);
+
+			AlphExec(ns, server.hostname, serversWithMoney[j]);
+			//ns.exec(hackScript, server.hostname, hackThreads, serversWithMoney[j]);
 			//ns.print(`${myScript} ${server.hostname} ${threads} serversWithMoney[${j}]: ${serversWithMoney[j]}`);
 			if (j > 0)
 				j -= 1;
@@ -165,7 +188,9 @@ function HackSelfEverywhere(ns, servers) {
 				j = serversWithMoney.length - 1;
 		}
 		else {
-			const coreThreads = Math.floor(server.maxRam / myScriptRam);
+			AlphExec(ns, server.hostname, server.hostname);
+			continue;
+
 			if (false) { }
 			else if (server.hackDifficulty > server.minDifficulty + 5) {
 				ns.exec("weak.js", server.hostname, coreThreads, server.hostname);
@@ -174,7 +199,7 @@ function HackSelfEverywhere(ns, servers) {
 				ns.exec("grow.js", server.hostname, coreThreads, server.hostname);
 			}
 			else {
-				ns.exec(myScript, server.hostname, threads, server.hostname);
+				ns.exec(hackScript, server.hostname, hackThreads, server.hostname);
 			}
 		}
 	}

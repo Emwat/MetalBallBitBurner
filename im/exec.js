@@ -1,17 +1,21 @@
 // import CopyNukeExe from 'exec'
 
 /** @param {NS} ns */
-export default function main(ns, myScript, targetHost, targetMoney) {
-	return CopyNukeExe(ns, myScript, targetHost, targetMoney);
+const myScript = "alph.js";
+const scriptRam = 2.2;
+export default function main(ns, targetHost, targetMoney, threads = null) {
+	return CopyNukeExe(ns, targetHost, targetMoney, threads);
 }
 
-function CopyNukeExe(ns, myScript, targetHost, targetMoney) {
+function CopyNukeExe(ns, targetHost, targetMoney, threads) {
 	const targetHostServer = ns.getServer(targetHost);
 	const targetMoneyServer = ns.getServer(targetMoney);
 
 	const moneyThresh = targetMoneyServer.moneyMax * 0.75;
 	const securityThresh = targetMoneyServer.minDifficulty + 5;
-	const threads = Math.floor(targetHostServer.maxRam / ns.getScriptRam(myScript));
+	if (!threads)
+	threads = Math.floor(
+		(targetHostServer.maxRam - targetHostServer.ramUsed) / scriptRam);
 
 	ns.scp(myScript, targetHost);
 	if (!targetHostServer.hasAdminRights)
@@ -19,7 +23,7 @@ function CopyNukeExe(ns, myScript, targetHost, targetMoney) {
 	if (!targetMoneyServer.hasAdminRights)
 		NukeTarget(ns, targetMoneyServer.numOpenPortsRequired, targetMoney);
 
-	if (threads == 0)
+	if (threads < 1)
 		return;
 
 	return ns.exec(myScript, targetHost, threads, targetMoney, moneyThresh, securityThresh);
@@ -27,9 +31,6 @@ function CopyNukeExe(ns, myScript, targetHost, targetMoney) {
 
 
 function NukeTarget(ns, ports, target) {
-	if (ns.hasRootAccess(target))
-		return;
-
 	if (ports >= 1)
 		ns.brutessh(target);
 

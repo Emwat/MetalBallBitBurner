@@ -2,7 +2,6 @@ import TopTargets from './im/topTarget'
 
 /** @param {NS} ns */
 export async function main(ns) {
-	const myHackingSkill = ns.getHackingLevel();
 	const alphjsRam = 2.2;
 	const growjsRam = 1.75;
 	const hackjsRam = 1.7;
@@ -45,16 +44,17 @@ export async function main(ns) {
 				`TopTargets Length: ${topTargets.length} ` +
 				`MaxThreads/TopTargets: ${Math.floor(maxThreads / topTargets.length)}`);
 
-			maxThreads = Math.floor(maxThreads / topTargets.length);
+			maxThreads = Math.floor((maxThreads / topTargets.length) - (30 - topTargets.length));
 		}
 
 		// maxThreads = Math.floor(maxThreads / 2);
 		for (let i = 0; i < topTargets.length; i++) {
 			const target = topTargets[i];
 			if (true) {
-				HelperExec(ns, "weak.js", "home", target, Math.floor(maxThreads * 0.4));
-				HelperExec(ns, "grow.js", "home", target, Math.floor(maxThreads * 0.3));
-				HelperExec(ns, "hack.js", "home", target, Math.floor(maxThreads * 0.3));
+				// HelperExec(ns, "alph.js", "home", target, Math.floor(maxThreads * 0.02));
+				HelperExec(ns, "weak.js", "home", target, Math.floor(maxThreads * 0.6));
+				HelperExec(ns, "grow.js", "home", target, Math.floor(maxThreads * 0.2));
+				HelperExec(ns, "alph.js", "home", target, Math.floor(maxThreads * 0.18));
 			}
 			else {
 				HelperExec(ns, "weak.js", "home", target, Math.floor(maxThreads * 0.1));

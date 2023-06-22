@@ -2,6 +2,8 @@
 
 import GetServers from "./im/servers"
 import AlphaExec from "./im/exec"
+import StrLeft from "./im/strLeft"
+import NumLeft from "./im/numLeft"
 
 const burners = ["grow.js", "weak.js", "hack.js"];
 const alphjsRam = 2.2;
@@ -111,7 +113,7 @@ function MainHelper(ns, myArg, targetServer, totalThreads) {
 			t += threads;
 		} else {
 
-			t += Distribute(ns, t, server, threads, target, totalThreads, serverObject, targetServer, isHome);
+			t += Distribute(ns, t, threads, target, totalThreads, serverObject, targetServer, isHome);
 
 		}
 
@@ -122,12 +124,15 @@ function MainHelper(ns, myArg, targetServer, totalThreads) {
 	ns.tprint(`Unleashed ${t} ${myArg} threads on ${target}. Program end.`);
 }
 
-function Distribute(ns, t, server, threads, target, totalThreads, serverObject, targetServer, isHome) {
+function Distribute(ns, t, threads, target, totalThreads, serverObject, targetServer, isHome) {
+	let server = serverObject.hostname;
 	let distributeOutput = 0;
 	function cap(threads, totalThreads, percentage) {
 		let limit = totalThreads * percentage;
-		if (threads > limit)
+		if (threads > limit){
+			// ns.tprint(`Limited ${threads} to ${Math.floor(threads - limit)}`);
 			return Math.floor(threads - limit);
+		}
 		return threads;
 	}
 
@@ -140,23 +145,44 @@ function Distribute(ns, t, server, threads, target, totalThreads, serverObject, 
 		return output;
 	}
 
-	let adjThreads = 0;
+	const a = 0.6;
+	const b = 0.8;
+	let appliedWeak = 0;
+	let appliedGrow = 0;
+	let appliedAlph = 0;
+	// const c = 0.95;
 
 	if (isHome) { }
-	else if (t < totalThreads * 0.45) adjThreads = execScriptGetAdjust("grow.js", threads, 0.45);
-	else if (t < totalThreads * 0.6) adjThreads = execScriptGetAdjust("weak.js", threads, 0.6);
-	else if (t < totalThreads * 0.9) adjThreads = execScriptGetAdjust("hack.js", threads, 0.9);
+	if (t < totalThreads * a) appliedWeak += execScriptGetAdjust("weak.js", threads, a);
+	if (t < totalThreads * b) appliedGrow += execScriptGetAdjust("grow.js", threads, b);
+	// else if (t < totalThreads * c) distributeOutput = execScriptGetAdjust("hack.js", threads, c);
 
-	distributeOutput += adjThreads;
+	distributeOutput += appliedWeak;
+	distributeOutput += appliedGrow;
 
-	threads = Math.floor(serverObject.maxRam / alphjsRam) - (isHome ? 10 : 0);
-	adjThreads = Math.floor(threads - adjThreads);
+	serverObject = ns.getServer(server);
+	threads = serverObject.maxRam - serverObject.ramUsed;
 
-	if (adjThreads > 0) {
-		distributeOutput += adjThreads;
-		ns.exec("alph.js", server, adjThreads, target,
+	if (isHome)
+		threads -= roomForScripts;
+
+	threads = threads / alphjsRam;
+	threads = Math.floor(threads);
+
+	if (threads > 0) {
+		appliedAlph += threads;
+		ns.exec("alph.js", server, threads, target,
 			targetServer.moneyMax * 0.75, targetServer.minDifficulty + 5);
 	}
+	
+	distributeOutput += appliedAlph;
+	ns.tprint(
+		StrLeft("a" + appliedAlph, 10) + 
+		StrLeft("g" + appliedGrow, 10) + 
+		StrLeft("w" + appliedWeak, 10) + 
+		NumLeft(t, 10) + 
+		StrLeft(server, 20)
+	);
 	return distributeOutput;
 }
 
@@ -187,6 +213,7 @@ function DetermineRam(myArg) {
 	else if (myArg == "g") return growjsRam;
 	else if (myArg == "w") return growjsRam;
 	else if (myArg == "h") return hackjsRam;
+	else if (myArg == "max") return growjsRam;
 
 	return growjsRam;
 }

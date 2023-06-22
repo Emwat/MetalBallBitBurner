@@ -7,23 +7,26 @@ export default function main(server, target, myHackingLevel) {
 	const black = "\u001b[30m";
 	const brightBlack = "\u001b[30;1m";
 	const cyan ="\u001b[36m";
-	const green = "\u001b[32m";
+	const green = "\u001b[32m"; // is slightly brighter than reset green
 	const reset = "\u001b[0m";
+	
 
 	if (server.hostname == "Totals")
 		return reset;
+	if (server.cpuCores > 1)
+		return green;
 	if (server.ramUsed == 0 && server.maxRam > 0)
 		return white;
 	if (myHackingLevel && server.requiredHackingSkill > myHackingLevel / 2)
-		return black;
+		return reset;
 	if (!server.hasAdminRights)
-		return brightBlack;
+		return black;
 	if (server.hostname == target)
 		return red;
+	// if (myHackingLevel && server.requiredHackingSkill > myHackingLevel)
+	// 	return reset;
 	if (server.minDifficulty + 5 < Math.floor(server.hackDifficulty))
 		return yellow;
-	if (server.cpuCores > 1)
-		return brightGreen;
-	
+
 	return reset;
 }

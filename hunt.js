@@ -1,7 +1,7 @@
 /** @param {NS} ns */
 export async function main(ns) {
 	ns.tail();
-	ns.disableLog("scan");
+	// ns.disableLog("scan");
 	GetAllServers(ns, ns.args[0], 0, 10);
 }
 let alreadyScanned = [];

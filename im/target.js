@@ -59,7 +59,10 @@ function GetTarget(ns) {
 		return GetValue(a) > GetValue(b) ? a : b;
 	}
 
-	return servers.reduce((a, b) => FilterMostMoneyAndHalfHackingSkill(ns, hackingLevel, portStrength, a, b)).hostname;
+	let singleTarget = servers
+		.reduce((a, b) => FilterMostMoneyAndHalfHackingSkill(ns, hackingLevel, portStrength, a, b));
+
+	return BlackListFilter(singleTarget.hostname, hackingLevel);
 }
 
 
@@ -78,4 +81,18 @@ function GetProgramLevel(ns) {
 			return i;
 	}
 	return -1;
+}
+
+function BlackListFilter(server, hackingLevel){
+	const blackList = ["iron-gym"]
+	if (blackList.indexOf(server) == -1)
+		return server;
+
+	const otherTargets = [
+				{ requiredHackingSkill: 100, name: "phantasy" },
+				{ requiredHackingSkill: 90, name: "max-hardware" },
+			];
+
+	return (hackingLevel / 2 > otherTargets[0].requiredHackingSkill) ?
+				otherTargets[0].name : otherTargets[1].name;
 }
