@@ -60,5 +60,5 @@ function numberA(srcNumber, excludeDecimal) {
 	else if (n / ten(9) > 1) return a + splice(n / ten(9)) + "b";
 	else if (n / ten(6) > 1) return a + splice(n / ten(6)) + "m";
 	else if (n / ten(3) > 1) return a + splice(n / ten(3)) + "k";
-	else return n;
+	else return n.toString().substring(0, 5);
 }

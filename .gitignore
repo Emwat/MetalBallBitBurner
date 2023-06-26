@@ -1,0 +1,7 @@
+# data dumps
+record.txt
+data.txt
+
+# deleted files
+freeram/*
+xx/*

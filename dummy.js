@@ -28,6 +28,7 @@ export async function main(ns) {
 	HackSelfEverywhere(ns, servers);
 
 	while (true) {
+		ns.tprint("WHILE LOOP, must kill dummy.js to end.")
 		servers = hostnames.map(m => ns.getServer(m));
 		const home = "home";
 
@@ -85,6 +86,7 @@ export async function main(ns) {
 		break;
 		await ns.sleep(60000 * 5);
 	}
+	ns.tprint(`dummy.js end ${new Date().toLocaleString()}`);
 
 }
 
@@ -168,9 +170,6 @@ function HackSelfEverywhere(ns, servers) {
 			continue;
 
 		if (!server.hasAdminRights)
-			continue;
-
-		if (server.requiredHackingSkill > myHackingLevel)
 			continue;
 
 		ns.killall(server.hostname);

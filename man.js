@@ -10,8 +10,11 @@ export async function main(ns) {
 	output = output.replaceAll(".js", `${y}`);
 	output = output.replace(/(?:\r\n|\r|\n)/g, `${r}\r\n`);
 	
-
-	ns.tprint(output);
+	ns.tail();
+	await ns.sleep(0);
+	ns.moveTail(960, 10);
+	ns.resizeTail(900, 900);
+	ns.print(output);
 }
 
 function sourceMan() {
@@ -24,10 +27,9 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 
 	
 	alph.js [target] [securityThresh] [moneyThresh]
+	swap.js --mv [all/a/g/w/h/k] [oldTarget] [a/g/w/h/k] [newAction]
 	
-	-------------
-	  TRACKING
-	-------------
+# TRACKING
 	book.js [server] >> reads record.txt on another server
 	power.js >> applies data.txt to every server
 	length.js [minutes]
@@ -37,19 +39,19 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	print.js m >> sort by money max
 	print.js r >> sort by required hacking skill
 	print.js [server]
+	pi.js >> idk what formulas is supposed to help with...
 
 	cct.js contracts()
 	
 	crack.js [server]
 	hunt.js [server]
 
-  --------------
-	 HARD HITTING
-	--------------
+# HARD HITTING
 	afteraugs.js (no args needed) >> applies alpha.js to mostly one server.
 	batch.js >> unused. WHILE Loop, applies w/g/h topTargets evenly on every server except home.
 	dummy.js >> WHILE LOOP, applies alpha everything
 	expert.js >> WHILE LOOP, all servers hack themselves, home applies idk
+	fill.js >> fills unused servers w/ alph and w
 	focus.js [k] >> Kills everything
 	focus.js [a/g/w/h, target] >> Kills everything, all servers apply a/g/w/h on one server
 	focus.js [b] >> WHILE LOOP, kills everything, all servers cycles through w, g, h all for one server
@@ -58,16 +60,13 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	homeHelper.js one >> does NOT apply, gives copy paste script for a/w/g/h
 	homeHelper.js [server] >> does NOT apply, gives copy paste script for a/w/g/h
 	homeHelper.js [server] [a/w/g/h] >> applies
-	--------
-	- GANG -
-  --------
+
+# GANG
 	gli.js [e/l/c/t]
 	heartb.js >> Gangs needs an insane amount of bad karma.
 	nite.js >> ascend gang members based on hacking
 	
-	---------
-	 HACKNET
-	---------
+# HACKNET
 	net.js >> buys 8 nodes and upgrades to level 100
 	net.js [l/r/c] >> upgrades to 200/16/8
 	net.js [numberOfNodes] >> will also fully upgrade them
@@ -76,7 +75,9 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	
 	pserv.js rename
 	pserv.js script >> applies g/w/h and leftover h
-	pserv.js script [target] [a/w/g/h]
+	pserv.js script >> applies g/w/h and leftover h
+	pserv.js script [target] PushScriptToMany topTargets
+	pserv.js script [target] [a/w/g/h] PushOneScript(single target)
 	pserv.js upgrade
 	pserv.js calc
 	pserv.js max

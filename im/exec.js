@@ -29,7 +29,6 @@ function CopyNukeExe(ns, targetHost, targetMoney, threads) {
 	return ns.exec(myScript, targetHost, threads, targetMoney, moneyThresh, securityThresh);
 }
 
-
 function NukeTarget(ns, ports, target) {
 	if (ports >= 1)
 		ns.brutessh(target);

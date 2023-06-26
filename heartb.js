@@ -19,7 +19,7 @@ function MainHelper(ns){
 	const karma = Math.floor(ns.heart.break());
 	const date = new Date().toLocaleString();
 
-	ns.tprint(`You have ${ns.formatNumber(karma)} karma. Goal: -54k karma ${date}`)
+	ns.tprint(`You have ${karma} karma. Goal: -54k karma ${date}`)
 	if (ns.args[0] == "info")
 		for (let i = 0; i < karmaDictionary.length; i++) {
 			const page = karmaDictionary[i];

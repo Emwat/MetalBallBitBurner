@@ -19,12 +19,11 @@ export async function main(ns) {
 }
 
 function CapRecording(ns) {
-let r = ns.read(saveFile);
+	let r = ns.read(saveFile);
 	if (r == "")
 		return;
 	let rows = JSON.parse("[" + r.slice(0, -1) + "]");
-	if (rows.length > 100)
-	{
+	if (rows.length > 100) {
 		r = r.substring(r.indexOf("}") + 2);
 		ns.write(saveFile, r, "w");
 	}
@@ -34,7 +33,13 @@ function IsRecording(ns) {
 	const blacklist = [
 		"home"
 	];
+	try {
+		let data = JSON.parse(ns.read(dataFile));
+		return blacklist.indexOf(data.hostname) == -1;
+	} catch
+	{
 
-	let data = JSON.parse(ns.read(dataFile));
-	return blacklist.indexOf(data.hostname) == -1;
+	}
+	return true;
+
 }

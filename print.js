@@ -11,17 +11,11 @@ let showAll = false;
 export async function main(ns) {
 	const arg = ns.args[0];
 	const target = GetTarget(ns);
+	showAll = ns.args.indexOf("all") > -1;
 
 	if (false)
 	{
 
-	}
-	else if (arg == "all") {
-		showAll = true;
-		let servers = GetAllServersO(ns);
-		servers = servers.sort((a, b) => a.requiredHackingSkill - b.requiredHackingSkill);
-		//ns.tprint(`${servers[10].requiredHackingSkill} ${servers[11].requiredHackingSkill}`)
-		PrintAllServers(ns, servers, target);
 	}
 	else if (arg == "d") {
 		let servers = GetAllServersO(ns);

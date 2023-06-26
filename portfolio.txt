@@ -1,1 +1,1 @@
-[{"iSym":"TITN","myShares":3800000,"buyPrice":14127,"iForecast":60}]
+[{"iSym":"BLD","myShares":2281445,"buyPrice":33609,"iForecast":61},{"iSym":"NTLK","myShares":4200000,"buyPrice":9617,"iForecast":63}]

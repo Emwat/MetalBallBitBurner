@@ -9,7 +9,7 @@ const burners = ["grow.js", "weak.js", "hack.js"];
 const alphjsRam = 2.2;
 const growjsRam = 1.75;
 const hackjsRam = 1.7;
-const roomForScripts = 20;
+const roomForScripts = 21;
 
 export async function main(ns) {
 	if (ns.args.length == 0) {
@@ -106,7 +106,7 @@ function MainHelper(ns, myArg, targetServer, totalThreads) {
 
 		if (!totalThreads) {
 			if (false) { }
-			else if (myArg == "a") AlphaExec(ns, "alph.js", server, target);
+			else if (myArg == "a") AlphaExec(ns, server, target);
 			else if (myArg == "g") ns.exec("grow.js", server, threads, target);
 			else if (myArg == "w") ns.exec("weak.js", server, threads, target);
 			else if (myArg == "h") ns.exec("hack.js", server, threads, target);
@@ -176,13 +176,13 @@ function Distribute(ns, t, threads, target, totalThreads, serverObject, targetSe
 	}
 	
 	distributeOutput += appliedAlph;
-	ns.tprint(
-		StrLeft("a" + appliedAlph, 10) + 
-		StrLeft("g" + appliedGrow, 10) + 
-		StrLeft("w" + appliedWeak, 10) + 
-		NumLeft(t, 10) + 
-		StrLeft(server, 20)
-	);
+	// ns.tprint(
+	// 	StrLeft("a" + appliedAlph, 10) + 
+	// 	StrLeft("g" + appliedGrow, 10) + 
+	// 	StrLeft("w" + appliedWeak, 10) + 
+	// 	NumLeft(t, 10) + 
+	// 	StrLeft(server, 20)
+	// );
 	return distributeOutput;
 }
 

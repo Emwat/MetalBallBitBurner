@@ -21,9 +21,12 @@ export async function main(ns) {
 		const [ignoreMe, target, myArg] = ns.args;
 		if (myArg) {
 			PushOneScript(ns, target, myArg);
+		} else if(target) {
+			PushOneScript(ns, target, "a");
 		} else {
 			PushScriptToMany(ns);
 		}
+		ns.exec("power.js", "home", 1);
 
 	} else if (ns.args[0] == "upgrade") {
 		UpgradePServ(ns);
@@ -39,6 +42,7 @@ export async function main(ns) {
 		ns.tprint("No args found.");
 	}
 
+	ns.tprint("pserv.js end " + new Date().toLocaleString());
 }
 
 function GetAllPServ(ns, otherName) {
@@ -68,15 +72,16 @@ function PushScriptToMany(ns) {
 		const server = allServers[i];
 		const serverObject = ns.getServer(server);
 		let threads = Math.floor(serverObject.maxRam / coreRam);
-		
+
 		const target = topTargets[t]; t++; if (t >= topTargets.length) t = 0;
 		if (threads == 0)
 			continue;
 
-		function ApplyScript(myScript, server, threads, target){
+		function ApplyScript(myScript, server, threads, target) {
 			ns.scriptKill(myScript, server);
 			ns.scp(myScript, server);
-			ns.exec(myScript, server, threads, target);
+			if (threads > 0)
+				ns.exec(myScript, server, threads, target);
 		}
 
 		const wThreads = Math.floor(threads * 0.6);
@@ -92,7 +97,7 @@ function PushScriptToMany(ns) {
 		// const ramLeftOverThreads = Math.floor(ramLeftover / alphjsRam);
 		// if (ramLeftOverThreads > 0) 
 		AlphExec(ns, server, target);
-		
+
 
 		ns.tprint(`${server} ${target} -t ${wThreads} ${gThreads} ${hThreads}`)
 
@@ -101,8 +106,6 @@ function PushScriptToMany(ns) {
 
 function PushOneScript(ns, target, myArg) {
 	const allServers = GetAllPServ(ns);
-	let t = 0;
-
 	const coreRam = 1.75;
 	const hackjsRam = 1.7;
 	const alphjsRam = 2.2;
@@ -127,7 +130,7 @@ function PushOneScript(ns, target, myArg) {
 		}
 
 		if (false) { }
-		else if (myArg == "a") ns.exec("alph.js", server, threads, target);
+		else if (myArg == "a") AlphExec(ns, server, target);
 		else if (myArg == "g") ns.exec("grow.js", server, threads, target);
 		else if (myArg == "w") ns.exec("weak.js", server, threads, target);
 		else if (myArg == "h") ns.exec("hack.js", server, threads, target);
@@ -218,7 +221,7 @@ function PrintPServInfo(ns) {
 		serverIncome = Math.floor(serverIncome);
 
 
-		output += 
+		output +=
 			" " + StrLeft(server.hostname, 13) +
 			" " + StrLeft(server.ramUsed + "/" + server.maxRam, 20) +
 			" " + StrLeft("$" + serverIncome, 13) +

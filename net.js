@@ -174,7 +174,7 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 				ns.print(`home: ${ToDollars(myMoney(ns))} / ${i} ${arg} cost: ${ToDollars(cost)}`)
 			}
 
-			await ns.sleep(waitTime);
+			// await ns.sleep(waitTime);
 
 			ex++;
 			if (ex > maxEx) {

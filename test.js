@@ -33,6 +33,7 @@ import Get from "get.js"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
+	// jtprint(ns, ns.getServer("n00dles"));
 	// AlphExec(ns, "home", "n00dles", 1);
 	// ns.tprint(arguments); idk wtf this is
 	// ns.tprint("Your Ports: " + GetProgramLevel(ns));
@@ -63,7 +64,7 @@ export async function main(ns) {
 	// ftprint(ns, ns.gang.getTaskNames());
 	// ftprint(ns, GetServers(ns));
 	// ns.tprint(GetMostAffordableNode(ns));
-	
+
 	// const processes = ns.ps("pserv-00");
 	// for (let i = 0; i < processes.length; ++i) {
 	// 	ns.tprint(processes[i].filename + ' ' + processes[i].threads);
@@ -78,7 +79,7 @@ export async function main(ns) {
 	// ns.tprint(JSON.parse(ns.read("asdf.txt")).a);
 	// ns.tprint("lolram");
 	// // exec(script, hostname, threadOrOptions, args)
-	
+
 	// let lolram1 = await Get(ns, ["lolram1", "getServerBaseSecurityLevel", "the-hub", -2, -3]);
 	// // jtprint(ns, lolram);
 	// ns.tprint(lolram1);
@@ -95,8 +96,25 @@ export async function main(ns) {
 	// ns.tprint(ns.formulas.hacking.weakenTime(ns.getServer("n00dles"), ns.getPlayer()));
 	// ns.tprint(ns.getWeakenTime("n00dles"));
 	// jtprint(ns, ns.getBitNodeMultipliers());
+	// ns.exploit();
+	// await testPrompt(ns);
 
 	ns.tprint("end test.");
+}
+
+async function testPrompt(ns) {
+	const queryA = "Do you enjoy Bitburner?";
+	const resultA = await ns.prompt(queryA);
+	ns.tprint(`${queryA} ${resultA}`);
+
+	const resultC = await ns.prompt("Please enter your name.", { type: "text" });
+	ns.tprint(`Hello, ${resultC}.`);
+
+	const resultD = await ns.prompt("Please select your favorite fruit.", {
+		type: "select",
+		choices: ["Apple", "Banana", "Orange", "Pear", "Strawberry"]
+	});
+	ns.tprint(`Your favorite fruit is ${resultD.toLowerCase()}.`);
 }
 
 function getRandomInt(max) {

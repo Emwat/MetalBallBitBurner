@@ -9,6 +9,8 @@ export async function main(ns) {
 	let roomForThreads = 10;
 	const homeServer = ns.getServer("home");
 	const homeRam = homeServer.maxRam - homeServer.ramUsed;
+	if (homeServer.maxRam <= 32)
+		roomForThreads = 0;
 
 	const alphMaxThreads = Math.floor(homeRam / alphjsRam) - roomForThreads;
 	const growMaxThreads = Math.floor(homeRam / growjsRam) - roomForThreads;

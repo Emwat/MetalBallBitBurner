@@ -34,6 +34,12 @@ function IsRecording(ns) {
 		"home"
 	];
 
-	let data = JSON.parse(ns.read(dataFile));
-	return blacklist.indexOf(data.hostname) == -1;
+	try {
+		let data = JSON.parse(ns.read(dataFile));
+		return blacklist.indexOf(data.hostname) == -1;
+	} catch
+	{
+
+	}
+	return true;
 }

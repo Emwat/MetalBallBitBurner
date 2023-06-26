@@ -1,86 +1,157 @@
 /** @param {NS} ns */
 
 import GetServers from "./im/servers"
+import AlphExec from "./im/exec"
+import AlphArgs from "./im/alphHelper"
+import StrLeft from "./im/strLeft"
 
-const validActions = [
-	"-k",
-	"-a",
-	"-w",
-	"-g",
-	"-h"
-];
+const cRam = 1.75;
+const hRam = 1.7;
+const aRam = 2.2;
 
 export async function main(ns) {
 	if (ns.args.length == 0) {
 		ns.tprint(`No args found. Program did not run. Args are 
-		redo.js WIP
+		--mv [oldAction] [oldTarget] [newAction] [newTarget]
 		
 		`);
 		return;
 	}
 
+	const iMv = ns.args.indexOf("--mv");
 
+	//ns.disableLog("scan");
 	ns.disableLog("scp");
 	ns.disableLog("getServer");
-	ns.killall();
 
-	MainHelper(ns, ns.args);
+	if (iMv > -1) {
+		if (iMv + 4 > ns.args.length) {
+			ns.tprint(`-mv must have 4 following arguments. oldAction/oldTarget/newAction/newTarget`)
+		}
+		let actions = {
+			oldAction: ns.args[iMv + 1],
+			oldTarget: ns.args[iMv + 2],
+			newAction: ns.args[iMv + 3],
+			newTarget: ns.args[iMv + 4]
+		};
+		// let actions = [
+		// 	ns.args[iMv + 1],
+		// 	ns.args[iMv + 2],
+		// 	ns.args[iMv + 3],
+		// 	ns.args[iMv + 4]
+		// ];
+		if (
+			actions.oldAction == undefined ||
+			actions.oldTarget == undefined ||
+			actions.newAction == undefined ||
+			actions.newTarget == undefined
+		) {
+			ns.tprint("Fail. " +
+				" " + actions.oldAction +
+				" " + actions.newTarget +
+				" " + actions.oldAction +
+				" " + actions.newTarget
+			);
+			return;
+		}
 
+		const stats = { killed: 0 };
+		const servers = GetServers(ns);
+		ns.print(`${ns.args.concat()}`)
+		ns.print(`${actions[0]} ${actions[1]} ${actions[2]} ${actions[3]}`)
 
-	// ns.exec("count.js", "home");
-
-}
-
-function GetTargetsFromArgs(myArgs) {
-	let myTargets = myArgs.filter(f => validActions.indexOf(f) == -1);
-	return myTargets;
-}
-
-function MainHelper(ns, myArgs) {
-	let servers = GetServers(ns);
-	servers = servers.map(s => ns.getServer(s));
-	// let ram = DetermineRam(myArgs);
-	let myTargets = GetTargetsFromArgs(myArgs);
-
-	const hasA = myArgs.indexOf("-a") > 0;
-	const hasG = myArgs.indexOf("-g") > 0;
-	const hasW = myArgs.indexOf("-w") > 0;
-	const hasH = myArgs.indexOf("-h") > 0;
-	const hasK = myArgs.indexOf("-k") > 0;
-	let stats = { killed: 0 };
-	function addKill() {
-		stats.killed += 1;
+		for (let i = 0; i < servers.length; i++) {
+			let host = servers[i];
+			MainHelper(ns, host, ApplyNewAction, actions, stats)
+		}
+		ns.tprint(`Stats.Killed ${stats.killed}`);
 	}
 
-	for (let i = 0; i < servers.length; i++) {
-		let host = servers[i].hostname;
-		if (host == "home")
+	ns.tprint(`swap.js ${ns.args.concat()} end ${new Date().toLocaleString()}`);
+}
+
+function DeHelper(actions) {
+	return [actions.oldAction, actions.oldTarget, actions.newAction, actions.newTarget];
+}
+
+function MainHelper(ns, host, ApplyNewAction, actions, stats) {
+	const processes = ns.ps(host);
+
+	for (let j = 0; j < processes.length; ++j) {
+		const process = processes[j];
+		if (!process)
 			continue;
 
-		const processes = ns.ps(host);
+		if (process.args.length == 0)
+			continue;
 
-		for (let j = 0; j < processes.length; ++j) {
-			const process = processes[j];
-			if (!process)
-				continue;
+		const scriptTarget = process.args[0];
+		if (actions.oldTarget != scriptTarget)
+			continue;
 
-			if (process.args.length == 0)
-				continue;
+		if (actions.oldAction != "max") {
+			ApplyNewAction(ns, process, host, actions, stats);
+		} else {
+			const acts = "wgha";
+			for (let k = 0; k < acts.length; k++) {
+				actions.oldAction = acts[k];
+				actions.newAction = acts[k];
 
-			const scriptTarget = process.args[0];
-
-			if (myTargets.indexOf(scriptTarget) == -1)
-				continue;
-
-			if (process.filename == "alph.js" && (hasK || !hasA)) {
-				ns.kill("alph.js", host, scriptTarget, process.args[1], process.args[2]);
-				stats.killed += 1;
+				ApplyNewAction(ns, process, host, actions, stats);
 			}
-			if (hasK || !hasG) { ns.kill("grow.js", host, scriptTarget); stats.killed += 1; }
-			if (hasK || !hasW) { ns.kill("weak.js", host, scriptTarget); stats.killed += 1; }
-			if (hasK || !hasH) { ns.kill("hack.js", host, scriptTarget); stats.killed += 1; }
+
 		}
 	}
+}
 
-	ns.tprint(`Killed ${stats.killed} scripts. Program end.`);
+// kill(filename, hostname, args) returns true/false
+// exec(script, hostname, threadOrOptions, args) returns pid/0
+function ApplyNewAction(ns, process, host, actions, stats) {
+	let killed = 0;
+	const [oldAction, oldTarget, newAction, newTarget] = DeHelper(actions);
+
+
+	if (oldAction == "w") { killed += ns.kill("weak.js", host, oldTarget); }
+	if (oldAction == "g") { killed += ns.kill("grow.js", host, oldTarget); }
+	if (oldAction == "h") { killed += ns.kill("hack.js", host, oldTarget); }
+	if (oldAction == "a" && process.filename == "alph.js") {
+		ns.kill("alph.js", host, oldTarget, process.args[1], process.args[2]);
+		killed += 1;
+	}
+
+	stats.killed += killed;
+	ns.tprint(`killed ${killed} ${oldAction} scripts on ${host}.`);
+
+	if (newAction == "k")
+		return;
+
+	let threads = 0;
+
+	function t(action) {
+		const things = [
+			["g", cRam]
+			, ["w", cRam]
+			, ["h", hRam]
+			, ["a", aRam]
+		];
+		let output = things.filter(f => f[0] == action);
+		return output[0][1];
+	}
+
+	if (killed > 0) {
+		threads = Math.floor((process.threads * t(oldAction)) / t(newAction));
+	}
+
+	if (threads < 1)
+		return;
+
+	let execID = 0;
+
+	if (newAction == "g") { execID = ns.exec("grow.js", host, threads, newTarget); }
+	if (newAction == "w") { execID = ns.exec("weak.js", host, threads, newTarget); }
+	if (newAction == "h") { execID = ns.exec("hack.js", host, threads, newTarget); }
+	if (newAction == "a") { execID = AlphExec(ns, host, newTarget, threads); }
+
+	if (execID)
+		ns.tprint(`on ${StrLeft(host, 20)}, ran ${newAction} -t ${threads}`);
 }
