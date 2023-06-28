@@ -33,7 +33,8 @@ import Get from "get.js"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
-	// jtprint(ns, ns.getServer("n00dles"));
+	jtprint(ns, ns.getMoneySources().sinceInstall);
+	// jtprint(ns, ns.getServer("catalyst"));
 	// AlphExec(ns, "home", "n00dles", 1);
 	// ns.tprint(arguments); idk wtf this is
 	// ns.tprint("Your Ports: " + GetProgramLevel(ns));

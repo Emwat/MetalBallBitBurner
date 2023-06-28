@@ -9,6 +9,7 @@ import StrLeft from "./im/strLeft"
 // weakAmt
 // growAmt
 // hackAmt
+const betaTxt = "beta.txt";
 
 export async function main(ns) {
 	if (ns.args.length == 0) {
@@ -18,10 +19,9 @@ export async function main(ns) {
 		return;
 	}
 	const target = ns.args[0];
-	const saveFile = "record.txt";
-	ns.scp(saveFile, "home", target);
+	ns.scp(betaTxt, "home", target);
 
-	let r = JSON.parse("[" + ns.read(saveFile).slice(0, -1) + "]");
+	let r = JSON.parse("[" + ns.read(betaTxt).slice(0, -1) + "]");
 	let sums = { w: 0, g: 0, h: 0 };
 
 	for (let i = 0; i < r.length && i < 100; i++) {

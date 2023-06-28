@@ -2,6 +2,7 @@
 import AlphExec from "./im/exec"
 import GetServers from "./im/servers"
 import GetTargets from "./im/topTarget"
+import StrLeft from "./im/strLeft"
 
 const hackScriptRam = 1.7;
 const coreScriptRam = 1.75;
@@ -15,9 +16,6 @@ export async function main(ns) {
 
 	let serversSumMoney = GetServersSumMoney(servers);
 
-
-
-
 	ns.tprint(`serversSumMoney: ${serversSumMoney}`);
 
 	ns.disableLog("scp");
@@ -25,7 +23,13 @@ export async function main(ns) {
 	ns.disableLog("sleep");
 	ns.disableLog("killall");
 
-	HackSelfEverywhere(ns, servers);
+	HackSelfEverywhere(ns);
+
+	if (ns.args[0] == "self")
+	{
+		ns.tprint(`dummy.js ${ns.args.concat()} end ${new Date().toLocaleString()}`);
+		return;
+	}
 
 	while (true) {
 		ns.tprint("WHILE LOOP, must kill dummy.js to end.")
@@ -86,7 +90,7 @@ export async function main(ns) {
 		break;
 		await ns.sleep(60000 * 5);
 	}
-	ns.tprint(`dummy.js end ${new Date().toLocaleString()}`);
+	ns.tprint(`dummy.js ${ns.args.concat()} end ${new Date().toLocaleString()}`);
 
 }
 
@@ -137,9 +141,7 @@ function DoWeakGrow(ns, server, stats, leftoverRam) {
 	stats.c += 1;
 }
 
-
-
-function HackSelfEverywhere(ns, servers) {
+function HackSelfEverywhere(ns) {
 	let j = 0;
 	let serversWithMoney = GetTargets(ns);
 	serversWithMoney.reverse().splice(0, Math.floor((serversWithMoney.length / 5) * 4));
@@ -147,30 +149,44 @@ function HackSelfEverywhere(ns, servers) {
 	// for (let i = 0; i < serversWithMoney.length; i++) {
 	// 	ns.tprint(serversWithMoney[i]);
 	// }
-
+	const hostnames = GetServers(ns);
+	const servers = hostnames.map(m => ns.getServer(m));
 	for (let i = 0; i < servers.length; i++) {
 		let server = servers[i];
 		const hackScript = "alph.js";
 		const coreThreads = Math.floor(server.maxRam / alphScriptRam);
 		const hackThreads = Math.floor(server.maxRam / alphScriptRam);
+		let d = StrLeft(server.hostname, 20);
 
 		if (server.maxRam <= 0) {
 			// if (server.moneyMax > 0)
 			// 	serversWithMoney.push(server.hostname);
+			ns.tprint(`${d} Skipped b/c maxRam = 0`);
 			continue;
 		}
 
 		if (server.hostname == "home")
+		{
+			ns.tprint(`${d} Skipped b/c home`);
 			continue;
+		}
 
 		if (server.hostname.startsWith("pserv"))
+		{
+			ns.tprint(`${d} Skipped name starts with pserv`);
 			continue;
-
+		}
+		
 		if (hackThreads <= 0)
+		{
+			ns.tprint(`${d} Skipped b/c hackThreads = 0`);
 			continue;
+		}
 
-		if (!server.hasAdminRights)
+		if (!server.hasAdminRights){
+			ns.tprint(`${d} Skipped b/c !hasAdminRights`);
 			continue;
+		}
 
 		ns.killall(server.hostname);
 		ns.scp(hackScript, server.hostname);

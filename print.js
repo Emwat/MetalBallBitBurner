@@ -24,23 +24,27 @@ export async function main(ns) {
 		PrintAllServers(ns, servers, target);
 	}
 	else if (arg == "h") {
+		ns.tprint("hackDifficulty");
 		let servers = GetAllServersO(ns);
 		servers = servers.sort((a, b) => a.hackDifficulty - b.hackDifficulty);
 		PrintAllServers(ns, servers, target);
 	}
 	else if (arg == "r") {
+		ns.tprint("requiredHackingSkill");
 		let servers = GetAllServersO(ns);
 		servers = servers.sort((a, b) => a.requiredHackingSkill - b.requiredHackingSkill);
 		//ns.tprint(`${servers[10].requiredHackingSkill} ${servers[11].requiredHackingSkill}`)
 		PrintAllServers(ns, servers, target);
 	}
 	else if (arg == "m") {
+		ns.tprint("moneyMax");
 		let servers = GetAllServersO(ns);
 		servers = servers.sort((a, b) => a.moneyMax - b.moneyMax);
 		//ns.tprint(`${servers[10].requiredHackingSkill} ${servers[11].requiredHackingSkill}`)
 		PrintAllServers(ns, servers, target);
 	}
-	else if (arg) {
+	else if (arg && arg != "all") {
+		ns.tprint(arg);
 		PrintHeaders(ns);
 		PrintInfo(ns, ns.getServer(arg))
 	}

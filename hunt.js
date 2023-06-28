@@ -39,9 +39,14 @@ function GetAllServers(ns, target, power, stopper) {
 }
 
 function padd(str, newLength) {
-	let output = ">" + str;
-	for (let i = str.length; i < newLength + str.length; i++) {
-		output = "-" + output;
+	try {
+		let output = ">" + str;
+		for (let i = str.length; i < newLength + str.length; i++) {
+			output = "-" + output;
+		}
+		return output;
+	} catch {
 	}
 	return output;
+
 }

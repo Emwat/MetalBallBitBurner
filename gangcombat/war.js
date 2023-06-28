@@ -4,24 +4,27 @@ import ZeroLeft from "./im/zeroLeft"
 
 // let soldiers = []; // to be populated by args
 
-const soldiers = [
-	"man09"
-	, "man10"
-	, "man11"
+// const soldiers = [
+// 	"man09"
+// 	, "man10"
+// 	, "man11"
 
-	// , "man02"
-	// , "man03"
-	// , "man04"
-	// , "man05"
-	// , "man06"
-	// , "man07"
-	// , "man08"
-];
+// 	// , "man02"
+// 	// , "man03"
+// 	// , "man04"
+// 	// , "man05"
+// 	// , "man06"
+// 	// , "man07"
+// 	// , "man08"
+// ];
 
 export async function main(ns) {
 	if (ns.args.length == 0) {
 		ns.tprint(`You haven't entered any arguments. Acceptable args are ...
-			You're not ready for war.
+			c >>  Contemplate War
+			war >> Contemplate War and Commit
+			r >> Recruit
+			d >>  Disengage
 		`);
 		return;
 	}
@@ -31,16 +34,19 @@ export async function main(ns) {
 		ContemplateWar(ns);
 	} else if (ns.args[0] == "war") {
 		ContemplateWar(ns, true);
-	} else if (ns.args[0] == "r") {
+	} else if (false && ns.args[0] == "r") {
 		Recruit(ns);
+	} else if (ns.args[0] == "d") {
+		Disengage(ns);
 	}
-
+	ns.tprint(`/gangcombat/war.js ${ns.args.concat()} ended. ${new Date().toLocaleString()}`)
 }
 
 function ContemplateWar(ns, isCommit) {
 	const rivals = [
 		"Speakers for the Dead"
 		, "The Black Hand"
+		, "The Syndicate"
 		, "Slum Snakes"
 		, "Tetrads"
 		, "The Dark Army"
@@ -68,6 +74,8 @@ function ContemplateWar(ns, isCommit) {
 }
 
 function StartWar(ns) {
+	let soldiers = ns.gang.getMemberNames();
+
 	for (let i = 0; i < soldiers.length; i++) {
 		const soldier = soldiers[i];
 		if (ns.gang.setMemberTask(soldier, "Territory Warfare")) {
@@ -77,12 +85,17 @@ function StartWar(ns) {
 }
 
 function Disengage(ns) {
+	let soldiers = ns.gang.getMemberNames();
+
 	for (let i = 0; i < soldiers.length; i++) {
 		const soldier = soldiers[i];
 		if (ns.gang.setMemberTask(soldier, "Train Combat")) {
 			ns.tprint(`${soldier} is now in combat training.`);
 		}
 	}
+
+	ns.gang.setTerritoryWarfare(false);
+	ns.tprint("You are no longer participating in war.");
 }
 
 function Recruit(ns) {

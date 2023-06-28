@@ -15,8 +15,8 @@ import ToDollars from "./im/carat"
 // ++  >=60
 // +++ >=65
 
-const saveFile = "portfolio.txt";
-const logFile = "profits.txt";
+const portfolioTxt = "portfolio.txt";
+const profitsTxt = "profits.txt";
 const reqAbvForecast = 59;
 const reqBelForecast = reqAbvForecast - 3;
 
@@ -32,6 +32,7 @@ export async function main(ns) {
 			info [f] >> forecast
 			info [p] >> price
 			info [me] >> me
+			s >> SellsEverything
 			k >> Kills wse.js
 			l >> SeeLogs
 			x >> Reset files. Does not sell anything.
@@ -83,10 +84,10 @@ export async function main(ns) {
 		SellEverything(ns);
 	}
 	else if (ns.args[0] == "xp") {
-		ns.write(saveFile, "[]", "w");
+		ns.write(portfolioTxt, "[]", "w");
 	}
 	else if (ns.args[0] == "xl") {
-		ns.write(logFile, "[]", "w");
+		ns.write(profitsTxt, "[]", "w");
 	}
 
 	ns.tprint(`wse.js ${ns.args.concat()} has ended. ${new Date().toLocaleString()}`);
@@ -216,8 +217,8 @@ function SellThings(ns, mySymbols, myPortfolio, myLogs) {
 
 function SellEverything(ns) {
 	let mySymbols = ns.stock.getSymbols().filter(f => ns.stock.getPosition(f)[0] > 0);
-	let myPortfolio = JSON.parse(ns.read(saveFile));
-	let myLogs = JSON.parse(ns.read(logFile));
+	let myPortfolio = JSON.parse(ns.read(portfolioTxt));
+	let myLogs = JSON.parse(ns.read(profitsTxt));
 
 	if (mySymbols.length != myPortfolio.length) {
 		let mismatch = `SellEverything ` +
@@ -244,8 +245,8 @@ function SellEverything(ns) {
 			myLogs.push(newRow);
 		}
 	}
-	ns.write(saveFile, JSON.stringify(myPortfolio), "w");
-	ns.write(logFile, JSON.stringify(myLogs), "w");
+	ns.write(portfolioTxt, JSON.stringify(myPortfolio), "w");
+	ns.write(profitsTxt, JSON.stringify(myLogs), "w");
 }
 
 function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
@@ -299,27 +300,27 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 		}
 	}
 	// if (hasBoughtSomething) {
-	// 	ns.write(saveFile, JSON.stringify(myPortfolio), "w");
-	// 	ns.write(logFile, JSON.stringify(myLogs), "w");
+	// 	ns.write(portfolioTxt, JSON.stringify(myPortfolio), "w");
+	// 	ns.write(profitsTxt, JSON.stringify(myLogs), "w");
 	// }
 	return [myPortfolio, myLogs];
 }
 
 function FixMismatch(ns) {
 	let mySymbols = ns.stock.getSymbols().filter(f => ns.stock.getPosition(f)[0] > 0);
-	let myPortfolio = JSON.parse(ns.read(saveFile));
-	// let myLogs = JSON.parse(ns.read(logFile));
+	let myPortfolio = JSON.parse(ns.read(portfolioTxt));
+	// let myLogs = JSON.parse(ns.read(profitsTxt));
 
 	ns.tprint("Removing " + myPortfolio.filter(f => mySymbols.indexOf(f.iSym) == -1).map(m => m.iSym).concat());
 	myPortfolio = myPortfolio.filter(f => mySymbols.indexOf(f.iSym) > -1);
-	ns.write(saveFile, JSON.stringify(myPortfolio), "w");
+	ns.write(portfolioTxt, JSON.stringify(myPortfolio), "w");
 	return myPortfolio;
 }
 
 async function BatchBuyAndSell(ns, waitTime) {
 
-	if (ns.read(saveFile) == "") ns.write(saveFile, "[]", "w");
-	if (ns.read(logFile) == "") ns.write(logFile, "[]", "w");
+	if (ns.read(portfolioTxt) == "") ns.write(portfolioTxt, "[]", "w");
+	if (ns.read(profitsTxt) == "") ns.write(profitsTxt, "[]", "w");
 
 	let symbols = ns.stock.getSymbols();
 	let w = 0;
@@ -327,8 +328,8 @@ async function BatchBuyAndSell(ns, waitTime) {
 	while (w < failSafeCap) {
 		w++;
 		let mySymbols = symbols.filter(f => ns.stock.getPosition(f)[0] > 0);
-		let myPortfolio = JSON.parse(ns.read(saveFile));
-		let myLogs = JSON.parse(ns.read(logFile));
+		let myPortfolio = JSON.parse(ns.read(portfolioTxt));
+		let myLogs = JSON.parse(ns.read(profitsTxt));
 		// Start selling
 		[myPortfolio, myLogs] = SellThings(ns, mySymbols, myPortfolio, myLogs);
 		const fee = 10 ** 7;
@@ -341,8 +342,8 @@ async function BatchBuyAndSell(ns, waitTime) {
 		// Start buying
 		[myPortfolio, myLogs] = BuyThings(ns, symbols, fee, myPortfolio, myLogs);
 
-		ns.write(saveFile, JSON.stringify(myPortfolio), "w");
-		ns.write(logFile, JSON.stringify(myLogs), "w");
+		ns.write(portfolioTxt, JSON.stringify(myPortfolio), "w");
+		ns.write(profitsTxt, JSON.stringify(myLogs), "w");
 
 
 		await ns.sleep(waitTime);
@@ -353,7 +354,7 @@ async function BatchBuyAndSell(ns, waitTime) {
 // newRow = { iSym, myShares: newShares, buyPrice, iForecast };
 
 function SeeLogs(ns) {
-	let logs = ns.read(logFile);
+	let logs = ns.read(profitsTxt);
 	if (logs.length < 3) {
 		ns.tprint("You have no logs.");
 		return;
@@ -363,7 +364,7 @@ function SeeLogs(ns) {
 	let totals = [];
 	let output = 0;
 	let grossOutput = 0;
-	let myPortfolio = JSON.parse(ns.read(saveFile));
+	let myPortfolio = JSON.parse(ns.read(portfolioTxt));
 
 	for (let i = 0; i < logs.length; i++) {
 		let log = logs[i];
