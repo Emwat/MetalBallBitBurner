@@ -1,21 +1,39 @@
 /** @param {NS} ns */
+import GetAllServers from './im/servers'
 import NumLeft from "./im/numLeft"
 
 
 export async function main(ns) {
-
+	if (ns.args[0] == "a") {
+		TakeTreasures(ns);
+		ns.tprint(`cct.js ${ns.args.concat()} ended; ${new Date().toLocaleString()}`)
+		return;
+	}
+	if (ns.args[0] == "dummy") {
+		ns.codingcontract.createDummyContract(ns.args[1]);
+		ns.tprint(`cct.js ended; ${new Date().toLocaleString()}`)
+		return;
+	}
 	// ns.tprint(AlgoStockTraderI(ns, algoStockArr1));
 	// ns.tprint(AlgoStockTraderI(ns, [53, 47, 40, 13, 72, 104, 82, 56, 147, 85, 83, 138, 145, 114, 159, 136, 133, 151, 143, 46, 10, 104, 84, 154, 89, 104, 200, 117, 169, 120, 108, 47, 97, 30, 21, 35, 147, 106, 166, 71, 159, 87]))
-	
-	// ns.tprint(CompressionI(ns, "abc"));
-	// ns.tprint(CompressionI(ns, "EYYYmmmmmmmmmmmmmzfffffffffffffqqaZZd3333362TTTTTTTT75rsssssssssssss"));
-	
+	// CompressionIExamples(ns);
+	// ns.tprint("lllllllllzz => " + CompressionI(ns, "lllllllllzz"));
+	// ns.tprint(CompressionI(ns, "uuuuuuuu2zzclllllllllzzfddddddddcccc444444LLbbbbbbbbb33K666HHxNN6UUUUUUUibyyyyy3"));
+
 	// ns.tprint(EncryptionICaesarCipher(ns, ["DEA", 3])); // ABX
 	// ns.tprint(EncryptionICaesarCipher(ns, ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", 1]));
 	// ns.tprint(EncryptionICaesarCipher(ns, ["MEDIA FLASH LOGIN SHELL SHIFT", 22]));
-	ns.tprint(EncryptionII(ns, ["DASHBOARD", "LINUX"]));
-	ns.tprint(EncryptionII(ns, ["PRINTEMAILMACROVIRUSMOUSE", "COMPUTING"]));
+	// ns.tprint(EncryptionII(ns, ["DASHBOARD", "LINUX"]));
+	// ns.tprint(EncryptionII(ns, ["PRINTEMAILMACROVIRUSMOUSE", "COMPUTING"]));
 
+	ns.tprint(`
+ 25525511135 -> ["255.255.11.135", "255.255.111.35"]
+ 1938718066 -> ["193.87.180.66"]
+`);
+	ns.tprint(GenerateIPAddresses(ns, "25525511135"));
+	ns.tprint(GenerateIPAddresses(ns, "1938718066"));
+	ns.tprint(GenerateIPAddresses(ns, "1921680101") + " / 192.168.010.1 is not a valid IP.");
+	ns.tprint(GenerateIPAddresses(ns, "3520617070"));
 	// ns.tprint(HammingCodes(ns, 8));
 	// ns.tprint(HammingCodes(ns, 21));
 	// ns.tprint(HammingCodes(ns, 65));
@@ -34,8 +52,83 @@ export async function main(ns) {
 	//  Example:
 	// 	[[1, 3], [8, 10], [2, 6], [10, 16]]
 	// 	would merge into [[1, 6], [8, 16]].`);
+	ns.tprint(`cct.js ended; ${new Date().toLocaleString()}`)
+}
 
+const contractDictionary = [
+	["Find Largest Prime Factor", null]
+	, ["Subarray with Maximum Sum", null]
+	, ["Total Ways to Sum", null]
+	, ["Total Ways to Sum II", null]
+	, ["Spiralize Matrix", null]
+	, ["Array Jumping Game", null]
+	, ["Array Jumping Game II", null]
+	, ["Merge Overlapping Intervals", null]
+	, ["Generate IP Addresses", null]
+	, ["Algorithmic Stock Trader I", AlgoStockTraderI]
+	, ["Algorithmic Stock Trader II", null]
+	, ["Algorithmic Stock Trader III", null]
+	, ["Algorithmic Stock Trader IV", null]
+	, ["Minimum Path Sum in a Triangle", null]
+	, ["Unique Paths in a Grid I", null]
+	, ["Unique Paths in a Grid II", null]
+	, ["Shortest Path in a Grid", null]
+	, ["Sanitize Parentheses in Expression", null]
+	, ["Find All Valid Math Expressions", null]
+	, ["HammingCodes: Integer to Encoded Binary", null]
+	, ["HammingCodes: Encoded Binary to Integer", null]
+	, ["Proper 2-Coloring of a Graph", null]
+	, ["Compression I: RLE Compression", CompressionI]
+	, ["Compression II: LZ Decompression", null]
+	, ["Compression III: LZ Compression", null]
+	, ["Encryption I: Caesar Cipher", null]
+	, ["Encryption II: Vigenère Cipher", EncryptionII]
 
+];
+
+function FakeTreasure(ns) {
+}
+
+function TakeTreasures(ns) {
+	const servers = GetAllServers(ns);
+
+	for (let i = 0; i < servers.length; i++) {
+		const server = servers[i];
+		if (server == "home") continue;
+		let files = ns.ls(server, ".cct");
+		if (files.length < 1) {
+			continue;
+		}
+		for (let j = 0; j < files.length; j++) {
+			let file = files[j];
+			let contractType = ns.codingcontract.getContractType(file, server);
+			let data = ns.codingcontract.getData(file, server);
+
+			// let description = ns.codingcontract.getDescription(file, server);
+			ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
+
+			let program = contractDictionary.filter(f => f[0] == contractType)[0][1];
+			// ns.tprint(`${server} ${file} ${contractType}`);
+
+			if (program == null)
+				continue;
+
+			ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
+
+			let output = program(ns, data);
+			const reward = ns.codingcontract.attempt(output, file, server);
+			if (reward) {
+				ns.tprint(`Reward: ${reward}`)
+			} else {
+				ns.tprint(`Failed contract: 
+				Server: ${server} 
+				File: ${file} 
+				ContractType: ${contractType}
+				
+				${data}`)
+			}
+		}
+	}
 }
 
 
@@ -137,10 +230,13 @@ function CompressionI(ns, str) {
 
 		if (runLength == 9) {
 			output += runLength + lastChar;
+			// ns.tprint("runLength == 9 " + output);
 			runLength = 0;
 		}
 		else if (lastChar != latestChar) {
-			output += runLength + lastChar;
+			if (runLength > 0)
+				output += runLength + lastChar;
+			// ns.tprint("lastChar != latestChar " + output);
 			runLength = 1;
 			lastChar = latestChar;
 		}
@@ -265,14 +361,13 @@ function EncryptionI(ns, arr) {
 //
 // Return the ciphertext as uppercase string.
 
-function EncryptionII(ns, arr){
+function EncryptionII(ns, arr) {
 	const [plaintext, keyword] = arr;
 	const adjustedKeyword = LengthenKeyword(plaintext, keyword);
-	function LengthenKeyword(plaintext, keyword){
+	function LengthenKeyword(plaintext, keyword) {
 		let output = "";
 		let i = 0;
-		while(output.length < plaintext.length)
-		{
+		while (output.length < plaintext.length) {
 			if (i == keyword.length)
 				i = 0;
 			output += keyword[i];
@@ -280,31 +375,90 @@ function EncryptionII(ns, arr){
 		}
 		return output;
 	}
-	function GetViSquare(){
-		function shift(str){
+	function GetViSquare() {
+		function shift(str) {
 			return str.slice(1) + str.slice(0, 1);
 		}
 		let abc = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 		let output = [];
-		for (let i = 0; i < abc.length; i++)
-		{
+		for (let i = 0; i < abc.length; i++) {
 			abc = shift(abc);
 			output.push(abc);
 		}
-		ftprint(ns, output);
+		// ftprint(ns, output);
 		return output;
 	}
 	const ViSquare = GetViSquare();
 	const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	let ciphertext = "";
-	ns.tprint(`adjustedKeyword: ${adjustedKeyword}`);
-	for (let i = 0; i < plaintext.length; i++){
+	// ns.tprint(`adjustedKeyword: ${adjustedKeyword}`);
+	for (let i = 0; i < plaintext.length; i++) {
 		const row = abc.indexOf(plaintext[i]);
 		const col = abc.indexOf(adjustedKeyword[i]);
 		// ns.tprint(`${i} ${plaintext[i]} ${adjustedKeyword[i]} ${row} ${col}`)
 		ciphertext += ViSquare[row][col];
 	}
 	return ciphertext;
+}
+
+// Generate IP Addresses
+
+// Given the following string containing only digits,
+// return an array with all possible valid IP address
+// combinations that can be created from the string:
+// 3520617070
+
+// Note that an octet cannot begin with a '0' unless 
+// the number itself is actually 0. For example, 
+// '192.168.010.1' is not a valid IP.
+
+// Examples:
+
+// 25525511135 -> ["255.255.11.135", "255.255.111.35"]
+// 1938718066 -> ["193.87.180.66"]
+
+function GenerateIPAddresses(ns, str) {
+	let possible = [];
+
+	function dot(j, str) {
+		return str[j] != void 0 ? "." : "";
+	}
+
+	function leftToRight(str) {
+		let output = "";
+		for (let i = 0; i < str.length; i++) {
+			let a = str[i];
+			let b = str[i + 1];
+			let c = str[i + 2];
+
+			if (a == "0")
+				continue;
+
+			if (a == "0" && "b" == "0")
+				continue;
+
+			// ns.tprint(a + b + c);
+			if (a && b && c && Number(a + b + c) <= 255) {
+				output += a + b + c + dot(i + 3, str);
+				i += 2;
+			} else if (a && b) {
+				output += a + b + dot(i + 2, str);
+				i += 1;
+			} else {
+				output += a + dot(i + 1, str);
+			}
+		}
+		if (output.split(".").length < 3)
+			output += ".0";
+			
+		return output;
+	}
+
+	let idea1 = leftToRight(str);
+
+
+	possible.push(output);
+	return possible;
 }
 
 // HammingCodes: Integer to Encoded Binary
@@ -377,6 +531,13 @@ function HammingCodes(ns, value) {
 // the first number will always be smaller than the second.
 
 function MergeOverlappingIntervals(ns, arr) {
+	let output = MergeOverlappingIntervalsHelper(ns, arr);
+	output = MergeOverlappingIntervalsHelper(ns, output);
+	output = MergeOverlappingIntervalsHelper(ns, output);
+	return output;
+}
+
+function MergeOverlappingIntervalsHelper(ns, arr) {
 	let trial = [];
 	let output = [];
 	let merged = [];
@@ -431,10 +592,12 @@ function MergeOverlappingIntervals(ns, arr) {
 }
 
 function ftprint(ns, obj) {
+	let output = "\r\n	"
 	for (let i = 0; i < obj.length; i++) {
 		const o = obj[i];
-		ns.tprint(o);
+		output += o + "\r\n	";
 	}
+	ns.tprint(output);
 }
 
 

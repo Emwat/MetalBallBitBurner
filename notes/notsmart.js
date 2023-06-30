@@ -13,7 +13,7 @@ export async function main(ns) {
 	let myWindowW = 1900;
 	let myWindowH = 900;
 	let widthAdjustment = 600;
-	let heightAdjustment = 200;
+	let heightAdjustment = 470; //10px per line
 	let x = myWindowW - widthAdjustment;
 	let y = myWindowH - heightAdjustment;
 	ns.resizeTail(widthAdjustment, heightAdjustment);
@@ -23,9 +23,15 @@ export async function main(ns) {
 
 function sourceMan(){
 	return `
+hack(hostname[,{threads, stock}])
+	The amount of money stolen if the hack is successful, and zero otherwise.
+grow(hostname[,{threads, stock}])
+	returns The number by which the money on the server was multiplied for the growth
+weaken(hostname[,{threads, stock}])
+	returns The amount by which the target server’s security level was decreased. 
+	This is equivalent to 0.05 multiplied by the number of script threads.
+
 kill(filename, hostname, args) returns true/false
 exec(script, hostname, threadOrOptions, args) returns pid/0
-write(filename, data, mode) returns void
-
-	`;
+write(filename, data, mode) returns void`;
 	}

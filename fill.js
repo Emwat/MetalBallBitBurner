@@ -16,7 +16,7 @@ export async function main(ns) {
 	const servers = GetServers(ns);
 	const defaultTarget = GetTarget(ns);
 
-	let execStat = 0;
+	let execStat = { i: 0, a: 0, w: 0 };
 	let serverWithMostMoney = { hostname: "", moneyMax: 0 };
 	ns.disableLog("scp");
 	// ns.disableLog("exec");
@@ -26,13 +26,13 @@ export async function main(ns) {
 
 	ns.tprint(`Filling up servers...`)
 
-	ns.tprint(
-		" # " +
-		" pt" +
-		StrLeft("hak/min", 7) +
-		" name"
-	);
-	ns.exec("power.js", "home", 1);
+	// ns.tprint(
+	// 	" # " +
+	// 	" pt" +
+	// 	StrLeft("hak/min", 7) +
+	// 	" name"
+	// );
+	// ns.exec("power.js", "home", 1);
 
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
@@ -41,9 +41,9 @@ export async function main(ns) {
 		const isTooStrong = serverObject.hackDifficulty > myHackingLevel;
 		let target = server;
 		let targetObject = null;
-		ns.tprint(StrLeft(server, 20) +
-			"	" + ns.formatNumber(serverObject.maxRam - serverObject.ramUsed, 2)
-		);
+		// ns.tprint(StrLeft(server, 20) +
+		// 	"	" + ns.formatNumber(serverObject.maxRam - serverObject.ramUsed, 2)
+		// );
 
 		if (server == "home")
 			continue;
@@ -64,8 +64,9 @@ export async function main(ns) {
 		targetObject = ns.getServer(target);
 
 		if (AlphExec(ns, server, target) > 0) {
-			ns.tprint(`on ${server}, ran ${myScript} ${target}`);
-			execStat++;
+			execStat.i++;
+			execStat.a++;
+			tprintFill(ns, execStat.i, server, myScript, target);
 			if (targetObject.moneyMax > serverWithMostMoney.moneyMax)
 				serverWithMostMoney = targetObject;
 		}
@@ -73,15 +74,23 @@ export async function main(ns) {
 		serverObject = ns.getServer(server);
 		if (serverObject.maxRam - serverObject.ramUsed >= coreScriptRam) {
 			// exec(script, hostname, threadOrOptions, args) returns pid/0
-			if (ns.exec("weak.js", server, 1, target) > 0)
-				ns.tprint(`on ${server}, ran weak.js ${target}`);
+			if (ns.exec("weak.js", server, 1, target) > 0) {
+				execStat.i++;
+				execStat.w++;
+				tprintFill(ns, execStat.i, server, "weak.js", target);
+			}
 		}
 
 
 	}
-	ns.tprint(`Applied ${myScript} to ${execStat} servers of ${servers.length}.`);
+	ns.tprint(`a ${execStat.a} w ${execStat.w} servers of ${servers.length}.`);
 	if (serverWithMostMoney.hostname != "")
 		ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
 
 	ns.tprint("fill.js end " + new Date().toLocaleString());
+}
+
+function tprintFill(ns, id, server, myScript, target) {
+	ns.tprint(`${NumLeft(id, 2)} on ${StrLeft(server, 20)}, ran ${myScript} ${StrLeft(target, 20)}`);
+
 }

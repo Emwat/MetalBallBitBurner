@@ -15,6 +15,12 @@ export async function main(ns) {
 			const server = servers[i];
 			ns.rm(betaTxt, server);
 		}
+	} else if (ns.args[0] == "wipe") {
+		for (let i = 0; i < servers.length; i++) {
+			const server = servers[i];
+			ns.rm(betaTxt, server);
+			ns.rm(thisTxt, server);
+		}
 	}
 
 

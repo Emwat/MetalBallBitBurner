@@ -14,25 +14,35 @@ const white = "\u001b[37m";
 export async function main(ns) {
 	await ns.sleep(200);
 	ns.disableLog("scan");
-	const arg = ns.args[0];
 	RedTarget = GetTarget(ns);
 	MyHackingSkill = ns.getHackingLevel();
 
+	const wArgIndex = ns.args.indexOf("-w");
+	const iArgIndex = ns.args.indexOf("-i") > -1;
+
 	// if the argument is a number, 
 	// wait Number minutes and then run
-	if (arg && !isNaN(arg)) {
+	if (wArgIndex > -1) {
+		let xMinutes = ns.args[wArgIndex + 1];
+		if (isNaN(xMinutes))
+		{
+			ns.tprint(`${xMinutes} is not a number. It is ${typeof xMinutes}`)
+			return;
+		}
 		const minute = 60000;
-		const waitTime = minute * arg;
-		ns.tprint(`This program will run in ${arg} minute(s).`);
+		const waitTime = minute * xMinutes;
+		ns.tprint(`This program will run in ${xMinutes} minute(s).`);
 		await ns.sleep(waitTime);
-		MainHelper(ns)
+		MainHelper(ns, GetStats(ns, iArgIndex))
 	} else {
-		MainHelper(ns);
+		MainHelper(ns, GetStats(ns, iArgIndex));
 	}
+
+	ns.tprint(`length.js ended. ${new Date().toLocaleString()}`);
 }
 
-function MainHelper(ns) {
-	let stats = GetStats(ns);
+function MainHelper(ns, stats) {
+	
 	PrintHeaders(ns);
 	let totals = DeclareTotals();
 	stats = stats.sort((a, b) => a.moneyMax - b.moneyMax);
@@ -93,8 +103,9 @@ function AddToTotal(totals, server) {
 	totals.count += 1;
 }
 
-function GetStats(ns) {
+function GetStats(ns, isSortByIncome) {
 	const hosts = GetServers(ns).sort();
+	// const hosts = ["home"].concat(GetServers(ns)).sort();
 	let stats = [];
 
 	for (let i = 0; i < hosts.length; i++) {
@@ -146,7 +157,10 @@ function GetStats(ns) {
 
 		}
 	}
-
+	if(isSortByIncome)
+		stats.sort((a, b) => a.i - b.i);
+	else 
+		stats.sort((a, b) => a.moneyMax - b.moneyMax)
 	return stats;
 }
 
@@ -176,8 +190,8 @@ function PrintHeaders(ns) {
 function PrintLineBreak(ns) {
 	let str =
 		StrLeft("", 3) +
-		" " + StrLeft("bmmmkkk000", 13) +
-		" " + StrLeft("bmmmkkk000", 13) +
+		" " + StrLeft("tbbbmmmkkk000", 13) +
+		" " + StrLeft("tbbbmmmkkk000", 13) +
 		" " + StrLeft("", 6) +
 		" " + StrLeft("", 11) +
 		" " + StrLeft("", 12) +
@@ -188,7 +202,7 @@ function PrintLineBreak(ns) {
 		" " + StrLeft("", 6) +
 		" " + StrLeft("", 6) +
 		" " + StrLeft("", 10) +
-		" " + StrLeft("bmmmkkk000", 12) +
+		" " + StrLeft("tbbbmmmkkk000", 12) +
 
 		" ";
 

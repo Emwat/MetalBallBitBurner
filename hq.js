@@ -11,21 +11,14 @@ let myHackingLevel;
 /** @param {NS} ns */
 export async function main(ns) {
 	myHackingLevel = ns.getHackingLevel();
-	let home = ns.getServer("home");
-	let bundledRam = hackScriptRam + coreScriptRam * 2 + alphScriptRam;
 	let threads = 200; // home.maxRam / bundledRam;
-	let serversCount = GetServersCount(ns);
-	let loopThreads = bundledRam * threads * 4 * serversCount;
-	loopThreads = (home.maxRam - home.ramUsed) / loopThreads;
-	loopThreads = Math.floor(loopThreads);
-	// ns.tprint(`${home.maxRam - home.ramUsed} ${bundledRam} ${threads} ${serversCount} ${loopThreads}`)
-	// return;
-	// 	Total:     262.14TB
-	// Used:       34.04TB (12.99%)
-	// Available: 228.10TB
-	loopThreads = 1;
+	let loopThreads = 1;
 	if (ns.args[0]) {
 		loopThreads = ns.args[0];
+	}
+	if (ns.args[1])
+	{
+		threads = ns.args[1];
 	}
 	const hostnames = GetServers(ns).sort();
 	let servers = hostnames.map(m => ns.getServer(m));
@@ -33,7 +26,7 @@ export async function main(ns) {
 	let output = 0;
 	let looped = 0;
 	for (let i = 0; i < loopThreads; i++) {
-		let o = MainHelper(ns, servers, threads);
+		let o = HQHelper(ns, servers, threads);
 		output += o;
 		if (o == 0)
 			break;
@@ -44,35 +37,22 @@ export async function main(ns) {
 	ns.tprint(`hq.js ended ${new Date().toLocaleString()}`)
 }
 
-function GetServersCount(ns) {
-	const hostnames = GetServers(ns);
-	let servers = hostnames.map(m => ns.getServer(m));
+
+function HQHelper(ns, servers, threads) {
+
+	const richServers = [
+		ns.getServer("ecorp"),
+		ns.getServer("megacorp"),
+
+		]
 	let output = 0;
-	for (let i = 0; i < servers.length; i++) {
-		const server = servers[i];
-		let isTooStrong = server.requiredHackingSkill > myHackingLevel;
-
-		if (server.moneyMax <= 0) {
-			continue;
-		}
-
-		if (isTooStrong) {
-			continue;
-		}
-
-		output += 1;
-	}
-	return output;
-}
-
-
-function MainHelper(ns, servers, threads) {
-
-	let output = 0;
-	for (let i = 0; i < servers.length; i++) {
-		const server = servers[i];
+	for (let i = 0; i < richServers.length; i++) {
+		const server = richServers[i];
 		let isTooStrong = server.requiredHackingSkill > myHackingLevel;
 		let lessThreads = threads;
+		let capAtSilverHelix = 10 ** 9;
+		let capAtSyscore = 10 ** 10;
+		let capAtTaiyang = 10 ** 10 * 2;
 		// ns.tprint(`${server.requiredHackingSkill} ${myHackingLevel} ${isTooStrong}`)
 		let t = 0;
 		if (server.moneyMax <= 0) {
@@ -83,13 +63,31 @@ function MainHelper(ns, servers, threads) {
 			continue;
 		}
 
-		if (server.moneyMax > 10 ** 9) {
-			if (ns.exec("weak.js", "home", lessThreads, server.hostname) > 0) { t++ }
-			if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
-			if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		if (server.moneyMax < capAtSilverHelix) {
+			lessThreads = Math.floor(lessThreads * 0.05);
+			if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
+
+		} else if (server.moneyMax < capAtSyscore) {
+			lessThreads = Math.floor(lessThreads * 0.1);
+
+			if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
+			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
+			// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		} else if (server.moneyMax < capAtTaiyang) {
+			lessThreads = Math.floor(lessThreads * 0.2);
+
+			if (AlphExec(ns, "home", server.hostname, lessThreads * 2) > 0) { t++ }
+			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
+			// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		} else {
+			if (AlphExec(ns, "home", server.hostname, lessThreads * 2) > 0) { t++ }
+			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
+			// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
 		}
 
-		if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
 
 		output += lessThreads * t;
 

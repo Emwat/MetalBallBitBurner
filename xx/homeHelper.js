@@ -6,10 +6,10 @@ export async function main(ns) {
 	const growjsRam = 1.75;
 	const hackjsRam = 1.7;
 
-	let roomForThreads = ns.args.includes("-max") ? 0 : 10;
+	let roomForThreads = 10;
 	const homeServer = ns.getServer("home");
 	const homeRam = homeServer.maxRam - homeServer.ramUsed;
-	if (homeServer.maxRam <= 64)
+	if (homeServer.maxRam <= 32)
 		roomForThreads = 0;
 
 	const alphMaxThreads = Math.floor(homeRam / alphjsRam) - roomForThreads;
@@ -108,9 +108,8 @@ function ThreadsIdea(ns, i, topTargets, maxThreads) {
 }
 
 function Helper(ns, myScript, scriptTarget, threads) {
-	if (threads == 0) {
-		return "error -> 0 threads";
-	}
+	if (threads == 0)
+		return "error";
 
 	const moneyThresh = ns.getServerMaxMoney(scriptTarget) * 0.75;
 	const securityThresh = ns.getServerMinSecurityLevel(scriptTarget) + 5;
@@ -128,7 +127,8 @@ function Helper(ns, myScript, scriptTarget, threads) {
 }
 
 function HelperExec(ns, myScript, hostServer, scriptTarget, threads) {
-	if (threads == 0) {
+	if (threads == 0)
+	{
 		ns.tprint(`Fail. HelperExec(${myScript}, ${hostServer}, ${scriptTarget}, ${threads})`);
 		ns.tprint(`threads ${threads} is zero.`)
 		return;

@@ -12,7 +12,8 @@ export async function main(ns) {
 	ns.exec("wse.js", "home", 1, "xl");
 	
 	ns.exec("wse.js", "home", 1, "s"); await ns.sleep(200);
-
+	ns.exec("power.js", "home", 1, "reset");
+	ns.scriptKill("gli.js", "home");
 	const install = ns.getMoneySources().sinceInstall;
 	jtprintd(ns, install);
 	ns.tprint("------------------------------------------------");

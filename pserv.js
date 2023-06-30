@@ -1,3 +1,4 @@
+import GetServers from './im/servers';
 import TopTargets from './im/topTarget';
 import AlphExec from './im/exec';
 import ToDollars from './im/carat'
@@ -14,6 +15,7 @@ export async function main(ns) {
 			"\r\n script [target] [a/w/g/h]" +
 			"\r\n upgrade" +
 			"\r\n calc" +
+			"\r\n hq" +
 			"\r\n");
 	} else if (ns.args[0] == "rename") {
 		RenamePServ(ns);
@@ -21,7 +23,7 @@ export async function main(ns) {
 		const [ignoreMe, target, myArg] = ns.args;
 		if (myArg) {
 			PushOneScript(ns, target, myArg);
-		} else if(target) {
+		} else if (target) {
 			PushOneScript(ns, target, "a");
 		} else {
 			PushScriptToMany(ns);
@@ -29,13 +31,24 @@ export async function main(ns) {
 		ns.exec("power.js", "home", 1);
 
 	} else if (ns.args[0] == "upgrade") {
-		UpgradePServ(ns);
+		UpgradePServ(ns, ns.args[1] || 128);
+	} else if (ns.args[0] == "upgradehax") {
+		ns.tail();
+		UpgradePServHax(ns, ns.args[1]);
 	} else if (ns.args[0] == "calc") {
 		PrintPServCalc(ns);
 	} else if (ns.args[0] == "info") {
 		PrintPServInfo(ns);
+	}
+	else if (ns.args[0] == "l") {
+		PrintPServInfo(ns, true);
 	} else if (ns.args[0] == "max") {
 		PrintPServMax(ns);
+	} else if (ns.args[0] == "hq") {
+		const [ignoreMe, loopThreads] = ns.args;
+		await HQMain(ns, loopThreads || 1);
+	} else if (ns.args[0] == "k") {
+		KillPServScripts(ns);
 	}
 
 	else {
@@ -180,7 +193,7 @@ function PrintPServCalc(ns) {
 		// }
 
 		ns.tprint(
-			" " + NumLeft(i, 3) +
+			" " + NumLeft(i + 1, 3) +
 			" " + NumLeft(costs[i], 6) +
 			" " + NumLeft(cost, 13) +
 			" " + NumLeft(costAllServers, 13) +
@@ -189,9 +202,11 @@ function PrintPServCalc(ns) {
 	}
 }
 
-function PrintPServInfo(ns) {
+function PrintPServInfo(ns, isExcludingMoreInfo = false) {
 	const servers = GetAllPServ(ns); // string[]
 	let output = "\r\n";
+	let sum = 0;
+	let avg = 0;
 
 	for (let i = 0; i < servers.length; i++) {
 		const server = ns.getServer(servers[i]); // object[]
@@ -216,21 +231,29 @@ function PrintPServInfo(ns) {
 				if (filename == "weak.js") return "w";
 				if (filename == "hack.js") return "h";
 			}
-			moreInfo += StrLeft(shortName(process.filename) + " " + "".concat(process.args), 20);
+			if (!isExcludingMoreInfo)
+				moreInfo += StrLeft(shortName(process.filename) + " " + "".concat(process.args), 20);
 		}
+
 		serverIncome = Math.floor(serverIncome);
-
-
+		sum += serverIncome;
 		output +=
 			" " + StrLeft(server.hostname, 13) +
 			" " + StrLeft(server.ramUsed + "/" + server.maxRam, 20) +
-			" " + StrLeft("$" + serverIncome, 13) +
+			" " + NumLeft(serverIncome, 13) +
 			" " + StrLeft(moreInfo, 13) +
 			"\r\n";
 
-	}
 
+	}
+	avg = Math.floor(sum / servers.length);
+	sum = Math.floor(sum);
+	ns.tprint("--------------------------tbbbmmmkkk000");
 	ns.tprint(output);
+	ns.tprint("--------------------------tbbbmmmkkk000");
+	ns.tprint("sum: " + ToDollars(sum) + " avg: " + ToDollars(avg));
+
+
 }
 
 function PrintPServMax(ns) {
@@ -267,9 +290,8 @@ function RenamePServ(ns) {
 	}
 }
 
-function UpgradePServ(ns) {
+function UpgradePServ(ns, ram) {
 	const allServers = GetAllPServ(ns);
-	const ram = ns.args[1] || 128;
 
 	for (let i = 0; i < allServers.length; i++) {
 		const server = allServers[i];
@@ -280,5 +302,106 @@ function UpgradePServ(ns) {
 			ns.tprint(`You did not have enough money at ${i}.`)
 			break;
 		}
+	}
+}
+
+function UpgradePServHax(ns, power) {
+	const allServers = GetAllPServ(ns);
+
+	for (let i = 0; i < allServers.length; i++) {
+		const server = allServers[i];
+		if (ns.upgradePurchasedServer(server, 2 ** power))
+		{
+			ns.tprint(`Upgraded ${server} to 2 ** ${power}.`);
+		} else
+		{
+			break;
+		}
+	}
+}
+
+async function HQMain(ns, loopThreads) {
+	const allServers = GetAllPServ(ns);
+	const servers = GetServers(ns).map(m => ns.getServer(m));
+	let threads = 200;
+	let looped = 1;
+	let output = 0;
+	let o = 0;
+	for (let i = 0; i < loopThreads; i++) {
+		for (let p = 0; p < allServers.length; p++) {
+			const pserver = allServers[p];
+			o = HQHelper(ns, servers, threads, pserver);
+			output += o;
+			if (o == 0)
+				break;
+			looped++;
+		}
+		if (o == 0)
+			break;
+		await ns.sleep(1000 * 1);
+	}
+	ns.tprint(`Applied a total of ${output} threads. (Looped ${looped} times)`)
+}
+
+function HQHelper(ns, servers, threads, host) {
+	let output = 0;
+	const myHackingLevel = ns.getHackingLevel();
+	for (let i = 0; i < servers.length; i++) {
+		const server = servers[i];
+		let isTooStrong = server.requiredHackingSkill > myHackingLevel;
+		let lessThreads = threads;
+		let capAtSilverHelix = 10 ** 9;
+		let capAtSyscore = 10 ** 10;
+		let capAtTaiyang = 10 ** 10 * 2;
+		// ns.tprint(`${server.requiredHackingSkill} ${myHackingLevel} ${isTooStrong}`)
+		let t = 0;
+		if (server.moneyMax <= 0) {
+			continue;
+		}
+
+		if (isTooStrong) {
+			continue;
+		}
+
+		if (server.moneyMax < capAtSilverHelix) {
+			lessThreads = Math.floor(lessThreads * 0.20);
+			if (AlphExec(ns, host, server.hostname, lessThreads) > 0) { t++ }
+
+		} else if (server.moneyMax < capAtSyscore) {
+			lessThreads = Math.floor(lessThreads * 0.40);
+
+			if (AlphExec(ns, host, server.hostname, lessThreads) > 0) { t++ }
+			// if (ns.exec("weak.js", host, lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("grow.js", host, lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("hack.js", host, lessThreads, server.hostname) > 0) { t++ }
+		} else if (server.moneyMax < capAtTaiyang) {
+			lessThreads = Math.floor(lessThreads * 0.60);
+
+			if (AlphExec(ns, host, server.hostname, lessThreads) > 0) { t++ }
+			// if (ns.exec("weak.js", host, lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("grow.js", host, lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("hack.js", host, lessThreads, server.hostname) > 0) { t++ }
+		} else {
+			if (AlphExec(ns, host, server.hostname, lessThreads) > 0) { t++ }
+			// if (ns.exec("weak.js", host, lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("grow.js", host, lessThreads, server.hostname) > 0) { t++ }
+			// if (ns.exec("hack.js", host, lessThreads, server.hostname) > 0) { t++ }
+		}
+
+
+		output += lessThreads * t;
+
+	}
+	// ns.tprint(`Applied ${output} threads.`);
+	return output;
+}
+
+function KillPServScripts(ns) {
+	let allServers = GetAllPServ(ns);
+	for (let p = 0; p < allServers.length; p++) {
+		ns.scriptKill("weak.js", allServers[p]);
+		ns.scriptKill("grow.js", allServers[p]);
+		ns.scriptKill("hack.js", allServers[p]);
+		ns.scriptKill("alph.js", allServers[p]);
 	}
 }

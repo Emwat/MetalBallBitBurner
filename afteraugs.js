@@ -30,7 +30,7 @@ export async function main(ns) {
 		StrLeft("hak/min", 7) +
 		" name"
 	);
-	ns.exec("power.js", "home", 1);
+	// ns.exec("power.js", "home", 1);
 
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
@@ -96,4 +96,5 @@ export async function main(ns) {
 		ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
 
 	ns.tprint("afteraugs.js end " + new Date().toLocaleString());
+
 }

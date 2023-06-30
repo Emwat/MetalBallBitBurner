@@ -1,98 +1,67 @@
 /** @param {NS} ns */
+import GetServers from './im/servers'
+import GetProgramLevel from './im/files'
+
+let myHackingLevel;
+let myPortPrograms;
 
 export default function main(ns) {
-	const target = GetTarget(ns);
-	return target;
+	myHackingLevel = ns.getHackingLevel();
+	myPortPrograms = GetProgramLevel(ns);
+
+	return GetTarget(ns);
 	// while (true) {
 	// 	await ns.weaken(target);
 	// 	await ns.grow(target);
 	// }
 }
 
+
+
 function GetTarget(ns) {
-	var servers = ns.scan("home");
-	var hackingLevel = ns.getHackingLevel();
-	var portStrength = GetProgramLevel(ns);
+	let servers = GetServers(ns);
+	let singleTarget = { hostname: "null", moneyMax:0};
+	servers = servers.map(s => ns.getServer(s));
+	//servers = servers.sort((a, b) => GetValue(b) - GetValue(a) ? a : b);
+	if (myHackingLevel < 100)
+		return "n00dles";
 
 	for (var i = 0; i < servers.length; i++) {
-		var server = servers[i];
-		var moreServers = ns.scan(server);
-		//ns.tprint(server);
-		for (var j = 0; j < moreServers.length; j++) {
-			var thisJServer = moreServers[j];
-			if (servers.indexOf(thisJServer) < 0) {
-				servers.push(thisJServer);
-				//ns.tprint(thisJServer);
-			}
-		}
-
+		let server = servers[i];
+		if (GetValue(singleTarget) < GetValue(server))
+			singleTarget = server;
+		//ns.tprint(server.hostname + " " + server.moneyMax + " " + GetValue(server));
 	}
-
-	servers = servers.map(s => ns.getServer(s));
-
-	// for (var i = 0; i < servers.length; i++) {
-	// 	let server = servers[i];
-	// 	ns.tprint(server.hostname + " " + server.moneyMax);
-	// }
-
-	// As a rule of thumb, your hacking target should be
-	// the server with highest max money that’s 
-	// required hacking level is under 1/2 of your hacking level.
-	function FilterMostMoneyAndHalfHackingSkill(ns, hackingLevel, portStrength, a, b) {
-		//ns.tprint(a + " " + b.hostname + " " + b.moneyMax);
-		//return a.moneyMax > b.moneyMax ? a.moneyMax : b.moneyMax;
-
-		function GetValue(x) {
-			//x = ns.getServer(x);
-			if (x.requiredHackingSkill == undefined)
-				return 0;
-
-			if (x.numOpenPortsRequired > portStrength)
-				return 0;
-
-			if (x.requiredHackingSkill > hackingLevel / 2)
-				return 0;
-
-			return x.moneyMax;			
-		}
-
-		return GetValue(a) > GetValue(b) ? a : b;
-	}
-
-	let singleTarget = servers
-		.reduce((a, b) => FilterMostMoneyAndHalfHackingSkill(ns, hackingLevel, portStrength, a, b));
-
-	return BlackListFilter(singleTarget.hostname, hackingLevel);
+	return BlackListFilter(singleTarget.hostname);
 }
 
 
-function GetProgramLevel(ns) {
-	const programs = [
-		"BruteSSH.exe",
-		"FTPCrack.exe",
-		"relaySMTP.exe",
-		"HTTPWorm.exe",
-		"SQLInject.exe"
-	];
+// As a rule of thumb, your hacking target should be
+// the server with highest max money that’s 
+// required hacking level is under 1/2 of your hacking level.
+function GetValue(x) {
+	if (x.requiredHackingSkill == undefined)
+		return 0;
 
-	for (var i = programs.length - 1; i > 0; i--) {
-		const program = programs[i];
-		if (ns.fileExists(program, "home"))
-			return i;
-	}
-	return -1;
+	if (x.numOpenPortsRequired > myPortPrograms)
+		return 0;
+
+	if (x.requiredHackingSkill > myHackingLevel / 2)
+		return 0;
+
+	return x.moneyMax;
 }
 
-function BlackListFilter(server, hackingLevel){
+function BlackListFilter(server) {
 	const blackList = ["iron-gym"]
 	if (blackList.indexOf(server) == -1)
 		return server;
 
 	const otherTargets = [
-				{ requiredHackingSkill: 100, name: "phantasy" },
-				{ requiredHackingSkill: 90, name: "max-hardware" },
-			];
+		{ requiredHackingSkill: 100, name: "phantasy" },
+		{ requiredHackingSkill: 90, name: "max-hardware" },
+	];
 
-	return (hackingLevel / 2 > otherTargets[0].requiredHackingSkill) ?
-				otherTargets[0].name : otherTargets[1].name;
+	return (myHackingLevel / 2 > otherTargets[0].requiredHackingSkill) ?
+		otherTargets[0].name : otherTargets[1].name;
 }

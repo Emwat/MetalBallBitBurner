@@ -39,6 +39,7 @@ export async function main(ns) {
 			qa >> quick vigilante justice and ascend
 			q [m/h/v/t] >> quick vigilante justice and then action
 			ba >> batch ascend
+			ba [X] >> batch ascend every 10 * X seconds
 			i >> info
 			
 			--- WARFARE
@@ -69,9 +70,10 @@ export async function main(ns) {
 	} else if (ns.args[0] == "a") {
 		ascendBuyAndTrain(ns, members);
 	} else if (ns.args[0] == "ba") {
+		const seconds = ns.args[1] || 300;
 		while (true) {
 			ascendBuyAndTrain(ns, members);
-			await ns.sleep(6000 * 4);
+			await ns.sleep(1000 * seconds);
 		}
 	}
 	else if (ns.args[0] == "i") {
@@ -278,6 +280,17 @@ function ascendBuyAndTrain(ns, members) {
 		const memberName = member.name;
 		//const memberInfo = ns.gang.getMemberInformation(member);
 		const ascResult = ns.gang.getAscensionResult(memberName);
+		let beforeAsc = [memberName, 
+		"hack", member.hack,
+		"str", member.str,
+		"def", member.def,
+		"dex", member.dex,
+		"agi", member.agi,
+		"cha", member.cha,
+		"upgrades", member.upgrades.length,
+		"money", member.moneyGain
+		].join();
+		beforeAsc = beforeAsc.replaceAll(",", " ");
 
 		if (i == 0) {
 
@@ -300,7 +313,9 @@ function ascendBuyAndTrain(ns, members) {
 			ns.tprint(`Could not ascend ${memberName}`);
 			continue;
 		}
-
+		
+		if (i == members.length - 1)
+			ns.tprint(beforeAsc);
 		// member.ascDate = new Date();
 		// ascData.push(member);
 		WeaponizeMemberHelper(ns, toBuyList, memberName);

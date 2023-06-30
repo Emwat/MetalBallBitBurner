@@ -33,7 +33,25 @@ import Get from "get.js"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
-	jtprint(ns, ns.getMoneySources().sinceInstall);
+	ftprint(ns, ns.codingcontract.getContractTypes());
+	// jtprint(ns, ns);
+	// jtprint(ns, ns.stanek);
+	// let doc = eval("document");
+
+	//ns.tprint(GetServers(ns).indexOf("home"));
+	// for(let i = 0; i < 100; i++)
+	// ns.tprint(`${i} ${ns.weakenAnalyze(i, 8)}`)
+	// ns.tprint(ns.growthAnalyze())
+	// ns.tprint(ns.hackAnalyze("megacorp"))
+	// ns.tprint(ns.hackAnalyze("ecorp"))
+	// ns.tprint(ns.growthAnalyze())
+	// ns.tprint(ns.growthAnalyze())
+	// ns.tprint(ns.growthAnalyze())
+	// ftprint(ns, ns.scan("home"));
+	// let members = ns.gang.getMemberNames();
+	// members = members.map(m => ns.gang.getMemberInformation(m));
+	// jtprint(ns, members[0]);
+	// jtprint(ns, ns.getMoneySources().sinceInstall);
 	// jtprint(ns, ns.getServer("catalyst"));
 	// AlphExec(ns, "home", "n00dles", 1);
 	// ns.tprint(arguments); idk wtf this is
@@ -131,8 +149,10 @@ function jtprint(ns, obj) {
 }
 
 function ftprint(ns, obj) {
+	let output = "\r\n	"
 	for (let i = 0; i < obj.length; i++) {
 		const o = obj[i];
-		ns.tprint(o);
+		output += o + "\r\n	";
 	}
+	ns.tprint(output);
 }

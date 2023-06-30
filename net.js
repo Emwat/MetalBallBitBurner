@@ -162,6 +162,7 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 			if (cost == 0 || !isFinite(cost)) {
 				ns.tprint(`error -> Cost: ${cost}` +
 					` -> UpgradeNodes(ns, ${numberOfNodes}, ${arg}, ${maxAmount})`)
+				throw "Blagh"
 				await ns.sleep(30);
 				break;
 			}
@@ -169,12 +170,12 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 			if (myMoney(ns) > cost && DoUpgrade(ns, i, arg)) {
 				ns.print(`Node ${i} is now at ${arg} ${GetNodeArg(ns.hacknet.getNodeStats(i), arg)}`);
 				levels[i] = GetNodeArg(ns.hacknet.getNodeStats(i), arg);
-				waitTime = 30;
+				waitTime = 0;
 			} else {
 				ns.print(`home: ${ToDollars(myMoney(ns))} / ${i} ${arg} cost: ${ToDollars(cost)}`)
 			}
 
-			// await ns.sleep(waitTime);
+			await ns.sleep(waitTime);
 
 			ex++;
 			if (ex > maxEx) {
