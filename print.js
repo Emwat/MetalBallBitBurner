@@ -17,7 +17,7 @@ export async function main(ns) {
 	{
 
 	}
-	else if (arg == "d") {
+	else if (arg == "mi") {
 		let servers = GetAllServersO(ns);
 		servers = servers.sort((a, b) => a.minDifficulty - b.minDifficulty);
 		//ns.tprint(`${servers[10].requiredHackingSkill} ${servers[11].requiredHackingSkill}`)

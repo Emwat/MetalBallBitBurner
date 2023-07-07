@@ -14,26 +14,35 @@ export async function main(ns) {
 		ns.tprint(`cct.js ended; ${new Date().toLocaleString()}`)
 		return;
 	}
+
 	// ns.tprint(AlgoStockTraderI(ns, algoStockArr1));
 	// ns.tprint(AlgoStockTraderI(ns, [53, 47, 40, 13, 72, 104, 82, 56, 147, 85, 83, 138, 145, 114, 159, 136, 133, 151, 143, 46, 10, 104, 84, 154, 89, 104, 200, 117, 169, 120, 108, 47, 97, 30, 21, 35, 147, 106, 166, 71, 159, 87]))
+	// ns.tprint(ArrayJumpingGame(ns, [10,6,4,8,7,9,9,4,10,10,10,1,4,3,3,3,3,0,8,0])); // returns 1
+	// ns.tprint(ArrayJumpingGame(ns, [1,9,0,4,3,9,0,0,3,7,0,4,6,0,0,2,7,3,2,1,6,0,10]));
+
 	// CompressionIExamples(ns);
 	// ns.tprint("lllllllllzz => " + CompressionI(ns, "lllllllllzz"));
 	// ns.tprint(CompressionI(ns, "uuuuuuuu2zzclllllllllzzfddddddddcccc444444LLbbbbbbbbb33K666HHxNN6UUUUUUUibyyyyy3"));
 
+	//  ["QUEUE FRAME ARRAY POPUP PRINT", 18]
+
+	//  D would be replaced by A, 
+	//  E would become B, and A would become X (because of rotation).
 	// ns.tprint(EncryptionICaesarCipher(ns, ["DEA", 3])); // ABX
-	// ns.tprint(EncryptionICaesarCipher(ns, ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", 1]));
-	// ns.tprint(EncryptionICaesarCipher(ns, ["MEDIA FLASH LOGIN SHELL SHIFT", 22]));
+	// ns.tprint(EncryptionI(ns, ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", 1]));
+	// ns.tprint(EncryptionI(ns, ["QUEUE FRAME ARRAY POPUP PRINT", 18]));
 	// ns.tprint(EncryptionII(ns, ["DASHBOARD", "LINUX"]));
 	// ns.tprint(EncryptionII(ns, ["PRINTEMAILMACROVIRUSMOUSE", "COMPUTING"]));
 
-	ns.tprint(`
- 25525511135 -> ["255.255.11.135", "255.255.111.35"]
- 1938718066 -> ["193.87.180.66"]
-`);
-	ns.tprint(GenerateIPAddresses(ns, "25525511135"));
-	ns.tprint(GenerateIPAddresses(ns, "1938718066"));
-	ns.tprint(GenerateIPAddresses(ns, "1921680101") + " / 192.168.010.1 is not a valid IP.");
-	ns.tprint(GenerateIPAddresses(ns, "3520617070"));
+	// 	ns.tprint(`
+	//  25525511135 -> ["255.255.11.135", "255.255.111.35"]
+	//  1938718066 -> ["193.87.180.66"]
+	// `);
+	// ns.tprint(GenerateIPAddresses(ns, "25525511135"));
+	// ns.tprint(GenerateIPAddresses(ns, "1938718066"));
+	// ns.tprint(GenerateIPAddresses(ns, "1921680101")); // + " / 192.168.010.1 is not a valid IP.");
+	// ns.tprint(GenerateIPAddresses(ns, "3520617070"));
+	// ns.tprint(GenerateIPAddresses(ns, "202721319")); // fail 07/06/2023 11:37 AM
 	// ns.tprint(HammingCodes(ns, 8));
 	// ns.tprint(HammingCodes(ns, 21));
 	// ns.tprint(HammingCodes(ns, 65));
@@ -43,9 +52,17 @@ export async function main(ns) {
 	// ns.tprint(MergeOverlappingIntervals(ns, [[1, 3], [8, 10], [2, 6], [10, 16]]));
 	// ns.tprint(MergeOverlappingIntervals(ns, [[25, 33], [17, 18], [8, 18], [9, 11], [15, 23], [4, 7], [6, 16], [2, 6], [2, 8], [12, 19]]));
 	// [[2,23],[25,33]]
+	// ns.tprint(MinimumPathSumInATriangle(ns, MinimumPathSumInATriangleExample));
 
+	// ns.tprint(`
+	//  "()())()" -> ["()()()", "(())()"]
+	//  "(a)())()" -> ["(a)()()", "(a())()"]
+	//  ")(" -> [""]
+	// `);
 	// ns.tprint(SanitizeParenthesesInExpression(ns, "()())()"));
 	// ns.tprint(SanitizeParenthesesInExpression(ns, "(a)())()"));
+	// ns.tprint(SanitizeParenthesesInExpression(ns, ")("));
+	// ns.tprint(SanitizeParenthesesInExpression(ns, "(()))))a()("));
 
 	// ns.tprint(TotalWaysToSumII(ns, 177, [1, 2, 4, 6, 7, 8, 9, 12, 13]));
 	// ns.tprint(`
@@ -61,10 +78,10 @@ const contractDictionary = [
 	, ["Total Ways to Sum", null]
 	, ["Total Ways to Sum II", null]
 	, ["Spiralize Matrix", null]
-	, ["Array Jumping Game", null]
+	, ["Array Jumping Game", ArrayJumpingGame]
 	, ["Array Jumping Game II", null]
 	, ["Merge Overlapping Intervals", null]
-	, ["Generate IP Addresses", null]
+	, ["Generate IP Addresses", GenerateIPAddresses]
 	, ["Algorithmic Stock Trader I", AlgoStockTraderI]
 	, ["Algorithmic Stock Trader II", null]
 	, ["Algorithmic Stock Trader III", null]
@@ -81,7 +98,7 @@ const contractDictionary = [
 	, ["Compression I: RLE Compression", CompressionI]
 	, ["Compression II: LZ Decompression", null]
 	, ["Compression III: LZ Compression", null]
-	, ["Encryption I: Caesar Cipher", null]
+	, ["Encryption I: Caesar Cipher", EncryptionI]
 	, ["Encryption II: Vigenère Cipher", EncryptionII]
 
 ];
@@ -105,7 +122,7 @@ function TakeTreasures(ns) {
 			let data = ns.codingcontract.getData(file, server);
 
 			// let description = ns.codingcontract.getDescription(file, server);
-			ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
+			// ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
 
 			let program = contractDictionary.filter(f => f[0] == contractType)[0][1];
 			// ns.tprint(`${server} ${file} ${contractType}`);
@@ -113,12 +130,12 @@ function TakeTreasures(ns) {
 			if (program == null)
 				continue;
 
-			ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
+			// ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
 
 			let output = program(ns, data);
 			const reward = ns.codingcontract.attempt(output, file, server);
 			if (reward) {
-				ns.tprint(`Reward: ${reward}`)
+				ns.tprint(`${contractType} ***** Reward: ${reward}`)
 			} else {
 				ns.tprint(`Failed contract: 
 				Server: ${server} 
@@ -131,29 +148,12 @@ function TakeTreasures(ns) {
 	}
 }
 
-
-const algoStockArr1 = [
-	98, 29, 192, 25, 64,
-	130, 98, 153, 97, 147,
-	53, 35, 176, 72, 166,
-	73, 127, 152, 73, 108,
-	121, 10, 22, 132, 24,
-	121, 96, 57, 74, 198,
-	41, 164];
-
-
 // Algorithmic Stock Trader I
-// You are attempting to solve a 
-// Coding Contract. You have 5 tries
-// remaining, after which the contract 
-// will self-destruct.
 
 // You are given the following array 
 // of stock prices (which are numbers) 
 // where the i-th element represents 
 // the stock price on day i:
-
-
 
 // Determine the maximum possible profit 
 // you can earn using at most one transaction 
@@ -183,6 +183,57 @@ function AlgoStockTraderI(ns, arr) {
 	ns.print(`Buy at ${bestI} \$${arr[bestI]}. Sell at ${bestJ} \$${arr[bestJ]}. Profit: ${maxPossibleProfit}`);
 	return maxPossibleProfit;
 }
+
+
+
+// Array Jumping Game
+// You are given the following array of integers:
+
+// Each element in the array represents your MAXIMUM jump
+// length at that position. This means that if you are at 
+// position i and your maximum jump length is n, you can 
+// jump to any position from i to i+n.
+
+// Assuming you are initially positioned at the start of 
+// the array, determine whether you are able to reach the 
+// last index.
+
+// Your answer should be submitted as 1 or 0, representing
+// true and false respectively
+
+function ArrayJumpingGame(ns, arr) {
+	let history = [];
+	let myPosition = 0;
+	let failsafe = 20;
+	let f = 0;
+	while (true) {
+		let maxJumpLength = arr[myPosition];
+		let bestJump = maxJumpLength;
+		for (let b = 1; b <= maxJumpLength; b++) {
+			if (myPosition + b >= arr.length)
+				return 1;
+			let jump = arr[myPosition + b];
+			// ns.tprint(`test ${jump} > ${arr[myPosition + bestJump]} (${bestJump})`)
+			if (jump > arr[myPosition + bestJump])
+				bestJump = b;
+		}
+		// ns.tprint(`myPos: ${myPosition} bestJump: ${bestJump} now: ${myPosition + bestJump}`);
+		myPosition = myPosition + bestJump;
+		if (arr[myPosition] == 0) {
+			// ns.tprint(`${myPosition} is zero. Cannot jump no more.`);
+			break;
+		}
+		f++
+		if (f > failsafe) {
+			ns.tprint(`*cough* ArrayJumpingGame activated the failsafe.`);
+			break;
+		}
+
+	}
+	return 0;
+
+}
+
 
 
 // Compression I: RLE Compression
@@ -245,6 +296,37 @@ function CompressionI(ns, str) {
 	return output;
 }
 
+// Compression III: LZ Compression
+
+// Lempel-Ziv (LZ) compression is a data compression technique 
+// which encodes data using references to earlier parts of the data. 
+// In this variant of LZ, data is encoded in two types of chunk. 
+// Each chunk begins with a length L, encoded as a single ASCII digit from 1 to 9,
+//  followed by the chunk data, which is either:
+
+// 1. Exactly L characters, which are to be copied directly into the uncompressed data.
+// 2. A reference to an earlier part of the uncompressed data. 
+// To do this, the length is followed by a second ASCII digit X: 
+// each of the L output characters is a copy of
+// the character X places before it in the uncompressed data.
+
+// For both chunk types, a length of 0 instead means the chunk ends immediately,
+// and the next character is the start of a new chunk. The two chunk types alternate,
+// starting with type 1, and the final chunk may be of either type.
+
+// You are given the following input string:
+//     dc6HLl6HLl6HOw66HOw1r31r31S1r31rOrOrvZ2ACQ2KkPACQ2LpAHACQ2LpAHAQ2UY6fzk
+// Encode it using Lempel-Ziv encoding with the minimum possible output length.
+
+// Examples (some have other possible encodings of minimal length):
+//     abracadabra     ->  7abracad47
+//     mississippi     ->  4miss433ppi
+//     aAAaAAaAaAA     ->  3aAA53035
+//     2718281828      ->  627182844
+//     abcdefghijk     ->  9abcdefghi02jk
+//     aaaaaaaaaaaa    ->  3aaa91
+//     aaaaaaaaaaaaa   ->  1a91031
+//     aaaaaaaaaaaaaa  ->  1a91041
 
 // Shortest Path in a Grid
 // You are located in the top-left corner of the following grid:
@@ -304,6 +386,8 @@ function ShortestPathInGrid() {
 
 // You are given an array with two elements:
 //   ["MEDIA FLASH LOGIN SHELL SHIFT", 22]
+//  ["QUEUE FRAME ARRAY POPUP PRINT", 18]
+
 // The first element is the plaintext, the second element is the left shift value.
 
 // Return the ciphertext as uppercase string. Spaces remains the same.
@@ -421,7 +505,10 @@ function GenerateIPAddresses(ns, str) {
 	let possible = [];
 
 	function dot(j, str) {
-		return str[j] != void 0 ? "." : "";
+		if (str[j])
+			return ".";
+
+		return "";
 	}
 
 	function leftToRight(str) {
@@ -448,16 +535,55 @@ function GenerateIPAddresses(ns, str) {
 				output += a + dot(i + 1, str);
 			}
 		}
-		if (output.split(".").length < 3)
+		output = output.replaceAll(".00", ".");
+		output = output.replaceAll(".0", ".");
+
+		if (output.split(".").length < 4)
 			output += ".0";
-			
+
+		return output;
+	}
+
+	// RRRRRRRRRRRRRRRRRRRRRRRRRRRR
+	// RRRRRRRRRRRRRRRRRRRRRRRRRRRR
+	// RRRRRRRRRRRRRRRRRRRRRRRRRRRR
+	function rightToLeft(str) {
+		let output = "";
+		for (let i = str.length - 1; i > 0; i--) {
+			let a = str[i];
+			let b = str[i - 1];
+			let c = str[i - 2];
+
+			// ns.tprint(a + b + c);
+			if (a && b && c && Number(c + b + a) <= 255) {
+				output = dot(i - 1, str) + c + b + a + output;
+				i -= 2;
+			} else if (a && b) {
+				output = dot(i - 1, str) + b + a + output;
+				i -= 1;
+			} else {
+				output = dot(i - 1, str) + a + output;
+			}
+		}
+		output = output.replaceAll(".00", ".");
+		output = output.replaceAll(".0", ".");
+		if (output[0] == ".")
+			output = output.substring(1);
+
 		return output;
 	}
 
 	let idea1 = leftToRight(str);
+	let idea2 = rightToLeft(str);
+	// ns.tprint(`Testing IP ${idea1} / ${idea2}`)
+	if (idea1 == idea2) {
+		possible.push(idea1);
+	} else {
+		possible.push(idea1);
+		if (!idea1.includes("0."))
+			possible.push(idea2);
+	}
 
-
-	possible.push(output);
 	return possible;
 }
 
@@ -600,6 +726,100 @@ function ftprint(ns, obj) {
 	ns.tprint(output);
 }
 
+// Minimum Path Sum in a Triangle
+// Given a triangle, find the minimum path sum from top 
+// to bottom. In each step of the path, you may only move 
+// to adjacent numbers in the row below. The triangle is 
+// represented as a 2D array of numbers:
+
+// [
+//      [1],
+//     [2,3],
+//    [5,9,1],
+//   [3,9,5,5]
+// ]
+
+// Example: If you are given the following triangle:
+
+
+const MinimumPathSumInATriangleContract = [
+	[2],
+	[4, 5],
+	[9, 8, 7],
+	[6, 7, 9, 4],
+	[7, 3, 1, 8, 2],
+	[1, 9, 3, 2, 4, 3],
+	[4, 7, 9, 1, 3, 1, 4],
+	[1, 7, 7, 9, 8, 8, 6, 5],
+	[8, 7, 4, 2, 8, 2, 6, 4, 5],
+	[8, 4, 8, 1, 2, 5, 8, 6, 9, 7],
+	[8, 3, 9, 9, 4, 3, 7, 4, 1, 8, 7],
+	[3, 3, 9, 7, 2, 5, 4, 7, 5, 1, 5, 4]
+];
+
+const MinimumPathSumInATriangleExample = [
+	[2],
+	[3, 4],
+	[6, 5, 7],
+	[4, 1, 8, 3]
+]; // returns 11
+
+//    2
+//   3,4
+//  6,5,7
+// 4,1,8,3
+
+// The minimum path sum is 11 (2 -> 3 -> 5 -> 1).
+
+function MinimumPathSumInATriangle(ns, triangle) {
+	let miniSum = 999;
+	let allPossiblePaths = [
+		"0000", // LLL
+		"0001", // LLR
+		"0011", // LRL
+		"0012", // LRR
+		"0111", // RLL
+		"0112", // RLR
+		"0122", // RRL
+		"0123"  // RRR
+	];
+
+	// allPossiblePaths = [];
+	// let leftMostPathway = "";
+	// let rightMostPathway = "";
+	// for (let i = 0; i < triangle.length; i++) {
+	// 	leftMostPathway += "0";
+	// }
+	// for (let i = 0; i < triangle.length; i++) {
+	// 	rightMostPathway += i.toString();
+	// }
+
+	// let currentPathway = rightMostPathway;
+	// for (let i = 0; i < triangle.length; i++) {
+	// 	for (let j = 0; j < triangle.length; j++) {
+	// 		currentPathway[i] = "0";
+	// 	}
+	// 	allPossiblePaths.push(currentPathway);
+	// }
+
+	// ftprint(ns, allPossiblePaths);
+
+	for (let i = 0; i < allPossiblePaths.length; i++) {
+		let app = allPossiblePaths[i];
+		let sum = 0;
+		// const layer1 = triangle[0];
+		// const layer2 = triangle[1];
+		// const layer3 = triangle[2];
+		// const layer4 = triangle[3];
+		// let sum = layer1[app[0]] + layer2[app[1]] + layer3[app[2]] + layer4[app[3]];
+		for (let j = 0; j < triangle.length; j++) {
+			sum += triangle[j][app[j]];
+		}
+		if (sum < miniSum)
+			miniSum = sum;
+	}
+	return miniSum;
+}
 
 // Proper 2-Coloring of a Graph
 //
@@ -649,25 +869,28 @@ function ftprint(ns, obj) {
 function SanitizeParenthesesInExpression(ns, str) {
 	let output = [];
 	let marks = [];
-	let hasOpened = false;
+	let hasOpened = 0;
 	let hasNeverOpened = true;
-	let validStr = "";
+	let cleanStr = "";
+	let moreOpenStr = "";
 
 	// Declare marks
 	for (let i = 0; i < str.length; i++) {
 		const isLeft = str[i] == "(";
 		const isRight = str[i] == ")";
-		if (!hasOpened && isLeft) {
-			hasOpened = true;
+		if (isLeft) {
+			hasOpened += 1;
 			hasNeverOpened = false;
 		}
-		else if (!hasOpened && isRight) {
-			// ns.tprint(`ded ${i}`);
+		else if (isRight) {
 			if (hasNeverOpened)
 				return [""];
-			marks.push(i);
-		} else if (hasOpened && isRight) {
-			hasOpened = false;
+
+			if (hasOpened <= 0)
+				marks.push(i);
+			else
+				hasOpened -= 1;
+
 		}
 	}
 
@@ -675,30 +898,37 @@ function SanitizeParenthesesInExpression(ns, str) {
 
 	// Declare Valid String
 	for (let i = 0; i < str.length; i++) {
-		validStr += (marks.indexOf(i) == -1 ? str[i] : "");
+		cleanStr += (!marks.includes(i) ? str[i] : "");
 	}
 
-	if (hasOpened) {
-		function RemoveChar(str, index) {
-			return str.slice(0, index - 1) + str.slice(index);
-		}
-		validStr = RemoveChar(validStr, validStr.lastIndexOf("("));
-	}
 
-	output.push(validStr);
+
+	output.push(cleanStr);
+
+	function RemoveChar(str, index) {
+		return str.slice(0, index - 1) + str.slice(index);
+	}
 
 	function InsertParen(str, index) {
 		return str.slice(0, index - 1) + "(" + str.slice(index - 1);
 	}
 
-	// Develop all possible results
-	for (let i = 0; i < marks.length; i++) {
-		let mark = marks[i];
-		for (let j = 0; j < mark; j++) {
-			if (validStr[j] == "(")
-				output.push(InsertParen(validStr, j));
-		}
+	if (hasOpened > 0) {
+		output.push(str + ")");
 	}
+
+	if (hasOpened <= 0 && marks.length > 0) {
+		output.push(RemoveChar(str, str.lastIndexOf("(", marks[0])));
+	}
+
+	// Develop all possible results
+	// for (let i = 0; i < marks.length; i++) {
+	// 	let mark = marks[i];
+	// 	for (let j = 0; j < mark; j++) {
+	// 		if (validStr[j] == "(")
+	// 			output.push(InsertParen(validStr, j));
+	// 	}
+	// }
 
 	return output;
 }

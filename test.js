@@ -33,7 +33,11 @@ import Get from "get.js"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
-	ftprint(ns, ns.codingcontract.getContractTypes());
+
+	// jtprint(ns, ns.stanek.fragmentDefinitions()[0])
+
+	// ftprint(ns, ns.codingcontract.getContractTypes());
+
 	// jtprint(ns, ns);
 	// jtprint(ns, ns.stanek);
 	// let doc = eval("document");
@@ -52,7 +56,7 @@ export async function main(ns) {
 	// members = members.map(m => ns.gang.getMemberInformation(m));
 	// jtprint(ns, members[0]);
 	// jtprint(ns, ns.getMoneySources().sinceInstall);
-	// jtprint(ns, ns.getServer("catalyst"));
+	jtprint(ns, ns.getServer("catalyst"));
 	// AlphExec(ns, "home", "n00dles", 1);
 	// ns.tprint(arguments); idk wtf this is
 	// ns.tprint("Your Ports: " + GetProgramLevel(ns));
@@ -119,6 +123,19 @@ export async function main(ns) {
 	// await testPrompt(ns);
 
 	ns.tprint("end test.");
+}
+
+function terminalWidth() {
+	let output = "";
+	for (let i = 0; i < 400; i++) {
+		let str = i.toString();
+		str = str[str.length - 1];
+		if (i % 10 == 0)
+			output += "X"
+		else
+			output += " ";
+	}
+	ns.tprint(output);
 }
 
 async function testPrompt(ns) {

@@ -1,6 +1,6 @@
 import GetTargets from "/im/topTarget"
 import GetTarget from "./im/target"
-import AlphExec from "./im/exec" // CopyNukeExe(ns, myScript, targetHost, targetMoney)
+import AlphExec from "./im/exec" // CopyNukeExe(ns, alphJS, targetHost, targetMoney)
 import GetServers from "./im/servers"
 import GetProgramLevel from "./im/files"
 import NumLeft from "./im/numLeft"
@@ -10,13 +10,15 @@ import StrLeft from "./im/strLeft"
 const coreScriptRam = 1.75;
 
 export async function main(ns) {
-	const myScript = "alph.js";
+	const alphJS = "alph.js";
+	const weakJS = "weak.js";
 	const myProgramsLevel = GetProgramLevel(ns);
 	const myHackingLevel = ns.getHackingLevel();
-	const servers = GetServers(ns);
-	const defaultTarget = GetTarget(ns);
+	const defaultTarget = GetTarget(ns) || "n00dles";
+	const arg0 = ns.args[0];
+	let servers = GetServers(ns);
 
-	let execStat = { i: 0, a: 0, w: 0 };
+	let { i, a, w } = { i: 0, a: 0, w: 0 };
 	let serverWithMostMoney = { hostname: "", moneyMax: 0 };
 	ns.disableLog("scp");
 	// ns.disableLog("exec");
@@ -33,64 +35,103 @@ export async function main(ns) {
 	// 	" name"
 	// );
 	// ns.exec("power.js", "home", 1);
+	//servers = ["zer0"]
+	// servers = ["pserv-00"];
+
+	if (myHackingLevel == 1)
+		ns.exec("crack.js", "home", 1, "n00dles");
+
+	let myBugs = [];
 
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
 		let serverObject = ns.getServer(server);
-		const isAboveMyProgramsLevel = serverObject.numOpenPortsRequired > myProgramsLevel;
-		const isTooStrong = serverObject.hackDifficulty > myHackingLevel;
+		// const isAboveMyProgramsLevel = serverObject.numOpenPortsRequired > myProgramsLevel;
+		const isMyServer = serverObject.hasAdminRights;
+		const isTooStrong = serverObject.hackDifficulty > myHackingLevel || serverObject.minDifficulty > 90;
 		let target = server;
-		let targetObject = null;
 		// ns.tprint(StrLeft(server, 20) +
 		// 	"	" + ns.formatNumber(serverObject.maxRam - serverObject.ramUsed, 2)
 		// );
+		let myBug = { server: server, applied: 0, alph: 0, weak: 0 };
 
-		if (server == "home")
+		if (server == "home") {
+			myBug.note = "isHome";
+			myBugs.push(myBug);
 			continue;
-
-		if (isAboveMyProgramsLevel)
-			continue;
-
-		if (myHackingLevel < 100) {
-			target = "n00dles";
 		}
 
-		if (serverObject.moneyMax == 0)
-			target = defaultTarget;
+		if (!isMyServer) {
+			myBug.note = "!isMyServer";
+			myBugs.push(myBug);
+			continue;
+		}
 
-		if (isTooStrong)
-			target = defaultTarget;
+		if (serverObject.moneyMax == 0) {
 
-		targetObject = ns.getServer(target);
+			target = defaultTarget;
+		}
+
+		if (isTooStrong) {
+			target = defaultTarget;
+		}
+
+		if (target.min)
+
+		if (arg0 == "target") {
+			target = defaultTarget;
+		}
+		else if (arg0) {
+			target = arg0;
+		}
+
+		myBug.target = target;
+
 
 		if (AlphExec(ns, server, target) > 0) {
-			execStat.i++;
-			execStat.a++;
-			tprintFill(ns, execStat.i, server, myScript, target);
-			if (targetObject.moneyMax > serverWithMostMoney.moneyMax)
-				serverWithMostMoney = targetObject;
+			myBug.alph += 1;
+			myBug.applied += 1;
+			tprintFill(ns, i, server, alphJS, target);
 		}
 
 		serverObject = ns.getServer(server);
+
 		if (serverObject.maxRam - serverObject.ramUsed >= coreScriptRam) {
+
+
 			// exec(script, hostname, threadOrOptions, args) returns pid/0
-			if (ns.exec("weak.js", server, 1, target) > 0) {
-				execStat.i++;
-				execStat.w++;
-				tprintFill(ns, execStat.i, server, "weak.js", target);
+			ns.scp(weakJS, server, "home");
+			if (ns.exec(weakJS, server, 1, target) > 0) {
+				myBug.weak += 1;
+				myBug.applied += 1;
+				tprintFill(ns, i, server, weakJS, target);
 			}
 		}
+		myBugs.push(myBug);
+	} // end forloop
 
-
-	}
-	ns.tprint(`a ${execStat.a} w ${execStat.w} servers of ${servers.length}.`);
+	//ns.tprint(`a ${a} w ${w} servers of ${servers.length}.`);
 	if (serverWithMostMoney.hostname != "")
 		ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
 
 	ns.tprint("fill.js end " + new Date().toLocaleString());
+
+	for (let i = 0; i < myBugs.length; i++) {
+		const myBug = myBugs[i];
+		ns.tprint(
+			StrLeft(myBug.server, 20) +
+			StrLeft(myBug.note || "", 14) +
+			StrLeft(myBug.target || "", 20) +
+			(myBug.applied ? NumLeft(myBug.applied, 3) : "") +
+			(myBug.alph ? NumLeft(myBug.alph, 3) : "") +
+			(myBug.weak ? NumLeft(myBug.weak, 3) : "") +
+			""
+		)
+	}
+
 }
 
-function tprintFill(ns, id, server, myScript, target) {
-	ns.tprint(`${NumLeft(id, 2)} on ${StrLeft(server, 20)}, ran ${myScript} ${StrLeft(target, 20)}`);
+function tprintFill(ns, id, server, theScript, target) {
+	// ns.tprint(`${NumLeft(id, 2)} on ${StrLeft(server, 20)}, ran ${theScript} ${StrLeft(target, 20)}`);
 
 }

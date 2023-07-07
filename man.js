@@ -27,7 +27,7 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 
 	
 	alph.js [target] [securityThresh] [moneyThresh]
-	swap.js --mv [all/a/g/w/h/k] [oldTarget] [a/g/w/h/k] [newAction]
+	swap.js --mv [oldAction: all/c/a/g/w/h/k] [oldTarget] [newAction: c/a/g/w/h/k] [newTarget]
 	
 # TRACKING
 	book.js [server] >> reads record.txt on another server

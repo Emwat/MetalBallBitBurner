@@ -1,6 +1,5 @@
 import GetTargets from "/im/topTarget"
 import GetTarget from "./im/target"
-import AlphExec from "./im/exec" // CopyNukeExe(ns, myScript, targetHost, targetMoney)
 import GetServers from "./im/servers"
 import GetProgramLevel from "./im/files"
 import NumLeft from "./im/numLeft"
@@ -31,6 +30,9 @@ export async function main(ns) {
 		" name"
 	);
 	// ns.exec("power.js", "home", 1);
+
+	if (myHackingLevel == 1)
+		ns.exec("crack.js", "home", 1, "n00dles");
 
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
@@ -68,32 +70,32 @@ export async function main(ns) {
 			continue;
 
 
-		if (AlphExec(ns, server, target) > 0) {
-			ns.print(`${myScript} ${server} ${target}`);
-			execStat++;
-			if (targetObject.moneyMax > serverWithMostMoney.moneyMax)
-				serverWithMostMoney = targetObject;
+		// if (AlphExec(ns, server, target) > 0) {
+		// 	ns.print(`${myScript} ${server} ${target}`);
+		// 	execStat++;
+		// 	if (targetObject.moneyMax > serverWithMostMoney.moneyMax)
+		// 		serverWithMostMoney = targetObject;
 
-			ns.tprint(
-				NumLeft(execStat, 3) +
-				StrLeft(serverObject.numOpenPortsRequired, 2) +
-				StrLeft(Math.floor(serverObject.hackDifficulty) + "/" + serverObject.minDifficulty, 7) +
+		// 	ns.tprint(
+		// 		NumLeft(execStat, 3) +
+		// 		StrLeft(serverObject.numOpenPortsRequired, 2) +
+		// 		StrLeft(Math.floor(serverObject.hackDifficulty) + "/" + serverObject.minDifficulty, 7) +
 
-				//NumLeft(serverObject.hackDifficulty, 4) +
-				StrLeft(server, 20) +
-				""
-			);
+		// 		//NumLeft(serverObject.hackDifficulty, 4) +
+		// 		StrLeft(server, 20) +
+		// 		""
+		// 	);
 
-			if (server == "n00dles") {
-				ns.exec("weak.js", server, 1, server);
-			}
-		}
+		// 	if (server == "n00dles") {
+		// 		ns.exec("weak.js", server, 1, server);
+		// 	}
+		// }
 
 
 	}
-	ns.tprint(`Applied ${myScript} to ${execStat} servers of ${servers.length}.`);
-	if (serverWithMostMoney.hostname != "")
-		ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
+	// ns.tprint(`Applied ${myScript} to ${execStat} servers of ${servers.length}.`);
+	// if (serverWithMostMoney.hostname != "")
+	// 	ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
 
 	ns.tprint("afteraugs.js end " + new Date().toLocaleString());
 

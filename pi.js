@@ -8,9 +8,10 @@ import Visual from "./im/visual"
 
 let showAll = false;
 let homeCores = 0;
-
+let player;
 
 export async function main(ns) {
+	player = ns.getPlayer();
 	const arg = ns.args[0];
 	const target = GetTarget(ns);
 	homeCores = ns.getServer("home").cpuCores;
@@ -29,8 +30,7 @@ hackTime(server, player) 	Calculate hack time.
 weakenTime(server, player) 	Calculate weaken time.
 `);
 
-	if (false)
-	{
+	if (false) {
 
 	}
 	else if (arg == "all") {
@@ -65,7 +65,7 @@ weakenTime(server, player) 	Calculate weaken time.
 	}
 	else if (arg) {
 		PrintHeaders(ns);
-		PrintInfo(ns, ns.getServer(arg))
+		PrintHackingInfo(ns, ns.getServer(arg))
 	}
 	else {
 		let servers = GetAllServersO(ns);
@@ -75,7 +75,7 @@ weakenTime(server, player) 	Calculate weaken time.
 	}
 }
 
-function GetAllServersO(ns){
+function GetAllServersO(ns) {
 	let servers = GetAllServers(ns);
 	servers = servers.map(a => ns.getServer(a));
 	return servers;
@@ -84,15 +84,14 @@ function GetAllServersO(ns){
 function PrintAllServers(ns, servers, target) {
 	const myHackingSkill = ns.getHackingLevel();
 	PrintHeaders(ns);
-	const player = ns.getPlayer();
 
 	for (var i = 0; i < servers.length; i++) {
 		var server = servers[i];
 		//server = ns.getServer(server);
 		if (server.hostname.indexOf("pserv-") == 0)
 			continue;
-		
-		PrintInfo(ns, server, player, target);
+
+		PrintHackingInfo(ns, server, target);
 	}
 }
 
@@ -124,7 +123,7 @@ function PrintHeaders(ns) {
 // growPercent(server, threads, player, cores)
 // growThreads(server, player, targetMoney, cores)
 
-function PrintInfo(ns, server, player, target) {
+function PrintHackingInfo(ns, server, target) {
 	const myHackingSkill = ns.getHackingLevel();
 	const sGrowPercent = ns.formulas.hacking.growPercent(server, 1, player, homeCores);
 	const sGrowThreads = ns.formulas.hacking.growThreads(server, player, server.moneyMax, homeCores);
@@ -149,7 +148,36 @@ function PrintInfo(ns, server, player, target) {
 		" " + NumLeft(server.requiredHackingSkill, 6) +
 		" " + server.hostname
 		//" " + (target == server.hostname ? "    <target>" : "" )
-		);
+	);
 }
 
+// constants() 	All constants used by the game.
+// coreUpgradeCost(startingCore, extraCores, costMult) 	Calculate cost of upgrading hacknet node cores.
+// hacknetNodeCost(n, mult) 	Calculate the cost of a hacknet node.
+// levelUpgradeCost(startingLevel, extraLevels, costMult) 	Calculate cost of upgrading hacknet node level.
+// moneyGainRate(level, ram, cores, mult) 	Calculate money gain rate.
+// ramUpgradeCost(startingRam, extraLevels, costMult) 	Calculate cost of upgrading hacknet node ram
+
+function SeeHacknetNodes() {
+
+	for (let i = 0; i < 8; i++) {
+		ns.tprint(ns.formulas.hacknet.coreUpgradeCost(8, 8 + i, 1));
+
+	}
+	for (let i = 0; i < 8; i++) {
+		ns.tprint(ns.formulas.hacknet.hacknetNodeCost(i, 1));
+	}
+
+	for (let i = 0; i < 10; i++) {
+		ns.tprint(ns.formulas.hacknet.levelUpgradeCost(0, i, 1));
+	}
+
+	for (let i = 0; i < 10; i++) {
+		ns.tprint(ns.formulas.hacknet.moneyGainRate(i, 1, 1, 1));
+	}
+
+	for (let i = 0; i < 10; i++) {
+		ns.tprint(ns.formulas.hacknet.ramUpgradeCost(i, i, 1));
+	}
+}
 

@@ -8,6 +8,8 @@ import StrLeft from './im/strLeft'
 
 /** @param {NS} ns */
 export async function main(ns) {
+	const arg0 = ns.args[0];
+
 	if (ns.args.length == 0) {
 		ns.tprint("No args found. Program did not run. Args are " +
 			"\r\n rename" +
@@ -17,9 +19,9 @@ export async function main(ns) {
 			"\r\n calc" +
 			"\r\n hq" +
 			"\r\n");
-	} else if (ns.args[0] == "rename") {
+	} else if (arg0 == "rename") {
 		RenamePServ(ns);
-	} else if (ns.args[0] == "script") {
+	} else if (arg0 == "script") {
 		const [ignoreMe, target, myArg] = ns.args;
 		if (myArg) {
 			PushOneScript(ns, target, myArg);
@@ -30,24 +32,28 @@ export async function main(ns) {
 		}
 		ns.exec("power.js", "home", 1);
 
-	} else if (ns.args[0] == "upgrade") {
+	} else if (arg0 == "upgrade") {
 		UpgradePServ(ns, ns.args[1] || 128);
-	} else if (ns.args[0] == "upgradehax") {
+	} else if (arg0 == "upgradehax") {
 		ns.tail();
 		UpgradePServHax(ns, ns.args[1]);
-	} else if (ns.args[0] == "calc") {
+	}
+	else if (arg0 == "om") {
+		ns.tail();
+		UpgradePServOM(ns);
+	} else if (arg0 == "calc") {
 		PrintPServCalc(ns);
-	} else if (ns.args[0] == "info") {
+	} else if (arg0 == "info") {
 		PrintPServInfo(ns);
 	}
-	else if (ns.args[0] == "l") {
+	else if (arg0 == "l") {
 		PrintPServInfo(ns, true);
-	} else if (ns.args[0] == "max") {
+	} else if (arg0 == "max") {
 		PrintPServMax(ns);
-	} else if (ns.args[0] == "hq") {
+	} else if (arg0 == "hq") {
 		const [ignoreMe, loopThreads] = ns.args;
 		await HQMain(ns, loopThreads || 1);
-	} else if (ns.args[0] == "k") {
+	} else if (arg0 == "k") {
 		KillPServScripts(ns);
 	}
 
@@ -184,6 +190,7 @@ function PrintPServCalc(ns) {
 		const cost = ns.getPurchasedServerCost(costs[i]);
 		let costAllServers = cost * servers.length;
 		let readableCostAllServers = ToDollars(cost * servers.length);
+		let readableCostMaxServers = ToDollars(cost * ns.getPurchasedServerLimit());
 		// if (!isFinite(cost))
 		// {
 		// 	const adjCost = ns.getPurchasedServerCost(costs[0])/Math.pow(10,3) * i * 2;
@@ -197,7 +204,8 @@ function PrintPServCalc(ns) {
 			" " + NumLeft(costs[i], 6) +
 			" " + NumLeft(cost, 13) +
 			" " + NumLeft(costAllServers, 13) +
-			" " + readableCostAllServers
+			// " " + readableCostAllServers +
+			" " + readableCostMaxServers
 		);
 	}
 }
@@ -226,6 +234,7 @@ function PrintPServInfo(ns, isExcludingMoreInfo = false) {
 			serverIncome += ns.getScriptIncome("hack.js", server.hostname, ...process.args);
 
 			function shortName(filename) {
+				if (filename == "chrg.js") return "c";
 				if (filename == "alph.js") return "a";
 				if (filename == "grow.js") return "g";
 				if (filename == "weak.js") return "w";
@@ -310,11 +319,9 @@ function UpgradePServHax(ns, power) {
 
 	for (let i = 0; i < allServers.length; i++) {
 		const server = allServers[i];
-		if (ns.upgradePurchasedServer(server, 2 ** power))
-		{
+		if (ns.upgradePurchasedServer(server, 2 ** power)) {
 			ns.tprint(`Upgraded ${server} to 2 ** ${power}.`);
-		} else
-		{
+		} else {
 			break;
 		}
 	}
@@ -399,9 +406,36 @@ function HQHelper(ns, servers, threads, host) {
 function KillPServScripts(ns) {
 	let allServers = GetAllPServ(ns);
 	for (let p = 0; p < allServers.length; p++) {
+		ns.scriptKill("chrg.js", allServers[p]);
 		ns.scriptKill("weak.js", allServers[p]);
 		ns.scriptKill("grow.js", allServers[p]);
 		ns.scriptKill("hack.js", allServers[p]);
 		ns.scriptKill("alph.js", allServers[p]);
 	}
+}
+
+function UpgradePServOM(ns) {
+	let x = 21;
+	while (x > 0) {
+		let attemptRam = 2 ** x;
+		let hostname = FindWeakestServer(ns);
+		let newHostname = ns.upgradePurchasedServer(hostname, attemptRam);
+		if (newHostname != "") {
+			ns.tprint(`Purchased server ${newHostname} with ${attemptRam} ram. (2 ** ${x})`)
+			break;
+		}
+		x--;
+	}
+}
+
+function FindWeakestServer(ns) {
+	let allServers = GetAllPServ(ns);
+	
+	let output = { hostname: "undefined", maxRam: 2 ** 21 };
+	for (let i = 0; i < allServers.length; i++) {
+		let server = ns.getServer(allServers[i]);
+		if (server.maxRam < output.maxRam)
+			output = server;
+	}
+	return output.hostname;
 }

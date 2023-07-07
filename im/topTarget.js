@@ -9,6 +9,7 @@ function GetTopTargets(ns) {
 	var servers = ns.scan("home");
 	var hackingLevel = ns.getHackingLevel();
 	var portStrength = GetProgramLevel(ns);
+	var lunaticDifficulty = 90;
 	ns.tprint(`Your port strength is ${portStrength}.`)
 
 	for (var i = 0; i < servers.length; i++) {
@@ -49,52 +50,20 @@ function GetTopTargets(ns) {
 			if (x.requiredHackingSkill > hackingLevel / 2)
 				return 0;
 
+			if (x.minDifficulty > lunaticDifficulty)
+				return 0;
+
 			return x.moneyMax;
 		}
 
-		return GetValue(a) > GetValue(b) ? a : b;
+		return GetValue(a) > GetValue(b) ? 1 : -1;
 	}
 
 	servers = servers.sort((a, b) => FilterMostMoneyAndHalfHackingSkill(ns, hackingLevel, portStrength, a, b));
 	servers = servers.reverse();
-	servers = servers.filter(s => miniGetValue(s, hackingLevel, portStrength) > 0);
-	// servers = servers.sort((a, b) => a.moneyMax > b.moneyMax ? a : b);
-	// servers = servers.sort((a, b) => a.moneyMax > b.moneyMax ? a.moneyMax : b.moneyMax);
-	// servers = servers.sort((a, b) => a.hostname > b ? a : b);
-	// servers = servers.map(a => a.moneyMax);
 	servers = servers.map(a => a.hostname);
 
 	return servers;
 
 	//return servers.reduce((a, b) => FilterMostMoneyAndHalfHackingSkill(ns, hackingLevel, portStrength, a, b)).hostname;
-}
-
-function miniGetValue(x, hackingLevel, portStrength) {
-	//x = ns.getServer(x);
-	if (x.requiredHackingSkill == undefined)
-		return 0;
-
-	if (x.numOpenPortsRequired > portStrength)
-		return 0;
-
-	if (x.requiredHackingSkill > hackingLevel / 2)
-		return 0;
-
-	return x.moneyMax;
-}
-
-function madLeft(str, length) {
-	let output = Math.trunc(str).toString();
-	for (var i = 0; i < length - Math.trunc(str).toString().length; i++) {
-		output = " " + output;
-	}
-	return output;
-}
-
-function sadLeft(str, length) {
-	let output = str.toString();
-	for (var i = 0; i < length - str.length; i++) {
-		output = " " + output;
-	}
-	return output;
 }

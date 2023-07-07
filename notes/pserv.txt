@@ -1,0 +1,13 @@
+
+purchaseServer: Not enough money to purchase server. Need $41.557t
+purchaseServer: Not enough money to purchase server. Need $12.987t
+purchaseServer: Not enough money to purchase server. Need $4.058t
+purchaseServer: Not enough money to purchase server. Need $1.268t
+purchaseServer: Not enough money to purchase server. Need $396.317b
+purchaseServer: Not enough money to purchase server. Need $123.849b
+purchaseServer: Not enough money to purchase server. Need $38.703b
+purchaseServer: Not enough money to purchase server. Need $12.095b
+purchaseServer: Not enough money to purchase server. Need $3.780b
+purchaseServer: Not enough money to purchase server. Need $1.181b
+purchaseServer: Not enough money to purchase server. Need $369.099m
+purchaseServer: Purchased new server with hostname 'pserv-07' for $115.343m 2 ** 9

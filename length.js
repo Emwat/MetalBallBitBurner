@@ -17,13 +17,12 @@ export async function main(ns) {
 	RedTarget = GetTarget(ns);
 	MyHackingSkill = ns.getHackingLevel();
 
-	const wArgIndex = ns.args.indexOf("-w");
-	const iArgIndex = ns.args.indexOf("-i") > -1;
+	const waitArgIndex = ns.args.indexOf("-w");
 
 	// if the argument is a number, 
 	// wait Number minutes and then run
-	if (wArgIndex > -1) {
-		let xMinutes = ns.args[wArgIndex + 1];
+	if (waitArgIndex > -1) {
+		let xMinutes = ns.args[waitArgIndex + 1];
 		if (isNaN(xMinutes))
 		{
 			ns.tprint(`${xMinutes} is not a number. It is ${typeof xMinutes}`)
@@ -33,9 +32,13 @@ export async function main(ns) {
 		const waitTime = minute * xMinutes;
 		ns.tprint(`This program will run in ${xMinutes} minute(s).`);
 		await ns.sleep(waitTime);
-		MainHelper(ns, GetStats(ns, iArgIndex))
+		let stats = GetStats(ns)
+		stats = stats.sort((a, b) => a.minDifficulty - b.minDifficulty );
+		MainHelper(ns, stats);
 	} else {
-		MainHelper(ns, GetStats(ns, iArgIndex));
+		let stats = GetStats(ns)
+		stats = stats.sort((a, b) => a.minDifficulty - b.minDifficulty );
+		MainHelper(ns, stats);
 	}
 
 	ns.tprint(`length.js ended. ${new Date().toLocaleString()}`);
@@ -45,7 +48,6 @@ function MainHelper(ns, stats) {
 	
 	PrintHeaders(ns);
 	let totals = DeclareTotals();
-	stats = stats.sort((a, b) => a.moneyMax - b.moneyMax);
 	let info = [];
 	let j = 1;
 	for (let i = 0; i < stats.length; i++) {
@@ -103,7 +105,7 @@ function AddToTotal(totals, server) {
 	totals.count += 1;
 }
 
-function GetStats(ns, isSortByIncome) {
+function GetStats(ns) {
 	const hosts = GetServers(ns).sort();
 	// const hosts = ["home"].concat(GetServers(ns)).sort();
 	let stats = [];
@@ -157,10 +159,6 @@ function GetStats(ns, isSortByIncome) {
 
 		}
 	}
-	if(isSortByIncome)
-		stats.sort((a, b) => a.i - b.i);
-	else 
-		stats.sort((a, b) => a.moneyMax - b.moneyMax)
 	return stats;
 }
 

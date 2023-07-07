@@ -94,6 +94,7 @@ function MainHelper(ns, myArg, targetServer, totalThreads) {
 			continue;
 
 		ns.scriptKill("alph.js", server);
+		ns.scriptKill("chrg.js", server);
 		for (let b = 0; b < burners.length; b++) {
 			const burner = burners[b];
 			ns.scriptKill(burner, server);
@@ -120,8 +121,10 @@ function MainHelper(ns, myArg, targetServer, totalThreads) {
 
 		//ns.tprint(`${myArg} ${server} ${target} -t ${threads}`)
 	}
-
-	ns.tprint(`Unleashed ${t} ${myArg} threads on ${target}. Program end.`);
+	if (myArg == "k")
+		ns.tprint(`focus.js ${myArg} end.`);
+	else
+		ns.tprint(`Unleashed ${t} ${myArg} threads on ${target}. Program end.`);
 }
 
 function Distribute(ns, t, threads, target, totalThreads, serverObject, targetServer, isHome) {
@@ -129,7 +132,7 @@ function Distribute(ns, t, threads, target, totalThreads, serverObject, targetSe
 	let distributeOutput = 0;
 	function cap(threads, totalThreads, percentage) {
 		let limit = totalThreads * percentage;
-		if (threads > limit){
+		if (threads > limit) {
 			// ns.tprint(`Limited ${threads} to ${Math.floor(threads - limit)}`);
 			return Math.floor(threads - limit);
 		}
@@ -174,7 +177,7 @@ function Distribute(ns, t, threads, target, totalThreads, serverObject, targetSe
 		ns.exec("alph.js", server, threads, target,
 			targetServer.moneyMax * 0.75, targetServer.minDifficulty + 5);
 	}
-	
+
 	distributeOutput += appliedAlph;
 	// ns.tprint(
 	// 	StrLeft("a" + appliedAlph, 10) + 
@@ -195,7 +198,7 @@ function GetTotalThreads(servers, ram) {
 		const threads = Math.floor(server.maxRam / ram) - (isHome ? roomForScripts : 0);
 		if (!server.hasAdminRights)
 			continue;
-			
+
 		output += threads;
 	}
 	return output;

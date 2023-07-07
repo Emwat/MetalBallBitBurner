@@ -6,25 +6,17 @@ import NumLeft from "./im/numLeft"
 // https://github.com/bitburner-official/bitburner-src/blob/dev/markdown/bitburner.gang.md
 
 let myMoney = 0;
+const warScript = "./terr/war.js";
+// const ascTxt = "gangcombat/asc.txt";
+const ripTxt = "./terr/rip.txt";
 
-
-const soldiers = [
-	"man09"
-	, "man10"
-	, "man11"
-
-	// , "man02"
-	// , "man03"
-	// , "man04"
-	// , "man05"
-	// , "man06"
-	// , "man07"
-	// , "man08"
-];
+const stayInTraining = []; //["man21", "man22", "man23", "man24"]
 
 export async function main(ns) {
 	if (ns.args.length == 0) {
 		ns.tprint(`You haven't entered any arguments. Acceptable args are ...
+			k >> kill all gli.js scripts
+
 			m >> Mug People
 			h >> human trafficking
 			v >> vigilante justice
@@ -34,13 +26,15 @@ export async function main(ns) {
 
 			---
 
-			a >> ascend
+			a ["print-all"] >> ascend
+			"asc new recruits"
 			e >> weaponmizeMember
 			qa >> quick vigilante justice and ascend
 			q [m/h/v/t] >> quick vigilante justice and then action
 			ba >> batch ascend
 			ba [X] >> batch ascend every 10 * X seconds
 			i >> info
+			member >> print all member names
 			
 			--- WARFARE
 			TODO		u >> upgrade people to be up to date
@@ -53,32 +47,42 @@ export async function main(ns) {
 		return;
 	}
 
-	const arg = ns.args[0];
+	const arg0 = ns.args[0];
 
 	let members = ns.gang.getMemberNames();
 	members = members.map(m => ns.gang.getMemberInformation(m));
-	if (gliKey(arg)) {
-		assignMembersToTask(ns, arg, members);
-	} else if (warKey(arg)) {
-		const warScript = "./gangcombat/war.js";
+	if (arg0 == "k") {
+		if (ns.scriptKill("gli.js", "home"))
+			ns.tprint("killed gli.js.");
+		else
+			ns.tprint("didn't kill anything.");
+	}
+	else if (gliKey(arg0)) {
+		assignMembersToTask(ns, arg0, members);
+	} else if (warKey(arg0)) {
 		//ns.spawn(warScript, 1, arg);
-		ns.exec(warScript, "home", 1, arg);
-	} else if (ns.args[0] == "q") {
+		ns.exec(warScript, "home", 1, arg0);
+	} else if (arg0 == "q") {
 		await quickGetUnwanted(ns, members, ns.args[1]);
-	} else if (ns.args[0] == "e") {
+	} else if (arg0 == "e") {
+		`WeaponizeMembers function does NOT check for prices!!`
 		WeaponizeMembers(ns, members);
-	} else if (ns.args[0] == "a") {
+	} else if (arg0 == "a") {
 		ascendBuyAndTrain(ns, members);
-	} else if (ns.args[0] == "ba") {
+	} else if (arg0 == "asc new recruits") {
+		let applyToNewRecruits = true;
+		ascendBuyAndTrain(ns, members, applyToNewRecruits);
+	} else if (arg0 == "ba") {
 		const seconds = ns.args[1] || 300;
 		while (true) {
 			ascendBuyAndTrain(ns, members);
 			await ns.sleep(1000 * seconds);
 		}
-	}
-	else if (ns.args[0] == "i") {
+	} else if (arg0 == "i") {
 		GetInfo(ns, members);
-	} else if (ns.args[0] == "br") {
+	} else if (arg0 == "member") {
+		PrintMembers(ns, members);
+	} else if (arg0 == "br") {
 		await BatchRecruit(ns);
 	} else {
 		ns.tprint("Argument is invalid. Nothing was done.");
@@ -97,6 +101,9 @@ function assignMembersToTask(ns, arg, members) {
 		// if (isSoldier && arg != "t") {
 		// 	continue;
 		// }
+		if (stayInTraining.includes(member.name))
+			continue;
+
 		total += setTaskGetBit(ns, arg, member.name);
 	}
 	ns.tprint(`${total} members are now working on ${gliKey(arg)}`);
@@ -109,6 +116,9 @@ function gliKey(arg) {
 	else if (arg == "m") {
 		return "Mug People";
 	}
+	else if (arg == "s") {
+		return "Strongarm Civilians";
+	}
 	else if (arg == "f") {
 		return "Traffick Illegal Arms";
 	}
@@ -120,6 +130,12 @@ function gliKey(arg) {
 	}
 	else if (arg == "t") {
 		return "Train Combat";
+	}
+	else if (arg == "tc") {
+		return "Train Charisma";
+	}
+	else if (arg == "th") {
+		return "Train Hacking";
 	}
 	else if (arg == "tw") {
 		return "Territory Warfare";
@@ -262,7 +278,7 @@ async function quickGetUnwanted(ns, members, arg2) {
 	assignMembersToTask(ns, arg2 ?? "t", members);
 }
 
-function ascendBuyAndTrain(ns, members) {
+function ascendBuyAndTrain(ns, members, onlyNewRecruits = false) {
 	const toBuyList = GetEquipmentCost(ns, members);
 	if (toBuyList.length < equips.length)
 		ns.tprint(`You can afford ${members.length} ${toBuyList[toBuyList.length - 1]}`);
@@ -272,7 +288,6 @@ function ascendBuyAndTrain(ns, members) {
 		return;
 	}
 
-	// const ascTxt = "gangcombat/asc.txt";
 	// let ascData = JSON.parse(ns.read("asc.txt"));
 
 	for (let i = 0; i < members.length; i++) {
@@ -280,22 +295,21 @@ function ascendBuyAndTrain(ns, members) {
 		const memberName = member.name;
 		//const memberInfo = ns.gang.getMemberInformation(member);
 		const ascResult = ns.gang.getAscensionResult(memberName);
-		let beforeAsc = [memberName, 
-		"hack", member.hack,
-		"str", member.str,
-		"def", member.def,
-		"dex", member.dex,
-		"agi", member.agi,
-		"cha", member.cha,
-		"upgrades", member.upgrades.length,
-		"money", member.moneyGain
+		const isPrintingAll = ns.args.includes("print-all");
+		let beforeAsc = [memberName,
+			"hack", member.hack,
+			"str", member.str,
+			"def", member.def,
+			"dex", member.dex,
+			"agi", member.agi,
+			"cha", member.cha,
+			"upgrades", member.upgrades.length,
+			"money", member.moneyGain
 		].join();
 		beforeAsc = beforeAsc.replaceAll(",", " ");
 
-		if (i == 0) {
-
-			// ns.tprint(ascResult);
-
+		if (onlyNewRecruits && !stayInTraining.includes(member.name)) {
+			continue;
 		}
 
 		if (!ascResult) {
@@ -313,8 +327,14 @@ function ascendBuyAndTrain(ns, members) {
 			ns.tprint(`Could not ascend ${memberName}`);
 			continue;
 		}
-		
-		if (i == members.length - 1)
+
+		if (isPrintingAll)
+			ns.tprint(beforeAsc);
+
+		if (!isPrintingAll && i == 0)
+			ns.tprint(beforeAsc);
+
+		if (!isPrintingAll && ns.args.includes("print-last") && i == members.length - 1)
 			ns.tprint(beforeAsc);
 		// member.ascDate = new Date();
 		// ascData.push(member);
@@ -342,17 +362,25 @@ function GetInfo(ns, members) {
 	}
 }
 
+function PrintMembers(ns, members) {
+	let output = "\r\n";
+	for (let i = 0; i < members.length; i++) {
+		const member = members[i];
+		output += "	" + NumLeft(i + 1, 2) + ". " + member.name + "\r\n";
+	}
+	ns.tprint(output);
+}
+
 async function BatchRecruit(ns) {
 	ns.tprint("WHILE LOOP started. You must manually kill this script.");
-	const ripFile = "/gangcombat/rip.txt";
-	let dead = JSON.parse(ns.read(ripFile));
+	let dead = JSON.parse(ns.read(ripTxt));
 	ns.tprint(`You are waiting for man${ZeroLeft(dead.length + 1, 2)}.`);
 	while (true) {
 
 		let newestMember = "man" + ZeroLeft(dead.length + 1, 2);
 		if (ns.gang.recruitMember(newestMember)) {
 			dead.push({ name: newestMember, date: new Date() });
-			ns.write(ripFile, JSON.stringify(dead), "w");
+			ns.write(ripTxt, JSON.stringify(dead), "w");
 			if (ns.gang.setMemberTask(newestMember, "Train Combat"))
 				ns.tprint(`${newestMember} (the new hire) is now training in combat.`);
 
@@ -360,3 +388,4 @@ async function BatchRecruit(ns) {
 		await ns.sleep(1000 * 10);
 	}
 }
+

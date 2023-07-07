@@ -45,6 +45,10 @@ function jtprint(ns, obj, showAll) {
 	});
 }
 
+// 0 = LessIsBetter
+// 1 = MoreIsBetter
+// 2 = idk
+
 const myDictionary = {
 	HackingLevelMultiplier: 1
 	, StrengthLevelMultiplier: 1
@@ -59,7 +63,7 @@ const myDictionary = {
 	, ServerWeakenRate: 1
 	, HomeComputerRamCost: 0
 	, PurchasedServerCost: 0
-	, PurchasedServerSoftcap: 2
+	, PurchasedServerSoftcap: 0
 	, PurchasedServerLimit: 2
 	, PurchasedServerMaxRam: 2
 	, CompanyWorkMoney: 1
@@ -88,10 +92,46 @@ const myDictionary = {
 	, CorporationDivisions: 1
 	, BladeburnerRank: 1
 	, BladeburnerSkillCost: 0
-	, GangSoftcap: 1
-	, GangUniqueAugs: 2
+	, GangSoftcap: 0
+	, GangUniqueAugs: 1
 	, DaedalusAugsRequirement: 2
 	, StaneksGiftPowerMultiplier: 1
 	, StaneksGiftExtraSize: 1
 	, WorldDaemonDifficulty: 0
 };
+
+// BN12 HARD.
+const BN12Dictionary = {
+	HackingLevelMultiplier: 0.25
+,StrengthLevelMultiplier: 0.7
+,DefenseLevelMultiplier: 0.7
+,DexterityLevelMultiplier: 0.7
+,AgilityLevelMultiplier: 0.7
+,ServerMaxMoney: 0.3375
+,ServerStartingMoney: 0.75
+,ServerStartingSecurity: 3
+,PurchasedServerSoftcap: 1.6
+,CompanyWorkMoney: 0.4
+,CrimeMoney: 0.4
+,HacknetNodeMoney: 0.4
+,ScriptHackMoney: 0.2
+,CodingContractMoney: 0.4
+,ClassGymExpGain: 0.5
+,CompanyWorkExpGain: 0.5
+,CrimeExpGain: 0.5
+,FactionWorkExpGain: 0.5
+,HackExpGain: 0.1
+,FactionWorkRepGain: 0.6
+,FourSigmaMarketDataCost: 10
+,FourSigmaMarketDataApiCost: 10
+,CorporationValuation: 0.001
+,CorporationSoftcap: 0.4
+,CorporationDivisions: 0.4
+,BladeburnerRank: 0.45
+,BladeburnerSkillCost: 2
+,GangSoftcap: 0.3
+,GangUniqueAugs: 0.1
+,DaedalusAugsRequirement: 30
+,StaneksGiftPowerMultiplier: 2
+,WorldDaemonDifficulty: 3
+}

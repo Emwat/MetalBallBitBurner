@@ -2,6 +2,7 @@
 import NumLeft from "./im/numLeft"
 import StrLeft from "./im/strLeft"
 import ToDollars from "./im/carat"
+import FormatTime from "./im/time"
 
 
 // stock.getOrders: You must either be in BitNode-8 or have Source-File 8 Level 3.
@@ -17,13 +18,16 @@ import ToDollars from "./im/carat"
 
 const portfolioTxt = "portfolio.txt";
 const profitsTxt = "profits.txt";
-const reqAbvForecast = 59;
-const reqBelForecast = reqAbvForecast - 3;
+const reqAbvForecast = 57;
+const reqBelForecast = reqAbvForecast - 2;
 
 export async function main(ns) {
 	// ns.tprint(ns.stock.getPosition("FNS")[0] > 0);
 	// ns.tprint(ns.stock.getPosition("CTYS")[0] > 0);
 	// ns.tprint(ns.stock.getPosition("CTYS"));
+	const arg0 = ns.args[0];
+	const arg1 = ns.args[1];
+
 	if (ns.args.length == 0) {
 		ns.tprint(`You have not entered any arguments. Acceptable arguments are 
 			b >> WHILE LOOP, BatchBuyAndSell
@@ -31,9 +35,12 @@ export async function main(ns) {
 			info [a] >> ask price
 			info [f] >> forecast
 			info [p] >> price
+			info [v] >> volatility
+			info [pcl] >> purchase cost long
+			info [pcs] >> purchase cost short
 			info [me] >> me
 			s >> SellsEverything
-			k >> Kills wse.js
+			k >> Kills wse.js b
 			l >> SeeLogs
 			x >> Reset files. Does not sell anything.
 		`);
@@ -61,33 +68,36 @@ export async function main(ns) {
 		let waitTime = 1000 * 7;
 		await BatchBuyAndSell(ns, waitTime);
 	}
-	else if (ns.args[0] == "i") {
+	else if (arg0 == "i" || arg0 == "info") {
 		if (false) { }
-		else if (ns.args[1] == "abc") symbols = symbols.sort();
-		else if (ns.args[1] == "a") symbols = symbols.sort((a, b) => ns.stock.getAskPrice(a) - ns.stock.getAskPrice(b));
-		else if (ns.args[1] == "f") symbols = symbols.sort((a, b) => ns.stock.getForecast(a) - ns.stock.getForecast(b));
-		else if (ns.args[1] == "p") symbols = symbols.sort((a, b) => ns.stock.getPrice(a) - ns.stock.getPrice(b));
-		else if (ns.args[1] == "v") symbols = symbols.sort((a, b) => ns.stock.getVolatility(a) - ns.stock.getVolatility(b));
-		else if (ns.args[1] == "pcl") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Long") - ns.stock.getPurchaseCost(b, 1, "Long"));
-		else if (ns.args[1] == "pcs") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Short") - ns.stock.getPurchaseCost(b, 1, "Short"));
-		else if (ns.args[1] == "me") symbols = symbols.filter(f => ns.stock.getPosition(f)[0] > 0);
+		else if (arg1 == "abc") symbols = symbols.sort();
+		else if (arg1 == "a") symbols = symbols.sort((a, b) => ns.stock.getAskPrice(a) - ns.stock.getAskPrice(b));
+		else if (arg1 == "f") symbols = symbols.sort((a, b) => ns.stock.getForecast(a) - ns.stock.getForecast(b));
+		else if (arg1 == "p") symbols = symbols.sort((a, b) => ns.stock.getPrice(a) - ns.stock.getPrice(b));
+		else if (arg1 == "v") symbols = symbols.sort((a, b) => ns.stock.getVolatility(a) - ns.stock.getVolatility(b));
+		else if (arg1 == "pcl") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Long") - ns.stock.getPurchaseCost(b, 1, "Long"));
+		else if (arg1 == "pcs") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Short") - ns.stock.getPurchaseCost(b, 1, "Short"));
+		else if (arg1 == "me") symbols = symbols.filter(f => ns.stock.getPosition(f)[0] > 0);
 
 		PrintInfo(ns, symbols);
 	}
-	else if (ns.args[0] == "k") {
+	else if (arg0 == "k") {
 		ns.kill("wse.js", "home", "b");
 	}
-	else if (ns.args[0] == "l") {
+	else if (arg0 == "l") {
 		SeeLogs(ns);
 	}
-	else if (ns.args[0] == "s") {
+	else if (arg0 == "s") {
 		SellEverything(ns);
 	}
-	else if (ns.args[0] == "xp") {
+	else if (arg0 == "xp") {
 		ns.write(portfolioTxt, "[]", "w");
 	}
-	else if (ns.args[0] == "xl") {
+	else if (arg0 == "xl") {
 		ns.write(profitsTxt, "[]", "w");
+	} else {
+		ns.tprint(`Invalid arguments. Nothing was done.`);
+
 	}
 
 	ns.tprint(`wse.js ${ns.args.concat()} has ended. ${new Date().toLocaleString()}`);
@@ -206,7 +216,7 @@ function SellThings(ns, mySymbols, myPortfolio, myLogs) {
 			if (sellPrice > 0) {
 				PrintActivity(ns, iData.myShares, iSym, sellPrice, iForecast, iData);
 				myPortfolio = myPortfolio.filter(f => f.iSym != iSym);
-				const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast };
+				const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast, date: new Date() };
 				myLogs.push(newRow);
 			}
 		}
@@ -237,11 +247,12 @@ function SellEverything(ns) {
 	for (let i = 0; i < mySymbols.length; i++) {
 		const iSym = mySymbols[i];
 		const iData = myPortfolio.filter(f => f.iSym == iSym)[0];
+		const iForecast = Math.floor(ns.stock.getForecast(iSym) * 100);
 		const sellPrice = ns.stock.sellStock(iSym, iData.myShares);
 		if (sellPrice > 0) {
-			PrintActivity(ns, iData.myShares, iSym, sellPrice, iData.iForecast, iData);
+			PrintActivity(ns, iData.myShares, iSym, sellPrice, iForecast, iData);
 			myPortfolio = myPortfolio.filter(f => f.iSym != iSym);
-			const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast: iData.iForecast };
+			const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast: iData.iForecast, date: new Date() };
 			myLogs.push(newRow);
 		}
 	}
@@ -251,7 +262,7 @@ function SellEverything(ns) {
 
 function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 	let hasBoughtSomething = false;
-	symbols = symbols.sort((a, b) => ns.stock.getForecast(b) - ns.stock.getForecast(a));
+	symbols = symbols.sort((a, b) => ns.stock.getVolatility(b) - ns.stock.getVolatility(a));
 	for (let i = 0; i < symbols.length; i++) {
 		let myMoney = getMoney(ns);
 		const iSym = symbols[i];
@@ -285,7 +296,7 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 			if (buyPrice > 0) {
 				hasBoughtSomething = true;
 				PrintActivity(ns, newShares, iSym, buyPrice, iForecast, null);
-				const newRow = { iSym, myShares: newShares, buyPrice, iForecast };
+				const newRow = { iSym, myShares: newShares, buyPrice, iForecast, date: new Date() };
 				myPortfolio.push(newRow);
 				myLogs.push(newRow);
 			}
@@ -390,30 +401,78 @@ function SeeLogs(ns) {
 		}
 	}
 
+	const a = 11; // main spacing
+	const b = 5; // percent spacing
+
+	ns.tprint("Symbol",
+			StrLeft("Shares", a),
+			StrLeft("Portfolio", a),
+			StrLeft("Vola", 4),
+			StrLeft("Fore", 4),
+			StrLeft("Profit", a),
+			StrLeft("", b),
+			StrLeft("Balance", a),
+			StrLeft("Time Bought", a),
+			""
+		);
+
 	for (let i = 0; i < totals.length; i++) {
 		let total = totals[i];
 		let gross = myPortfolio.filter(f => f.iSym == total.iSym);
+		let myShares = 0;
+		let timeBought = 0;
+		let grossBuyPrice = 0;
 		output += total.amount;
 
 		if (gross.length == 0) {
 			gross = "";
 		} else {
 			gross = gross[0];
+			myShares = gross.myShares;
+			timeBought = gross.date;
+			timeBought = new Date() - new Date(timeBought);
+			timeBought = Math.floor(timeBought/1000);
+			timeBought = FormatTime(timeBought);
+			timeBought = timeBought.replace("0 days ", "")
+			if (gross.buyPrice)
+				grossBuyPrice = gross.myShares * gross.buyPrice;
 			gross = gross.myShares * ns.stock.getPrice(gross.iSym);
 			grossOutput += gross;
 		}
 
+
 		ns.tprint(" " +
-			StrLeft(total.iSym, 5) +
-			StrLeft(ToDollars(total.amount), 12) +
-			StrLeft(ToDollars(gross), 12),
-			StrLeft(ToDollars(total.amount + gross), 12)
+			StrLeft(total.iSym, 5), // Symbol
+			myShares ? NumLeft(myShares, a) : StrLeft("", a), // Shares
+			StrLeft(ToDollars(total.amount), a), // Portfolio
+			myShares ? NumLeft(Math.floor(ns.stock.getVolatility(total.iSym) * 1000), 4) : StrLeft("", 4), // Vola
+			myShares ? NumLeft(Math.floor(ns.stock.getForecast(total.iSym) * 100), 4) : StrLeft("", 4), // Forecast
+			gross ? StrLeft(ToDollars(gross), a) : StrLeft("", a), // Profit
+			grossBuyPrice ? NumLeft(gross/grossBuyPrice * 100 - 100, b - 1) + "%" : StrLeft("", b), // Profit %
+			StrLeft(ToDollars(total.amount + gross), a), // Balance
+			//gross ? StrLeft(FormatTime(new Date() - timeBought), a) : "", // Time
+			StrLeft(gross ? timeBought : "", a), // Time
+			""
 		);
 	}
-	ns.tprint("Total:" +
-			StrLeft(ToDollars(output), 12) +
-			StrLeft(ToDollars(grossOutput), 12),
-			StrLeft(ToDollars(output + grossOutput), 12)
+	ns.tprint("Total:",
+			StrLeft("", a),
+			StrLeft(ToDollars(output), a),
+			StrLeft("", 4),
+			StrLeft("", 4),
+			StrLeft(ToDollars(grossOutput), a),
+			StrLeft("", b),
+			StrLeft(ToDollars(output + grossOutput), a),
+			""
 		);
 
+}
+
+function ForecastSymbol(forecast){
+	if (forecast <= 29) return "---"
+	if (forecast <= 32) return "--"
+	if (forecast <= 45) return "-"
+	if (forecast <= 59) return "+"
+	if (forecast <= 64) return "++"
+	return "+++"
 }

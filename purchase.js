@@ -1,6 +1,7 @@
 import AlphExec from './im/exec' //ExecutiveFunction(ns, myScript, target)
 import GetTarget from './im/target'
 import ZeroLeft from './im/zeroLeft'
+import ToDollars from './im/carat'
 
 /** @param {NS} ns */
 
@@ -8,24 +9,54 @@ import ZeroLeft from './im/zeroLeft'
 
 export async function main(ns) {
 	const arg = ns.args[0];
-	// if (!arg) {
-	// 	ns.tprint("No args found. Available arguments are " +
-	// 		"\r\n i - FindIterator" +
-	// 		"\r\n p - Make Purchases" +
-	// 		"\r\n\r\nEnding program.")
-	// 	return;
-	// }
 
-	let ram = 8;
 
-	if (arg == "i") {
+	let ram = ns.args[1] || 8;
+
+	if (!arg) {
+		ns.tprint(`"No args found. Available arguments are " +
+	c [ram] - Cost
+	i - FindIterator
+	p [ram]- Make Purchases
+	
+	Ending program."`)
+		return;
+	} else if (arg == "c" || arg == "cost") {
+		let serverLimit = ns.getPurchasedServerLimit();
+		ns.tprint(`With (${ram}) ram: ` +
+			`  One Server: ${ToDollars(ns.getPurchasedServerCost(ram))} ` +
+			`  ${serverLimit} Servers: ${ToDollars(ns.getPurchasedServerCost(ram) * serverLimit)}`);
+	}
+	else if (arg == "i") {
 		ns.tprint(FindIterator(ns));
 	} else if (arg == "p") {
 		await MakePurchases(ns, ram);
+	} else if (arg == "o") {
+		let i = FindIterator(ns);
+		let hostname = "pserv-" + ZeroLeft(i, 2);
+		let newHostname = ns.purchaseServer(hostname, ram);
+		if (newHostname != "") {
+			ns.tprint(`Purchased server ${newHostname}.`)
+		}
+	} else if (arg == "om") {
+		let x = 21;
+		while (x > 0) {
+			let attemptRam = 2 ** x;
+			let i = FindIterator(ns);
+			let hostname = "pserv-" + ZeroLeft(i, 2);
+			let newHostname = ns.purchaseServer(hostname, attemptRam);
+			if (newHostname != "") {
+				ns.tprint(`Purchased server ${newHostname} with ${attemptRam} ram. (2 ** ${x})`)
+				break;
+			}
+			x--;
+		}
+
 	} else {
-		await MakePurchases(ns, ram);
+		ns.tprint("no arguments found.")
 	}
 
+	ns.tprint(`purchase.js ${ns.args.concat()} ended.`);
 }
 
 function FindIterator(ns) {

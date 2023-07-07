@@ -23,8 +23,6 @@ function GetTarget(ns) {
 	let singleTarget = { hostname: "null", moneyMax:0};
 	servers = servers.map(s => ns.getServer(s));
 	//servers = servers.sort((a, b) => GetValue(b) - GetValue(a) ? a : b);
-	if (myHackingLevel < 100)
-		return "n00dles";
 
 	for (var i = 0; i < servers.length; i++) {
 		let server = servers[i];

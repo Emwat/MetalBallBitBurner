@@ -1,11 +1,31 @@
 /** @param {NS} ns */
 const numSleeves = 6; // ns.getNumSleeves();
-export async function main(ns) {
-	const arg0 = ns.args[0];
-	const arg1 = ns.args[1];
-	const toAllSleeves = ns.args[1] == "max";
 
-	if (!arg0) {
+const crimeTypes = [
+	"Shoplift"
+	, "Rob Store"
+	, "Mug"
+	, "Larceny"
+	, "Deal Drugs"
+	, "Bond Forgery"
+	, "Traffick Arms"
+	, "Homicide"
+	, "Grand Theft Auto"
+	, "Kidnap"
+	, "Assassination"
+];
+
+const classes = ["Computer Science", "Data Structures", "Networks", "Algorithms", "Management", "Leadership"]
+
+const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ishima"];
+
+export async function main(ns) {
+	// const argRabbit = ns.args[0];
+	const argAction = ns.args[0];
+	const argParams = ns.args[1];
+	const toAllSleeves = true; // argRabbit == "max";
+
+	if (!argAction) {
 		ns.tprint(emptyArgsError());
 		return;
 	}
@@ -17,86 +37,92 @@ export async function main(ns) {
 	}
 
 	if (false) { }
-	else if (arg0 == "t") {
+	else if (argAction == "t") {
 		let myFunc = function (x) { ns.tprint(ns.sleeve.getTask(x)) };
 		if (toAllSleeves) loop(ns, myFunc);
-		else ns.sleeve.getTask(arg1);
+		else ns.sleeve.getTask(argRabbit);
 	}
-	else if (arg0 == "c") {
-		// setToCommitCrime(sleeveNumber, crimeType) 	Set a sleeve to commit crime.
-
+	else if (argAction == "c") {
+		let crimeType = crimeTypes.filter(f => f[0] == argParams.toUpperCase())[0];
+		if (toAllSleeves) loop(ns, ns.sleeve.setToCommitCrime, [crimeType]);
+		else ns.sleeve.setToCommitCrime(argRabbit, crimeType);
 	}
-	else if (arg0 == "j") {
+	else if (argAction == "j") {
 		// setToCompanyWork(sleeveNumber, companyName) 	Set a sleeve to work for a company.
 
 	}
-	else if (arg0 == "r") {
+	else if (argAction == "r") {
 		// travel(sleeveNumber, city) 	Make a sleeve travel to another city.
-		let myCity = ns.args[2].ToUpperCase();
-		const cities = [
-			"Sector-12","Aevum","Volhaven","Chongqing","New Tokyo","Ishima"
-		];
+		let myCity = argParams.ToUpperCase();
+
 		myCity = cities.filter(f => f[0] == myCity)[0];
 		if (toAllSleeves) loop(ns, ns.sleeve.travel, [myCity]);
-		else ns.sleeve.travel(arg1, myCity);
+		else ns.sleeve.travel(argRabbit, myCity);
 
 	}
-	else if (arg0 == "f") {
+	else if (argAction == "f") {
 		// setToFactionWork(sleeveNumber, factionName, factionWorkType) 	Set a sleeve to work for a faction.
 
 	}
-	else if (arg0 == "g") {
+	else if (argAction == "g") {
 		// setToGymWorkout(sleeveNumber, gymName, stat) 	Set a sleeve to workout at the gym.
 
 	}
-	else if (arg0 == "s") {
+	else if (argAction == "s") {
 		if (toAllSleeves) loop(ns.sleeve.setToShockRecovery);
-		else ns.sleeve.setToShockRecovery(arg1);
+		else ns.sleeve.setToShockRecovery(argRabbit);
 	}
-	// else if (arg0 == "sy") {
+	// else if (argAction == "sy") {
 	// 	if (toAllSleeves) loop(ns.sleeve.setToSynchronize);
-	// 	else ns.sleeve.setToSynchronize(arg1);
+	// 	else ns.sleeve.setToSynchronize(argRabbit);
 	// }
-	else if (arg0 == "u") {
+	else if (argAction == "u") {
 		// UniversityClassType":{"computerScience":"Computer Science","dataStructures":"Data Structures",
 		// "networks":"Networks","algorithms":"Algorithms","management":"Management","leadership":"Leadership"}}}
 		// setToUniversityCourse(sleeveNumber, university, className) 	
 		// Set a sleeve to take a class at a university.
 		const universities = [
-				"Summit University"
+			"Summit University"
 		];
-		const classes = [
-			"Computer Science"
-			, "Data Structures"
-			, "Networks"
-			, "Algorithms"
-			, "Management"
-			, "Leadership"
-		]
+
 
 		if (toAllSleeves) loop(ns.sleeve.setToUniversityCourse);
-		else ns.sleeve.setToUniversityCourse(arg1);
+		else ns.sleeve.setToUniversityCourse(argRabbit);
 	} else {
-		ns.tprint(`${arg0} is an invalid argument.`)
+		ns.tprint(`${argAction} is an invalid argument.`)
 	}
 	ns.tprint(`sli.js ${ns.args.concat()} ended. ${new Date().toLocaleString()}`)
 }
 
+	// "Shoplift"
+	// , "Mug"
+	// , "Larceny"
+	// , "Deal Drugs"
+	// , "Bond Forgery"
+	// , "Traffick Arms"
+	// , "Homicide"
+	// , "Grand Theft Auto"
+	// , "Kidnap"
+	// , "Assassination"
+
 function emptyArgsError() {
 	return `You haven't entered any arguments. Valid arguments are
 	
-	t >> getTask
+	argAction:
 
-	c >> commit crime
-	f >> faction
-	WIP >> g >> gym
-	WIP >> j >> job
-	r [city] >> travel [s/a/v/c/n/i]
-	s >> shock recovery
-	u >> university
+		t >> getTask
+
+		c [crime: s/m/l/h... ]>> commit crime
+		f >> faction
+		WIP >> g >> gym
+		WIP >> j >> job
+		r [city: s/a/v/c/n/i] >> travel 
+		s >> shock recovery
+		u >> university
 	
-
-	Make sure to enter the second argument as \"max\" or a number to specify the sleeve.
+	argRabbit: 
+		max
+		1/2/3/4/5/6
 	`;
 }
 

@@ -11,13 +11,12 @@ let myHackingLevel;
 /** @param {NS} ns */
 export async function main(ns) {
 	myHackingLevel = ns.getHackingLevel();
-	let threads = 200; // home.maxRam / bundledRam;
+	let threads = 1000; // home.maxRam / bundledRam;
 	let loopThreads = 1;
 	if (ns.args[0]) {
 		loopThreads = ns.args[0];
 	}
-	if (ns.args[1])
-	{
+	if (ns.args[1]) {
 		threads = ns.args[1];
 	}
 	const hostnames = GetServers(ns).sort();
@@ -40,14 +39,19 @@ export async function main(ns) {
 
 function HQHelper(ns, servers, threads) {
 
-	const richServers = [
-		ns.getServer("ecorp"),
-		ns.getServer("megacorp"),
-
-		]
+	if (ns.args[2]) {
+		servers = [ns.getServer(ns.args[2])];
+	}
+	// servers = [
+	// 	// ns.getServer("n00dles"),
+	// 	// ns.getServer("phantasy"),
+	// 	// ns.getServer("rho-construction")
+	// 	// ns.getServer("ecorp"),
+	// 	// ns.getServer("megacorp"),
+	// 	];
 	let output = 0;
-	for (let i = 0; i < richServers.length; i++) {
-		const server = richServers[i];
+	for (let i = 0; i < servers.length; i++) {
+		const server = servers[i];
 		let isTooStrong = server.requiredHackingSkill > myHackingLevel;
 		let lessThreads = threads;
 		let capAtSilverHelix = 10 ** 9;
@@ -63,30 +67,46 @@ function HQHelper(ns, servers, threads) {
 			continue;
 		}
 
-		if (server.moneyMax < capAtSilverHelix) {
-			lessThreads = Math.floor(lessThreads * 0.05);
+		if (server.minDifficulty <= 90) {
 			if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
-
-		} else if (server.moneyMax < capAtSyscore) {
-			lessThreads = Math.floor(lessThreads * 0.1);
-
-			if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
-			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
-			// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
-			// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
-		} else if (server.moneyMax < capAtTaiyang) {
-			lessThreads = Math.floor(lessThreads * 0.2);
-
-			if (AlphExec(ns, "home", server.hostname, lessThreads * 2) > 0) { t++ }
-			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
-			// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
-			// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.3), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", "home", Math.floor(1000), server.hostname) > 0) { t++ }
+			if (ns.exec("hack.js", "home", Math.floor(lessThreads * 0.1), server.hostname) > 0) { t++ }
 		} else {
-			if (AlphExec(ns, "home", server.hostname, lessThreads * 2) > 0) { t++ }
-			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
-			// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
-			// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+			continue;
+			if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
+		  if (ns.exec("hack.js", "home", Math.floor(lessThreads * 0.2), server.hostname) > 0) { t++ }
 		}
+
+		// if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
+		// if (ns.exec("hack.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
+
+		// if (server.moneyMax < capAtSilverHelix) {
+		// 	lessThreads = Math.floor(lessThreads * 0.05);
+		// 	if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
+
+		// } else if (server.moneyMax < capAtSyscore) {
+		// 	lessThreads = Math.floor(lessThreads * 0.1);
+
+		// 	if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
+		// 	if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
+		// 	// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		// 	// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		// } else if (server.moneyMax < capAtTaiyang) {
+		// 	lessThreads = Math.floor(lessThreads * 0.2);
+
+		// 	if (AlphExec(ns, "home", server.hostname, lessThreads * 2) > 0) { t++ }
+		// 	if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
+		// 	// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		// 	// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		// } else {
+		// 	if (AlphExec(ns, "home", server.hostname, lessThreads * 2) > 0) { t++ }
+		// 	if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.5), server.hostname) > 0) { t++ }
+		// 	// if (ns.exec("grow.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		// 	// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
+		// }
 
 
 		output += lessThreads * t;

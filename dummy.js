@@ -161,7 +161,7 @@ function HackSelfEverywhere(ns) {
 		if (server.maxRam <= 0) {
 			// if (server.moneyMax > 0)
 			// 	serversWithMoney.push(server.hostname);
-			ns.tprint(`${d} Skipped b/c maxRam = 0`);
+			//ns.tprint(`${d} Skipped b/c maxRam = 0`);
 			continue;
 		}
 
