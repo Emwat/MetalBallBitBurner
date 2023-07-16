@@ -17,6 +17,8 @@ import GetServers from './im/servers'
 import GetMostAffordableNode from './im/nodeCosts'
 import Get from "get.js"
 
+import tickers from "./static/symbols"
+import augs from "./static/augs"
 // carat.js
 // exec.js
 // files.js
@@ -33,6 +35,14 @@ import Get from "get.js"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
+	jtprint(ns, ns.formulas.gang);
+	// ns.tprint(StrRight("test", 50) + "x");
+	// ns.tprint(augs);
+	// jtprint(ns, ns.sleeve.getSleeve(0).skills);
+	// ftprint(ns, GetTargets(ns))
+	// ns.tprint(ns.hacknet.getHashUpgradeLevel("Improve Studying"))
+	// ns.tprint(JSON.stringify(GetTickersAndOrganizations(ns)));
+	// ftprint(ns, ns.sleeve.getSleevePurchasableAugs(0));
 
 	// jtprint(ns, ns.stanek.fragmentDefinitions()[0])
 
@@ -56,7 +66,7 @@ export async function main(ns) {
 	// members = members.map(m => ns.gang.getMemberInformation(m));
 	// jtprint(ns, members[0]);
 	// jtprint(ns, ns.getMoneySources().sinceInstall);
-	jtprint(ns, ns.getServer("catalyst"));
+	// jtprint(ns, ns.getServer("catalyst"));
 	// AlphExec(ns, "home", "n00dles", 1);
 	// ns.tprint(arguments); idk wtf this is
 	// ns.tprint("Your Ports: " + GetProgramLevel(ns));
@@ -109,7 +119,14 @@ export async function main(ns) {
 	// let lolram2 = await Get(ns, ["lolram2", "getScriptRam", "test.js", "home", -2, -3]);
 	// ns.tprint(lolram2)
 	// ns.tprint("end lolram");
-	// jtprint(ns, ns);
+	// jtprint(ns, ns.enums.CityName);
+	// jtprint(ns, ns.enums.CrimeType);
+	// jtprint(ns, ns.enums.FactionWorkType);
+	// jtprint(ns, ns.enums.GymType);
+	// jtprint(ns, ns.enums.LocationName);
+	// jtprint(ns, ns.enums.JobName);
+	// jtprint(ns, ns.enums.ToastVariant);
+	// jtprint(ns, ns.enums.UniversityClassType);
 	// jtprint(ns, ns.heart);
 	// jtprint(ns, ns.rainbow);
 	// jtprint(ns, ns.rainbow("bitburner"));
@@ -123,6 +140,20 @@ export async function main(ns) {
 	// await testPrompt(ns);
 
 	ns.tprint("end test.");
+}
+
+function GetTickersAndOrganizations(ns){
+	let output = [];
+	let tickers = ns.stock.getSymbols().map(m => [m, ns.stock.getOrganization(m)]);
+	ns.tprint(tickers[0])
+	const servers = GetServers(ns).map(m => ns.getServer(m));
+	for (let i = 0; i < servers.length; i++){
+		let server = servers[i];
+		let ticker = tickers.find(f => f[1] == server.organizationName);
+		if(ticker)
+			output.push({hostname: server.hostname, ticker: ticker[0], organizationName: server.organizationName});
+	}
+	return output;
 }
 
 function terminalWidth() {
@@ -172,4 +203,26 @@ function ftprint(ns, obj) {
 		output += o + "\r\n	";
 	}
 	ns.tprint(output);
+}
+
+function FixAugs(){
+	let a = [];
+	//ns.tprint( typeof augs); return;
+	// jtprint(ns, augs[0]);return;
+	// ns.tprint(augs.length); return;
+	
+	for(let i = 0; i < augs.length; i++){
+		let aug = augs[i];
+		let bonuses = {};
+		if(aug.bonuses)
+		for(let j = 0; j < aug.bonuses.length; j++){
+			let obj = aug.bonuses[j];
+			let k = Object.keys(obj)[0];
+			let v = Object.values(obj)[0];
+			bonuses[k] = v;
+		}
+		a.push({...aug, bonuses});
+
+	}
+	ns.tprint(JSON.stringify(a));
 }

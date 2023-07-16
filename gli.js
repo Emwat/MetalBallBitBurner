@@ -18,9 +18,13 @@ export async function main(ns) {
 			k >> kill all gli.js scripts
 
 			m >> Mug People
+			s >> strongarm civilians
+			f >> traffick illegal arms
 			h >> human trafficking
 			v >> vigilante justice
 			t >> train combat
+			th >> train hacking
+			tc >> train charisma
 			q >> quick vigilante justice and then train
 			tw >> Territorial Warfare
 
@@ -128,14 +132,14 @@ function gliKey(arg) {
 	else if (arg == "v") {
 		return "Vigilante Justice";
 	}
+	else if (arg == "th") {
+		return "Train Hacking";
+	}
 	else if (arg == "t") {
 		return "Train Combat";
 	}
 	else if (arg == "tc") {
 		return "Train Charisma";
-	}
-	else if (arg == "th") {
-		return "Train Hacking";
 	}
 	else if (arg == "tw") {
 		return "Territory Warfare";
@@ -288,68 +292,72 @@ function ascendBuyAndTrain(ns, members, onlyNewRecruits = false) {
 		return;
 	}
 
+	ns.exec("helperMakeNotesGli.js", "home", 1);
+
 	// let ascData = JSON.parse(ns.read("asc.txt"));
 
 	for (let i = 0; i < members.length; i++) {
-		const member = members[i];
-		const memberName = member.name;
-		//const memberInfo = ns.gang.getMemberInformation(member);
-		const ascResult = ns.gang.getAscensionResult(memberName);
-		const isPrintingAll = ns.args.includes("print-all");
-		let beforeAsc = [memberName,
-			"hack", member.hack,
-			"str", member.str,
-			"def", member.def,
-			"dex", member.dex,
-			"agi", member.agi,
-			"cha", member.cha,
-			"upgrades", member.upgrades.length,
-			"money", member.moneyGain
-		].join();
-		beforeAsc = beforeAsc.replaceAll(",", " ");
-
-		if (onlyNewRecruits && !stayInTraining.includes(member.name)) {
-			continue;
-		}
-
-		if (!ascResult) {
-			ns.gang.setMemberTask(memberName, "Train Combat");
-			continue;
-		}
-
-		// if (ascResult.str < 1.1) {
-		// 	ns.gang.setMemberTask(memberName, "Train Combat");
-		// 	continue;
-		// }
-
-		let ascensionInfo = ns.gang.ascendMember(memberName);
-		if (ascensionInfo == void 0) {
-			ns.tprint(`Could not ascend ${memberName}`);
-			continue;
-		}
-
-		if (isPrintingAll)
-			ns.tprint(beforeAsc);
-
-		if (!isPrintingAll && i == 0)
-			ns.tprint(beforeAsc);
-
-		if (!isPrintingAll && ns.args.includes("print-last") && i == members.length - 1)
-			ns.tprint(beforeAsc);
-		// member.ascDate = new Date();
-		// ascData.push(member);
-		WeaponizeMemberHelper(ns, toBuyList, memberName);
-
-		if (ns.gang.setMemberTask(memberName, "Train Combat")) {
-			//ns.tprint(`${memberName} is now combat training.`)
-		}
-		else
-			ns.tprint(`${memberName} is error.`)
-
-
+		AscendBuyAndTrainHelper(ns, i, members, toBuyList, onlyNewRecruits);
 	}
 	// ns.write(ascTxt, JSON.stringify(ascData), "w");
 
+}
+
+function AscendBuyAndTrainHelper(ns, i, members, toBuyList, onlyNewRecruits) {
+	const member = members[i];
+	const memberName = member.name;
+	//const memberInfo = ns.gang.getMemberInformation(member);
+	const ascResult = ns.gang.getAscensionResult(memberName);
+	const isPrintingAll = ns.args.includes("print-all");
+	let beforeAsc = [memberName,
+		"hack", member["hack"],
+		"str", member.str,
+		"def", member.def,
+		"dex", member.dex,
+		"agi", member.agi,
+		"cha", member.cha,
+		"upgrades", member.upgrades.length,
+		"money", member.moneyGain
+	].join();
+	beforeAsc = beforeAsc.replaceAll(",", " ");
+
+	if (onlyNewRecruits && !stayInTraining.includes(member.name)) {
+		return;
+	}
+
+	if (!ascResult) {
+		ns.gang.setMemberTask(memberName, "Train Combat");
+		return;
+	}
+
+	// if (ascResult.str < 1.1) {
+	// 	ns.gang.setMemberTask(memberName, "Train Combat");
+	// 	continue;
+	// }
+
+	let ascensionInfo = ns.gang.ascendMember(memberName);
+	if (ascensionInfo == void 0) {
+		ns.tprint(`Could not ascend ${memberName}`);
+		return;
+	}
+
+	if (isPrintingAll)
+		ns.tprint(beforeAsc);
+
+	if (!isPrintingAll && i == 0)
+		ns.tprint(beforeAsc);
+
+	if (!isPrintingAll && ns.args.includes("print-last") && i == members.length - 1)
+		ns.tprint(beforeAsc);
+	// member.ascDate = new Date();
+	// ascData.push(member);
+	WeaponizeMemberHelper(ns, toBuyList, memberName);
+
+	if (ns.gang.setMemberTask(memberName, "Train Combat")) {
+		//ns.tprint(`${memberName} is now combat training.`)
+	}
+	else
+		ns.tprint(`${memberName} is error.`)
 }
 
 function GetInfo(ns, members) {

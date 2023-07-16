@@ -9,7 +9,7 @@ export async function main(ns) {
 	let roomForThreads = ns.args.includes("-max") ? 0 : 10;
 	const homeServer = ns.getServer("home");
 	const homeRam = homeServer.maxRam - homeServer.ramUsed;
-	if (homeServer.maxRam <= 64)
+	if (homeServer.maxRam <= 128)
 		roomForThreads = 0;
 
 	const alphMaxThreads = Math.floor(homeRam / alphjsRam) - roomForThreads;
@@ -35,18 +35,18 @@ export async function main(ns) {
 		let topTargets = TopTargets(ns);
 		let maxThreads = Math.floor(homeRam / growjsRam);
 		ns.tprint(`There are ${topTargets.length} targets.`)
-		if (maxThreads > 10) {
+		if (maxThreads > 20) {
 			// ns.tprint(``);
 			maxThreads = maxThreads - Math.floor(growjsRam * 3);
 		}
 
 		if (topTargets.length > 2) {
 			topTargets = topTargets.splice(0, Math.floor(topTargets.length / 2))
+			maxThreads = Math.floor((maxThreads / topTargets.length));
 			ns.tprint(`MaxThreads: ${maxThreads} ` +
 				`TopTargets Length: ${topTargets.length} ` +
 				`MaxThreads/TopTargets: ${Math.floor(maxThreads / topTargets.length)}`);
 
-			maxThreads = Math.floor((maxThreads / topTargets.length) - (30 - topTargets.length));
 		}
 
 		// maxThreads = Math.floor(maxThreads / 2);
@@ -128,9 +128,8 @@ function Helper(ns, myScript, scriptTarget, threads) {
 }
 
 function HelperExec(ns, myScript, hostServer, scriptTarget, threads) {
-	if (threads == 0) {
+	if (threads <= 0) {
 		ns.tprint(`Fail. HelperExec(${myScript}, ${hostServer}, ${scriptTarget}, ${threads})`);
-		ns.tprint(`threads ${threads} is zero.`)
 		return;
 	}
 

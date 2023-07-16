@@ -39,7 +39,7 @@ export async function main(ns) {
 		UpgradePServHax(ns, ns.args[1]);
 	}
 	else if (arg0 == "om") {
-		ns.tail();
+		//ns.tail();
 		UpgradePServOM(ns);
 	} else if (arg0 == "calc") {
 		PrintPServCalc(ns);

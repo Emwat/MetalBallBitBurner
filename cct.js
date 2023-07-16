@@ -1,6 +1,8 @@
 /** @param {NS} ns */
 import GetAllServers from './im/servers'
 import NumLeft from "./im/numLeft"
+import StrLeft from "./im/strLeft"
+import StrRight from "./im/strRight"
 
 
 export async function main(ns) {
@@ -103,12 +105,9 @@ const contractDictionary = [
 
 ];
 
-function FakeTreasure(ns) {
-}
-
 function TakeTreasures(ns) {
 	const servers = GetAllServers(ns);
-
+	let skippedTreasures = 0;
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
 		if (server == "home") continue;
@@ -124,18 +123,20 @@ function TakeTreasures(ns) {
 			// let description = ns.codingcontract.getDescription(file, server);
 			// ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
 
-			let program = contractDictionary.filter(f => f[0] == contractType)[0][1];
+			let program = contractDictionary.find(f => f[0] == contractType)[1];
 			// ns.tprint(`${server} ${file} ${contractType}`);
 
-			if (program == null)
+			if (program == null) {
+				skippedTreasures++;
 				continue;
+			}
 
 			// ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
 
 			let output = program(ns, data);
 			const reward = ns.codingcontract.attempt(output, file, server);
 			if (reward) {
-				ns.tprint(`${contractType} ***** Reward: ${reward}`)
+				ns.tprint(`${StrRight(contractType, 43)} Reward: ${reward}`)
 			} else {
 				ns.tprint(`Failed contract: 
 				Server: ${server} 
@@ -146,6 +147,8 @@ function TakeTreasures(ns) {
 			}
 		}
 	}
+	if (skippedTreasures)
+		ns.tprint(`You have skipped ${skippedTreasures} contracts.`);
 }
 
 // Algorithmic Stock Trader I
