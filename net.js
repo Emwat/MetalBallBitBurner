@@ -23,15 +23,14 @@ export async function main(ns) {
 	let count = 8;
 	function GetMaxAmount(arg, goAllTheWay) {
 		const theMaxLevel = 200;
-    const theMaxRam = 64;
-    const theMaxCores = 16;
+		const theMaxRam = 64;
+		const theMaxCores = 16;
 
 		let maxLevel = 200;
 		let maxRam = 16;
 		let maxCores = 8;
 
-		if (goAllTheWay)
-		{
+		if (goAllTheWay) {
 			maxLevel = theMaxLevel;
 			maxRam = theMaxRam;
 			maxCores = theMaxCores;
@@ -61,8 +60,7 @@ export async function main(ns) {
 
 	if (arg == "max") {
 		const i = GetMostAffordableNode(ns);
-		if (i == undefined)
-		{
+		if (i == undefined) {
 			ns.tprint(`MostAffordableNode is undefined.`)
 			ns.tprint(`net.js ended.`)
 			return;
@@ -76,13 +74,19 @@ export async function main(ns) {
 		return;
 	}
 
+
+
+
 	let ownedNodes = ns.hacknet.numNodes();
-	if (ownedNodes < count)
+	if (arg == "o" || arg == "owned") {
+		count = ownedNodes;
+	}
+	else if (ownedNodes < count)
 		await PurchaseNodes(ns, count);
 	else
 		count = ownedNodes;
 
-	if (!arg) {
+	if (!isValidAction(arg)) {
 		await UpgradeNodes(ns, count, "l", 100);
 	} else {
 		await UpgradeNodes(ns, count, arg, number ?? GetMaxAmount(arg));
@@ -107,15 +111,19 @@ function myMoney(ns) {
 	return ns.getServerMoneyAvailable("home");
 }
 
+function isValidAction(action) {
+	return action == "l" || action == "r" || action == "c";
+}
+
 async function PurchaseNodes(ns, numberOfNodes) {
 	ns.tprint(`Purchasing ${numberOfNodes} nodes...`)
 	let res = null;
-	
+
 	while (ns.hacknet.numNodes() < numberOfNodes) {
 		res = ns.hacknet.purchaseNode();
-		if (res != -1){
-		 ns.print("Purchased hacknet Node with index " + res);
-	}
+		if (res != -1) {
+			ns.print("Purchased hacknet Node with index " + res);
+		}
 		await ns.sleep(1000);
 	};
 
@@ -133,7 +141,7 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 		return allNodesCurrentLevel < allNodesMaxLevel;
 	}
 	function IsStillUpgrading(levels, numberOfNodes, maxLevel, arg) {
-		let remainingLevels = levels.filter(f => {return f < maxLevel});
+		let remainingLevels = levels.filter(f => { return f < maxLevel });
 		let allNodesMaxLevel = remainingLevels.length * maxLevel;
 		let allNodesCurrentLevel = remainingLevels.reduce((a, b) => a + b, 0);
 

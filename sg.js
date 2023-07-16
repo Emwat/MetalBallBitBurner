@@ -1,6 +1,11 @@
 /** @param {NS} ns */
+import StrLeft from './im/strLeft'
+import StrRight from './im/strRight'
 
-const fragTxt = "frag.txt";
+const fragTxt = "frag.txt"; // Contains all saved fragment batches
+const lastGiftTxt = "forStanek1.txt"; // Stores the last saved fragment batch
+
+let maxStanekSize = 5;
 
 export async function main(ns) {
 
@@ -21,30 +26,17 @@ export async function main(ns) {
 	else if (arg0 == "a") {
 		// ns.tprint(ns.stanek.acceptGift());
 	}
-	else if (arg0 == "update") {
-		let fragData = ns.read(fragTxt);
-		fragData = !fragData ? [] : JSON.parse(fragData);
-		let s = 0;
-		for (let i = 0; i < savedFrags.length; i++) {
-			const savedFrag = savedFrags[i];
-			const existing = fragData.filter(f => f.name == savedFrag.name);
-			if (existing.length > 0) {
-				ns.tprint(`${savedFrag.name} already exists. Nothing has been done there.`)
-				continue;
-			}
-			fragData.push(savedFrag);
-			s++;
-		}
-		ns.tprint(`Saved ${s} fragData.`);
-		ns.write(fragTxt, JSON.stringify(fragData), "w");
-	}
 	else if (arg0 == "frag") {
 		let fragData = ns.read(fragTxt);
 		fragData = !fragData ? [] : JSON.parse(fragData);
+		let output = "";
 		for (let i = 0; i < fragData.length; i++) {
 			const fragD = fragData[i];
-			ns.tprint(fragD.name);
+			output += ("\r\n    " + StrRight(fragD.name, 20) +
+				" " + StrRight((fragD.width ? fragD.width + " x " + fragD.height : ""), 7) +
+				" " + (fragD.date != "" ? new Date(fragD.date).toLocaleString() : ""));
 		}
+		ns.tprint(output);
 	}
 	else if (arg0 == "g") {
 		const [ignoreMe, fragName] = ns.args;
@@ -54,7 +46,9 @@ export async function main(ns) {
 			return;
 		}
 		let myNewFrag = GetFrags(ns);
-		myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag };
+		let width = ns.stanek.giftWidth();
+		let height = ns.stanek.giftHeight();
+		myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag, width, height };
 		let fragData = ns.read(fragTxt);
 		fragData = !fragData ? [] : JSON.parse(fragData);
 		if (fragData.filter(f => f.name == fragName).length > 0) {
@@ -82,30 +76,34 @@ export async function main(ns) {
 		fragData = fragData.filter(f => f.name == fragName)[0];
 		ns.stanek.clearGift();
 		InitFrags(ns, fragData.frag);
+		ns.write(lastGiftTxt, JSON.stringify(fragData.frag), "w");
 		ns.exec("chrg.js", "home", 1, JSON.stringify(fragData.frag));
-	}
-	else if (arg0 == "b") {
-		let [ignoreMe, threads, fragName] = ns.args;
-		if (!fragName) {
-			ns.tprint("You forgot an argument: NAME")
-			ns.tprint("sg.js end.")
-			return;
-		}
-		const loadedFrag = JSON.parse(ns.read(fragTxt)).filter(f => f.name == fragName)[0]?.frag;
-		if (!loadedFrag) {
-			ns.tprint(`Frag ${fragName} not found.`)
-			ns.tprint("sg.js end.")
-			return;
-		}
-		if (threads == "max")
-		{
+	} else if (arg0 == "b") {
+		let [ignoreMe, threads] = ns.args;
+
+		if (threads == "max" || threads == void 0) {
 			let maxRam = ns.getServerMaxRam("home");
-			//let usedRam = ns.getServerUsedRam("home");
-			threads = Math.floor((maxRam - 64)/2);
+			let usedRam = ns.getServerUsedRam("home");
+			maxRam -= usedRam;
+			if (maxRam < 64)
+				threads = Math.floor((maxRam - 11) / 2);
+			else
+				threads = Math.floor((maxRam - 40) / 2);
 		}
-		ns.exec("chrg.js", "home", threads, JSON.stringify(loadedFrag));
-		ns.tprint(`Applied ${threads} threads to chrg.js for ${fragName}`);
-	} else if (arg0 == "k") {
+		if (threads < 0) {
+			ns.tprint(`You don't have any threads left.`)
+			return;
+		}
+		if (ns.exec("chrg.js", "home", threads, ns.read(lastGiftTxt)) > 0)
+			ns.tprint(`Applied ${threads} threads to chrg.js.`);
+		else
+			ns.tprint(`Fail chrg.js -- threads: ${threads}. ${ns.read(lastGiftTxt)}`);
+	} else if (arg0 == "w" || arg0 == "write") {
+		let myOldFrag = GetFrags(ns);
+		ns.write(lastGiftTxt, JSON.stringify(myOldFrag), "w");
+		ns.tprint(`Current Stanek's Gift has been saved on ${lastGiftTxt}. ${new Date().toLocaleString()}`)
+	}
+	else if (arg0 == "k") {
 		if (ns.scriptKill("chrg.js", "home"))
 			ns.tprint("killed chrg.js");
 		else
@@ -144,10 +142,10 @@ function InitFrags(ns, frags) {
 
 }
 function GetFrags(ns) {
+	maxStanekSize = ns.stanek.giftWidth();
 	let myFrags = [];
-	const maxX = 5;
-	for (let x = 0; x < maxX; x++) {
-		for (let y = 0; y < maxX; y++) {
+	for (let x = 0; x < maxStanekSize; x++) {
+		for (let y = 0; y < maxStanekSize; y++) {
 			let frag = ns.stanek.getFragment(x, y);
 			// if(frag)
 			// 	jtprint(ns, frag);
@@ -177,48 +175,3 @@ function jtprint(ns, obj) {
 		ns.tprint("   " + key + ": " + value + ", ");
 	});
 }
-
-
-const savedFrags = [
-	{
-		name: "hacknet0", frag: [
-			{ x: 0, y: 0, rotation: 0, id: 101 }
-			, { x: 0, y: 2, rotation: 0, id: 105 }
-			, { x: 1, y: 1, rotation: 0, id: 6 } // hack
-			, { x: 2, y: 4, rotation: 0, id: 20 } // hacknet production
-			, { x: 3, y: 2, rotation: 0, id: 21 } // hacknet cost
-			, { x: 4, y: 0, rotation: 1, id: 101 }
-		]
-	},
-	{
-		name: "hacknet1", frag: [
-			{ x: 0, y: 0, rotation: 0, id: 101 }
-			, { x: 0, y: 1, rotation: 2, id: 105 }
-			, { x: 1, y: 3, rotation: 0, id: 101 }
-			, { x: 2, y: 4, rotation: 0, id: 20 } // hacknet production
-			, { x: 3, y: 1, rotation: 0, id: 21 } // hacknet cost
-			, { x: 4, y: 0, rotation: 1, id: 101 }
-		]
-	},
-	{
-		name: "lots0", frag: [
-			{ x: 0, y: 0, rotation: 3, id: 5 } // faster hgw
-			, { x: 0, y: 3, rotation: 0, id: 25 } // work and faction rep
-			, { x: 1, y: 0, rotation: 2, id: 1 } // hack skill
-			, { x: 1, y: 2, rotation: 1, id: 104 }
-			, { x: 2, y: 1, rotation: 2, id: 106 }
-			, { x: 3, y: 0, rotation: 2, id: 7 } // grow skill
-			, { x: 4, y: 2, rotation: 3, id: 27 } // work money
-		]
-	},
-	{
-		name: "hacky0", frag: [
-			{ x: 0, y: 1, rotation: 1, id: 1 } // hack skill
-			, { x: 0, y: 3, rotation: 0, id: 0 } // hack skill
-			, { x: 2, y: 0, rotation: 3, id: 102 }
-			, { x: 2, y: 3, rotation: 2, id: 101 }
-			, { x: 3, y: 0, rotation: 2, id: 7 } // grow skill
-			, { x: 4, y: 1, rotation: 3, id: 5 } // faster hgw
-		]
-	}
-];

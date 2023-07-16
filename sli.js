@@ -15,14 +15,16 @@ const crimeTypes = [
 	, "Assassination"
 ];
 
-const classes = ["Computer Science", "Data Structures", "Networks", "Algorithms", "Management", "Leadership"]
-
 const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ishima"];
+
+const uniClasses = ["Computer Science", "Data Structures"
+		,"Networks","Algorithms","Management","Leadership"];
+		
+const universities = ["Rothman University", "Summit University", "ZB Institute of Technology"];
 
 export async function main(ns) {
 	// const argRabbit = ns.args[0];
-	const argAction = ns.args[0];
-	const argParams = ns.args[1];
+	const [argAction, argParams] = ns.args;
 	const toAllSleeves = true; // argRabbit == "max";
 
 	if (!argAction) {
@@ -43,7 +45,7 @@ export async function main(ns) {
 		else ns.sleeve.getTask(argRabbit);
 	}
 	else if (argAction == "c") {
-		let crimeType = crimeTypes.filter(f => f[0] == argParams.toUpperCase())[0];
+		let crimeType = crimeTypes.find(f => f[0] == argParams.toUpperCase());
 		if (toAllSleeves) loop(ns, ns.sleeve.setToCommitCrime, [crimeType]);
 		else ns.sleeve.setToCommitCrime(argRabbit, crimeType);
 	}
@@ -53,9 +55,9 @@ export async function main(ns) {
 	}
 	else if (argAction == "r") {
 		// travel(sleeveNumber, city) 	Make a sleeve travel to another city.
-		let myCity = argParams.ToUpperCase();
+		let myCity = argParams.toUpperCase();
 
-		myCity = cities.filter(f => f[0] == myCity)[0];
+		myCity = cities.find(f => f[0] == myCity);
 		if (toAllSleeves) loop(ns, ns.sleeve.travel, [myCity]);
 		else ns.sleeve.travel(argRabbit, myCity);
 
@@ -69,7 +71,7 @@ export async function main(ns) {
 
 	}
 	else if (argAction == "s") {
-		if (toAllSleeves) loop(ns.sleeve.setToShockRecovery);
+		if (toAllSleeves) loop(ns, ns.sleeve.setToShockRecovery);
 		else ns.sleeve.setToShockRecovery(argRabbit);
 	}
 	// else if (argAction == "sy") {
@@ -77,16 +79,14 @@ export async function main(ns) {
 	// 	else ns.sleeve.setToSynchronize(argRabbit);
 	// }
 	else if (argAction == "u") {
-		// UniversityClassType":{"computerScience":"Computer Science","dataStructures":"Data Structures",
-		// "networks":"Networks","algorithms":"Algorithms","management":"Management","leadership":"Leadership"}}}
-		// setToUniversityCourse(sleeveNumber, university, className) 	
-		// Set a sleeve to take a class at a university.
-		const universities = [
-			"Summit University"
-		];
+		
 
+		//let takeUni = universities[0];
+		let takeUni = "ZB Institute of Technology";
+		ns.tprint(uniClasses);
+		let takeClass = uniClasses.find(f => f[0] == argParams.toUpperCase());
 
-		if (toAllSleeves) loop(ns.sleeve.setToUniversityCourse);
+		if (toAllSleeves) loop(ns, ns.sleeve.setToUniversityCourse, [takeUni, takeClass]);
 		else ns.sleeve.setToUniversityCourse(argRabbit);
 	} else {
 		ns.tprint(`${argAction} is an invalid argument.`)
@@ -128,7 +128,11 @@ function emptyArgsError() {
 
 function loop(ns, myFunction, moreArgs) {
 	for (let i = 0; i < numSleeves; i++) {
-		myFunction(i, ...moreArgs);
+		if(moreArgs)
+			myFunction(i, ...moreArgs);
+		else
+			myFunction(i);
+
 	}
 }
 

@@ -7,19 +7,50 @@ import NumLeft from "./im/numLeft"
 import StrLeft from "./im/strLeft"
 
 /** @param {NS} ns */
-const coreScriptRam = 1.75;
+
+	const alphJS = "alph.js";
+	const growJS = "grow.js";
+	const weakJS = "weak.js";
+	const hackJS = "hack.js";
+	const sharJS = "shar.js";
+
+const scriptMap = new Map();
+
+	
 
 export async function main(ns) {
-	const alphJS = "alph.js";
-	const weakJS = "weak.js";
+	scriptMap.set('a', [alphJS, 2.2])
+	scriptMap.set('g', [growJS, 1.75, (program, server, threads, target) => {program.exec(growJS, server, threads, target)}]);
+	scriptMap.set('w', [weakJS, 1.75, (program, server, threads, target) => {program.exec(weakJS, server, threads, target)}]);
+	scriptMap.set('h', [hackJS, 1.7, (program, server, threads, target) => {program.exec(hackJS, server, threads, target)}]);
+	scriptMap.set('s', [sharJS, 4, (program, server, threads, target) => {program.exec(hackJS, server, threads, target)}]);
+
 	const myProgramsLevel = GetProgramLevel(ns);
 	const myHackingLevel = ns.getHackingLevel();
 	const defaultTarget = GetTarget(ns) || "n00dles";
-	const arg0 = ns.args[0];
+	let [argTarget, argAction] = ns.args;
+	
+	let myScript = weakJS;
+	let myScriptRam = 1.75;
+
 	let servers = GetServers(ns);
 
-	let { i, a, w } = { i: 0, a: 0, w: 0 };
 	let serverWithMostMoney = { hostname: "", moneyMax: 0 };
+
+	if (argTarget?.length || 0 == 1)
+	{
+		[argAction, argTarget] = ns.args;
+	}
+
+	// ns.tprint(argAction)
+	// ns.tprint(scriptMap.get(argAction))
+	if (argAction)
+	{
+		myScript = scriptMap.get(argAction)[0];
+		myScriptRam = scriptMap.get(argAction)[1];
+	}
+	
+
 	ns.disableLog("scp");
 	// ns.disableLog("exec");
 	ns.disableLog("getServer");
@@ -46,15 +77,14 @@ export async function main(ns) {
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
 		let serverObject = ns.getServer(server);
-		const isAboveMyProgramsLevel = serverObject.numOpenPortsRequired > myProgramsLevel;
-		// const isMyServer = serverObject.hasAdminRights;
-		const isTooStrong = serverObject.requiredHackingSkill > myHackingLevel;
-		const isLunatic = serverObject.minDifficulty > 90;
+		// const isAboveMyProgramsLevel = serverObject.numOpenPortsRequired > myProgramsLevel;
+		const isMyServer = serverObject.hasAdminRights;
+		const isTooStrong = serverObject.hackDifficulty > myHackingLevel || serverObject.minDifficulty > 90;
 		let target = server;
 		// ns.tprint(StrLeft(server, 20) +
 		// 	"	" + ns.formatNumber(serverObject.maxRam - serverObject.ramUsed, 2)
 		// );
-		let myBug = { server: server, applied: 0, alph: 0, weak: 0 };
+		let myBug = { server: server, applied: 0, a: 0, g: 0, h: 0, w: 0, s: 0 };
 
 		if (server == "home") {
 			myBug.note = "isHome";
@@ -62,63 +92,40 @@ export async function main(ns) {
 			continue;
 		}
 
-		if (isAboveMyProgramsLevel) {
-			myBug.note = "isAboveMyProgramsLevel";
+		if (!isMyServer) {
+			myBug.note = "!isMyServer";
 			myBugs.push(myBug);
 			continue;
 		}
 
 		if (serverObject.moneyMax == 0) {
-			myBug.note = "moneyMax 0";
 
 			target = defaultTarget;
 		}
 
-		if (isTooStrong) {
-			// myBug.note = "hackDifficulty " + Math.floor(serverObject.hackDifficulty);
+		if (argAction != "s" && isTooStrong) {
 			target = defaultTarget;
 		}
 
-		if (isLunatic) {
-			// myBug.note = "minDifficulty " + serverObject.minDifficulty;
+		if (argTarget == "target") {
 			target = defaultTarget;
 		}
-
-		if (target.minDifficulty >= 90){
-			target = defaultTarget;
-		}
-
-		if (arg0 == "target") {
-			target = defaultTarget;
-		}
-		else if (arg0) {
-			target = arg0;
-		}
-
-		if (target.startsWith("hacknet-server-")){
-			target = defaultTarget;
+		else if (argTarget) {
+			target = argTarget;
 		}
 
 		myBug.target = target;
 
-
-		if (AlphExec(ns, server, target) > 0) {
-			myBug.alph += 1;
-			myBug.applied += 1;
-			tprintFill(ns, i, server, alphJS, target);
-		}
-
 		serverObject = ns.getServer(server);
+		let threads = Math.floor((serverObject.maxRam - serverObject.ramUsed) / myScriptRam);
 
-		if (serverObject.maxRam - serverObject.ramUsed >= coreScriptRam) {
-
-
+		if (threads > 0) {
 			// exec(script, hostname, threadOrOptions, args) returns pid/0
-			ns.scp(weakJS, server, "home");
-			if (ns.exec(weakJS, server, 1, target) > 0) {
-				myBug.weak += 1;
+			ns.scp(myScript, server, "home");
+			if (ns.exec(myScript, server, threads, target) > 0) {
 				myBug.applied += 1;
-				tprintFill(ns, i, server, weakJS, target);
+				myBug[myScript[0].toLowerCase()] += 1;
+				tprintFill(ns, i, server, myScript, target);
 			}
 		}
 		myBugs.push(myBug);
@@ -130,7 +137,7 @@ export async function main(ns) {
 
 	ns.tprint("fill.js end " + new Date().toLocaleString());
 
-	PrintMyBugs(ns, myBugs);
+
 
 }
 
@@ -139,18 +146,19 @@ function tprintFill(ns, id, server, theScript, target) {
 
 }
 
-function PrintMyBugs(ns, myBugs){
-	for (let i = 0; i < myBugs.length; i++) {
+function PrintMyBug(ns, myBugs){
+		for (let i = 0; i < myBugs.length; i++) {
 		const myBug = myBugs[i];
 		ns.tprint(
 			StrLeft(myBug.server, 20) +
-			StrLeft(myBug.note || "", 25) +
+			StrLeft(myBug.note || "", 14) +
 			StrLeft(myBug.target || "", 20) +
-			(myBug.applied ? NumLeft(myBug.applied, 3) : StrLeft("", 3)) +
-			(myBug.alph ? NumLeft(myBug.alph, 3) : StrLeft("", 3)) +
-			(myBug.weak ? NumLeft(myBug.weak, 3) : StrLeft("", 3)) +
-			// NumLeft(myBug.hackDifficulty, 5) +
-			// NumLeft(myBug.minDifficulty, 5) +
+			(myBug.applied ? NumLeft(myBug.applied, 3) : "   ") +
+			(myBug.a ? NumLeft(myBug.a, 3) + "a" : "   ") +
+			(myBug.g ? NumLeft(myBug.g, 3) + "g" : "   ") +
+			(myBug.w ? NumLeft(myBug.w, 3) + "w" : "   ") +
+			(myBug.h ? NumLeft(myBug.h, 3) + "h" : "   ") +
+			(myBug.s ? NumLeft(myBug.s, 3) + "s" : "   ") +
 			""
 		)
 	}

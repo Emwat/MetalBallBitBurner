@@ -77,7 +77,6 @@ export async function main(ns) {
 		else if (arg1 == "v") symbols = symbols.sort((a, b) => ns.stock.getVolatility(a) - ns.stock.getVolatility(b));
 		else if (arg1 == "pcl") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Long") - ns.stock.getPurchaseCost(b, 1, "Long"));
 		else if (arg1 == "pcs") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Short") - ns.stock.getPurchaseCost(b, 1, "Short"));
-		else if (arg1 == "pwr") symbols = symbols.sort((a, b) => GetPriority(ns, a) - GetPriority(ns, b));
 		else if (arg1 == "me") symbols = symbols.filter(f => ns.stock.getPosition(f)[0] > 0);
 
 		PrintInfo(ns, symbols);
@@ -93,11 +92,9 @@ export async function main(ns) {
 	}
 	else if (arg0 == "xp") {
 		ns.write(portfolioTxt, "[]", "w");
-		ns.tprint(`Reset ${portfolioTxt}`);
 	}
 	else if (arg0 == "xl") {
 		ns.write(profitsTxt, "[]", "w");
-		ns.tprint(`Reset ${profitsTxt}`);
 	} else {
 		ns.tprint(`Invalid arguments. Nothing was done.`);
 
@@ -119,7 +116,7 @@ function PrintInfo(ns, symbols) {
 
 	ns.tprint("" +
 		" " + LeftStr(5, "sym") +
-		" " + LeftStr(25, "Organization") +
+		" " + LeftStr(25, "Organication") +
 		" " + LeftStr(6, "Ask") +
 		" " + LeftStr(6, "Bid") +
 		" " + LeftStr(6, "Price") +
@@ -130,7 +127,6 @@ function PrintInfo(ns, symbols) {
 		" " + LeftStr(7, "Long") +
 		" " + LeftStr(8, "Short") +
 		" " + LeftStr(8, "Long") +
-		" " + LeftStr(8, "Priority") +
 		""
 	);
 
@@ -151,7 +147,6 @@ function PrintInfo(ns, symbols) {
 			" " + LeftNum(7, ns.stock.getPurchaseCost(sym, 1, "Long")) +
 			" " + LeftNum(8, ns.stock.getSaleGain(sym, 1, "Short")) +
 			" " + LeftNum(8, ns.stock.getSaleGain(sym, 1, "Long")) +
-			" " + GetPriority(ns, sym, true) +
 			""
 		);
 	}
@@ -190,12 +185,11 @@ function PrintActivity(ns, shares, iSym, price, iForecast, iData) {
 
 	let str = new Date().toLocaleTimeString() + " " + (isBuying ? "buying  " : "selling ") +
 		`${NumLeft(shares, 14)} ${StrLeft(iSym, 5)} shares` +
-		` for ${StrLeft(ToDollars(price * shares), 10)}` +
-		` Price: ${StrLeft(ToDollars(price), 7)}` +
-		` Forecast: ${iForecast}.`;
+		` for ${StrLeft(ToDollars(price * shares), 10)} (Price: ${StrLeft(ToDollars(price), 7)})` +
+		` b/c forecast is ${iForecast}.`;
 
 	if (iData)
-		str += ` Profit: ${StrLeft(ToDollars(iData.myShares * price - iData.myShares * iData.buyPrice), 8)}`;
+		str += ` Profit is ${StrLeft(ToDollars(iData.myShares * price - iData.myShares * iData.buyPrice), 8)}`;
 	ns.tprint(str);
 }
 
@@ -267,7 +261,8 @@ function SellEverything(ns) {
 }
 
 function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
-	symbols = symbols.sort((a, b) => GetPriority(ns, b) - GetPriority(ns, a));
+	let hasBoughtSomething = false;
+	symbols = symbols.sort((a, b) => ns.stock.getVolatility(b) - ns.stock.getVolatility(a));
 	for (let i = 0; i < symbols.length; i++) {
 		let myMoney = getMoney(ns);
 		const iSym = symbols[i];
@@ -296,10 +291,10 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 		// );
 
 		if (doNotOwn && isGoodForecast && isBuying && isFeePlus) {
+			//ns.tprint(`was gonna buy ${iSym} ${newShares}`);
 			const buyPrice = Math.ceil(ns.stock.buyStock(iSym, newShares));
 			if (buyPrice > 0) {
-				// Runs GROW
-				// ns.exec("w1.js", "home", 1000, iSym);
+				hasBoughtSomething = true;
 				PrintActivity(ns, newShares, iSym, buyPrice, iForecast, null);
 				const newRow = { iSym, myShares: newShares, buyPrice, iForecast, date: new Date() };
 				myPortfolio.push(newRow);
@@ -315,7 +310,10 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 			}
 		}
 	}
-
+	// if (hasBoughtSomething) {
+	// 	ns.write(portfolioTxt, JSON.stringify(myPortfolio), "w");
+	// 	ns.write(profitsTxt, JSON.stringify(myLogs), "w");
+	// }
 	return [myPortfolio, myLogs];
 }
 
@@ -407,16 +405,16 @@ function SeeLogs(ns) {
 	const b = 5; // percent spacing
 
 	ns.tprint("Symbol",
-		StrLeft("Shares", a),
-		StrLeft("Portfolio", a),
-		StrLeft("Vola", 4),
-		StrLeft("Fore", 4),
-		StrLeft("Profit", a),
-		StrLeft("", b),
-		StrLeft("Ongoing", a),
-		StrLeft("Time Bought", a),
-		""
-	);
+			StrLeft("Shares", a),
+			StrLeft("Portfolio", a),
+			StrLeft("Vola", 4),
+			StrLeft("Fore", 4),
+			StrLeft("Profit", a),
+			StrLeft("", b),
+			StrLeft("Balance", a),
+			StrLeft("Time Bought", a),
+			""
+		);
 
 	for (let i = 0; i < totals.length; i++) {
 		let total = totals[i];
@@ -433,7 +431,7 @@ function SeeLogs(ns) {
 			myShares = gross.myShares;
 			timeBought = gross.date;
 			timeBought = new Date() - new Date(timeBought);
-			timeBought = Math.floor(timeBought / 1000);
+			timeBought = Math.floor(timeBought/1000);
 			timeBought = FormatTime(timeBought);
 			timeBought = timeBought.replace("0 days ", "")
 			if (gross.buyPrice)
@@ -450,7 +448,7 @@ function SeeLogs(ns) {
 			myShares ? NumLeft(Math.floor(ns.stock.getVolatility(total.iSym) * 1000), 4) : StrLeft("", 4), // Vola
 			myShares ? NumLeft(Math.floor(ns.stock.getForecast(total.iSym) * 100), 4) : StrLeft("", 4), // Forecast
 			gross ? StrLeft(ToDollars(gross), a) : StrLeft("", a), // Profit
-			grossBuyPrice ? NumLeft(gross / grossBuyPrice * 100 - 100, b - 1) + "%" : StrLeft("", b), // Profit %
+			grossBuyPrice ? NumLeft(gross/grossBuyPrice * 100 - 100, b - 1) + "%" : StrLeft("", b), // Profit %
 			StrLeft(ToDollars(total.amount + gross), a), // Balance
 			//gross ? StrLeft(FormatTime(new Date() - timeBought), a) : "", // Time
 			StrLeft(gross ? timeBought : "", a), // Time
@@ -458,74 +456,23 @@ function SeeLogs(ns) {
 		);
 	}
 	ns.tprint("Total:",
-		StrLeft("", a),
-		StrLeft(ToDollars(output), a),
-		StrLeft("", 4),
-		StrLeft("", 4),
-		StrLeft(ToDollars(grossOutput), a),
-		StrLeft("", b),
-		StrLeft(ToDollars(output + grossOutput), a),
-		""
-	);
+			StrLeft("", a),
+			StrLeft(ToDollars(output), a),
+			StrLeft("", 4),
+			StrLeft("", 4),
+			StrLeft(ToDollars(grossOutput), a),
+			StrLeft("", b),
+			StrLeft(ToDollars(output + grossOutput), a),
+			""
+		);
 
 }
 
-function ForecastSymbol(forecast) {
+function ForecastSymbol(forecast){
 	if (forecast <= 29) return "---"
 	if (forecast <= 32) return "--"
 	if (forecast <= 45) return "-"
 	if (forecast <= 59) return "+"
 	if (forecast <= 64) return "++"
 	return "+++"
-}
-
-function GetPriority(ns, iSym, isDebugging) {
-	let forecast = ns.stock.getForecast(iSym) * 100;
-	let price = ns.stock.getPrice(iSym);
-	let volatility = ns.stock.getVolatility(iSym) * 10000;
-	let benchPrice = 30000;
-	let pointsForecast = 0;
-	let pointsPrice = 10;
-	let p = 0;
-	let pCap = 15;
-	let pointsVolatility = 0;
-	let pointsVolatilityIncrement = 5;
-
-	if (forecast < reqAbvForecast)
-		return 0;
-
-	while (forecast > 40) {
-		forecast -= 5;
-		pointsForecast += 15;
-	}
-
-	if (price > benchPrice) {
-		while (price > benchPrice && p <= pCap) {
-			p++
-			price -= 5000;
-			pointsPrice -= 2;
-			pointsPrice *= 1.2;
-		}
-	} else if (price < benchPrice) {
-		while (price < benchPrice) {
-			price += 5000;
-			pointsPrice += 3;
-			pointsPrice *= 1.2;
-		}
-	}
-
-	while (volatility > reqAbvForecast) {
-		volatility -= pointsVolatilityIncrement;
-		pointsVolatility += pointsVolatilityIncrement;
-	}
-	let total = Math.floor(pointsForecast + pointsPrice + pointsVolatility);
-
-	if (isDebugging)
-		return "" +
-			" f " + LeftNum(2, pointsForecast) +
-			" p " + LeftNum(5, pointsPrice) +
-			" v " + LeftNum(5, pointsVolatility) +
-			" total: " + total;
-	return total;
-
 }

@@ -22,7 +22,7 @@ function jtprint(ns, obj, showAll) {
 		let color = "";
 		if (value == 1) {
 			if (showAll)
-				color = black;
+				color = reset;
 			else
 				return;
 		}
@@ -64,7 +64,7 @@ const myDictionary = {
 	, HomeComputerRamCost: 0
 	, PurchasedServerCost: 0
 	, PurchasedServerSoftcap: 0
-	, PurchasedServerLimit: 2
+	, PurchasedServerLimit: 25
 	, PurchasedServerMaxRam: 2
 	, CompanyWorkMoney: 1
 	, CrimeMoney: 1
@@ -88,13 +88,13 @@ const myDictionary = {
 	, FourSigmaMarketDataCost: 0
 	, FourSigmaMarketDataApiCost: 0
 	, CorporationValuation: 1
-	, CorporationSoftcap: 2
+	, CorporationSoftcap: 1
 	, CorporationDivisions: 1
 	, BladeburnerRank: 1
 	, BladeburnerSkillCost: 0
-	, GangSoftcap: 0
+	, GangSoftcap: 1
 	, GangUniqueAugs: 1
-	, DaedalusAugsRequirement: 2
+	, DaedalusAugsRequirement: 30
 	, StaneksGiftPowerMultiplier: 1
 	, StaneksGiftExtraSize: 1
 	, WorldDaemonDifficulty: 0
