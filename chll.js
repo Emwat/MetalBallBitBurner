@@ -21,6 +21,7 @@ export async function main(ns) {
 	
 	// ns.tprint(arg);
 	if (arg0 == "k") {
+		await ns.sleep(200);
 		KillCharge(ns, servers);
 	} else if (arg0 == "kh"){
 		KillCharge(ns, servers, true);
@@ -34,7 +35,7 @@ export async function main(ns) {
 	}
 
 
-	ns.tprint("fyll.js end " + new Date().toLocaleString());
+	ns.tprint("chll.js end " + new Date().toLocaleString());
 }
 
 // Tests the first fragment, to avoid error pileup
@@ -63,6 +64,8 @@ async function ChargeServers(ns, servers, arg, stats, avoidHacknet) {
 			continue;
 		if (avoidHacknet && server.startsWith("hacknet"))
 			continue;
+		else if (server.startsWith("hacknet"))
+			ns.tprint(`chrg.js on ${server} w/ ${threads}`);
 
 		ns.scp("chrg.js", server);
 		if (ns.exec("chrg.js", server, threads, arg) > 0) {
@@ -78,8 +81,6 @@ async function ChargeServers(ns, servers, arg, stats, avoidHacknet) {
 
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
-		if (server == "home")
-			continue;
 		if (onlyHacknet && !server.startsWith("hacknet"))
 			continue;
 

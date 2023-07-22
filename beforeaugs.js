@@ -19,7 +19,12 @@ export async function main(ns) {
 	jtprintd(ns, install);
 	
 	ns.tprint("--------------------------------------------");
-	ns.tprint(" Did you install augments for your sleeves? ");
+	ns.tprint(" Did you...");
+	ns.tprint("		ascend your gang");
+	ns.tprint("		upgrade home server");
+	ns.tprint("		spend hashnet points");
+	ns.tprint("		install augments for sleeves");
+	ns.tprint("		find Serenity with Stanek's Gift");
 	ns.tprint("--------------------------------------------");
 
 }

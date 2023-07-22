@@ -9,7 +9,7 @@ let upgrades = [
 	, [100, 50, "Improve Studying"]
 	, [50 ,50,"Improve Gym Training"]
 	// , [200,, "Exchange for Corporation Research"]
-	// , [250,, "Exchange for Bladeburner Rank"]
+	, [250, 250, "Exchange for Bladeburner Rank"]
 	// , [250,, "Exchange for Bladeburner SP"]
 	// , [200, 200, "Generate Coding Contract"]
 	// , [400,, "Company Favor"]
@@ -45,7 +45,6 @@ k >> kill
 	} else {
 		ns.tprint(`Invalid argument.`)
 	}
-
 
 }
 

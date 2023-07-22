@@ -2,6 +2,7 @@ import TopTargets from './im/topTarget'
 
 /** @param {NS} ns */
 export async function main(ns) {
+	const sharjsRam = 4;
 	const alphjsRam = 2.2;
 	const growjsRam = 1.75;
 	const hackjsRam = 1.7;
@@ -12,6 +13,7 @@ export async function main(ns) {
 	if (homeServer.maxRam <= 128)
 		roomForThreads = 0;
 
+	const sharMaxThreads = Math.floor(homeRam / sharjsRam) - roomForThreads;
 	const alphMaxThreads = Math.floor(homeRam / alphjsRam) - roomForThreads;
 	const growMaxThreads = Math.floor(homeRam / growjsRam) - roomForThreads;
 	const hackMaxThreads = Math.floor(homeRam / hackjsRam) - roomForThreads;
@@ -73,6 +75,9 @@ export async function main(ns) {
 		Helper(ns, "weak.js", target, growMaxThreads);
 		Helper(ns, "hack.js", target, hackMaxThreads);
 
+	}  else if (ns.args[0] == "s") {
+		ns.exec("shar.js", "home", sharMaxThreads );
+		ns.tprint(`running shar.js -t ${sharMaxThreads}`);
 	} else {
 		let [target, arg2] = ns.args;
 		if (target.length == 1) {

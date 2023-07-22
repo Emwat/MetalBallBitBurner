@@ -40,11 +40,14 @@ export async function main(ns) {
 	//  25525511135 -> ["255.255.11.135", "255.255.111.35"]
 	//  1938718066 -> ["193.87.180.66"]
 	// `);
-	// ns.tprint(GenerateIPAddresses(ns, "25525511135"));
-	// ns.tprint(GenerateIPAddresses(ns, "1938718066"));
-	// ns.tprint(GenerateIPAddresses(ns, "1921680101")); // + " / 192.168.010.1 is not a valid IP.");
-	// ns.tprint(GenerateIPAddresses(ns, "3520617070"));
-	// ns.tprint(GenerateIPAddresses(ns, "202721319")); // fail 07/06/2023 11:37 AM
+	ns.tprint(GenerateIPAddresses(ns, "25525511135"));
+	ns.tprint(GenerateIPAddresses(ns, "1938718066"));
+	ns.tprint(GenerateIPAddresses(ns, "1921680101")); // + " / 192.168.010.1 is not a valid IP.");
+	ns.tprint(GenerateIPAddresses(ns, "3520617070"));
+	ns.tprint(GenerateIPAddresses(ns, "202721319")); // fail 07/06/2023 11:37 AM
+	ns.tprint(GenerateIPAddresses(ns, "4951957")); // fail 07/21/2023 10:01 AM
+	ns.tprint(["4.95.19.57","4.95.195.7","49.5.19.57","49.5.195.7","49.51.9.57","49.51.95.7"]);
+
 	// ns.tprint(HammingCodes(ns, 8));
 	// ns.tprint(HammingCodes(ns, 21));
 	// ns.tprint(HammingCodes(ns, 65));
@@ -552,16 +555,18 @@ function GenerateIPAddresses(ns, str) {
 	// RRRRRRRRRRRRRRRRRRRRRRRRRRRR
 	function rightToLeft(str) {
 		let output = "";
-		for (let i = str.length - 1; i > 0; i--) {
+		for (let i = str.length - 1; i >= 0; i--) {
 			let a = str[i];
 			let b = str[i - 1];
 			let c = str[i - 2];
 
 			// ns.tprint(a + b + c);
-			if (a && b && c && Number(c + b + a) <= 255) {
+			if (false) {
+
+			} else if (a && b && c && c != "0" && Number(c + b + a) <= 255) {
 				output = dot(i - 1, str) + c + b + a + output;
 				i -= 2;
-			} else if (a && b) {
+			} else if (a && b && b != "0") {
 				output = dot(i - 1, str) + b + a + output;
 				i -= 1;
 			} else {
@@ -573,7 +578,27 @@ function GenerateIPAddresses(ns, str) {
 		if (output[0] == ".")
 			output = output.substring(1);
 
+		if (!isValidIPAddress(output, str))
+			return;
+
 		return output;
+	}
+
+	function isValidIPAddress(theAttempt, input) {
+		let splits = theAttempt.split(".");
+		if (splits.length != 4)
+			return false;
+
+		for (let i = 0; i < splits.length; i++) {
+			if (Number(splits[i]) > 255)
+				return false;
+		}
+
+		if (theAttempt.replaceAll(".", "").replaceAll("0", "") != input.replaceAll("0", "")){
+			return false;
+		}
+
+		return true;
 	}
 
 	let idea1 = leftToRight(str);
@@ -583,8 +608,11 @@ function GenerateIPAddresses(ns, str) {
 		possible.push(idea1);
 	} else {
 		possible.push(idea1);
-		if (!idea1.includes("0."))
-			possible.push(idea2);
+		if (idea2) {
+			if (!idea1.includes("0."))
+				possible.push(idea2);
+		}
+
 	}
 
 	return possible;

@@ -1,16 +1,17 @@
 /** @param {NS} ns */
 import ToDollars from "./im/carat"
-import ZeroLeft from "./im/zeroLeft"
+import StrLeft from "./im/strLeft"
 import NumLeft from "./im/numLeft"
+import ZeroLeft from "./im/zeroLeft"
 
 // https://github.com/bitburner-official/bitburner-src/blob/dev/markdown/bitburner.gang.md
 
 let myMoney = 0;
-const warScript = "./terr/war.js";
+// const warScript = "./terr/war.js";
 // const ascTxt = "gangcombat/asc.txt";
 const ripTxt = "./terr/rip.txt";
-
-const stayInTraining = []; //["man21", "man22", "man23", "man24"]
+const gangAscTxt = "gangAsc.txt";
+const gangTrainTxt = "gangTrain.txt";
 
 export async function main(ns) {
 	if (ns.args.length == 0) {
@@ -25,28 +26,23 @@ export async function main(ns) {
 			t >> train combat
 			th >> train hacking
 			tc >> train charisma
-			q >> quick vigilante justice and then train
 			tw >> Territorial Warfare
+			terror >> Terrorism
+			q >> quick vigilante justice and then train
 
-			---
+			ba >> WHILE LOOP, batch ascend
+			ba [X] >> WHILE LOOP, batch ascend every 10 * X seconds
+			br >> WHILE LOOP, batch recruit
 
 			a ["print-all"] >> ascend
-			"asc new recruits"
+			an >> ascend only the members in ${gangTrainTxt}
 			e >> weaponmizeMember
 			qa >> quick vigilante justice and ascend
 			q [m/h/v/t] >> quick vigilante justice and then action
-			ba >> batch ascend
-			ba [X] >> batch ascend every 10 * X seconds
 			i >> info
+			ia >> see ${gangAscTxt}
 			member >> print all member names
-			
-			--- WARFARE
-			TODO		u >> upgrade people to be up to date
-			c >> Contemplate WAR
-			war >>  Contemplate WAR and commit
-			d >>  Disengage
-			br >> WHILE LOOP, batch recruit
-
+			train [44-48/44+] >> write to ${gangTrainTxt}
 		`);
 		return;
 	}
@@ -63,9 +59,6 @@ export async function main(ns) {
 	}
 	else if (gliKey(arg0)) {
 		assignMembersToTask(ns, arg0, members);
-	} else if (warKey(arg0)) {
-		//ns.spawn(warScript, 1, arg);
-		ns.exec(warScript, "home", 1, arg0);
 	} else if (arg0 == "q") {
 		await quickGetUnwanted(ns, members, ns.args[1]);
 	} else if (arg0 == "e") {
@@ -73,9 +66,9 @@ export async function main(ns) {
 		WeaponizeMembers(ns, members);
 	} else if (arg0 == "a") {
 		ascendBuyAndTrain(ns, members);
-	} else if (arg0 == "asc new recruits") {
-		let applyToNewRecruits = true;
-		ascendBuyAndTrain(ns, members, applyToNewRecruits);
+	} else if (arg0 == "an") {
+		let onlyGangTrain = true;
+		ascendBuyAndTrain(ns, members, onlyGangTrain);
 	} else if (arg0 == "ba") {
 		const seconds = ns.args[1] || 300;
 		while (true) {
@@ -84,10 +77,14 @@ export async function main(ns) {
 		}
 	} else if (arg0 == "i") {
 		GetInfo(ns, members);
-	} else if (arg0 == "member") {
+	} else if (arg0 == "ia") {
+		SeeBeforeAscNotes(ns);
+	} else if (["member", "members"].includes(arg0)) {
 		PrintMembers(ns, members);
 	} else if (arg0 == "br") {
 		await BatchRecruit(ns);
+	} else if (arg0 == "train") {
+		SetMembersToTrain(ns, members);
 	} else {
 		ns.tprint("Argument is invalid. Nothing was done.");
 	}
@@ -99,6 +96,7 @@ export async function main(ns) {
 
 function assignMembersToTask(ns, arg, members) {
 	let total = 0;
+	let stayInTraining = JSON.parse(ns.read(gangTrainTxt));
 	for (let i = 0; i < members.length; i++) {
 		const member = members[i];
 		// const isSoldier = soldiers.indexOf(member.name) != -1;
@@ -144,17 +142,10 @@ function gliKey(arg) {
 	else if (arg == "tw") {
 		return "Territory Warfare";
 	}
+	else if (arg == "terror") {
+		return "Terrorism";
+	}
 	return "";
-}
-
-function warKey(arg) {
-	return (
-		arg == "c" ||
-		arg == "war" ||
-		arg == "r" ||
-		arg == "d" ||
-		false
-	)
 }
 
 function setTaskGetBit(ns, arg, member) {
@@ -273,17 +264,19 @@ function GetEquipmentCost(ns, members) {
 	return toBuyList;
 }
 
-async function quickGetUnwanted(ns, members, arg2) {
+async function quickGetUnwanted(ns, members, nextAction) {
 
 	assignMembersToTask(ns, "v", members);
 	// while(ns.gang.getGangInformation().wantedLevel != 1)
 	// 	await ns.sleep(200);	
 	await ns.sleep(Math.pow(10, 4) * 2);
-	assignMembersToTask(ns, arg2 ?? "t", members);
+	assignMembersToTask(ns, nextAction ?? "t", members);
 }
 
 function ascendBuyAndTrain(ns, members, onlyNewRecruits = false) {
 	const toBuyList = GetEquipmentCost(ns, members);
+	const stayInTraining = JSON.parse(ns.read(gangTrainTxt));
+
 	if (toBuyList.length < equips.length)
 		ns.tprint(`You can afford ${members.length} ${toBuyList[toBuyList.length - 1]}`);
 
@@ -292,38 +285,30 @@ function ascendBuyAndTrain(ns, members, onlyNewRecruits = false) {
 		return;
 	}
 
-	ns.exec("helperMakeNotesGli.js", "home", 1);
+	if (onlyNewRecruits && stayInTraining.length > 0)
+		MakeBeforeAscNotes(ns, stayInTraining[0]);
+	else
+		MakeBeforeAscNotes(ns, members[0].name);
 
 	// let ascData = JSON.parse(ns.read("asc.txt"));
 
 	for (let i = 0; i < members.length; i++) {
-		AscendBuyAndTrainHelper(ns, i, members, toBuyList, onlyNewRecruits);
+		if (onlyNewRecruits && !stayInTraining.includes(members[i].name)) {
+			continue;
+		}
+		AscendBuyAndTrainHelper(ns, i, members, toBuyList);
 	}
 	// ns.write(ascTxt, JSON.stringify(ascData), "w");
 
 }
 
-function AscendBuyAndTrainHelper(ns, i, members, toBuyList, onlyNewRecruits) {
+function AscendBuyAndTrainHelper(ns, i, members, toBuyList) {
 	const member = members[i];
 	const memberName = member.name;
 	//const memberInfo = ns.gang.getMemberInformation(member);
 	const ascResult = ns.gang.getAscensionResult(memberName);
 	const isPrintingAll = ns.args.includes("print-all");
-	let beforeAsc = [memberName,
-		"hack", member["hack"],
-		"str", member.str,
-		"def", member.def,
-		"dex", member.dex,
-		"agi", member.agi,
-		"cha", member.cha,
-		"upgrades", member.upgrades.length,
-		"money", member.moneyGain
-	].join();
-	beforeAsc = beforeAsc.replaceAll(",", " ");
 
-	if (onlyNewRecruits && !stayInTraining.includes(member.name)) {
-		return;
-	}
 
 	if (!ascResult) {
 		ns.gang.setMemberTask(memberName, "Train Combat");
@@ -341,16 +326,15 @@ function AscendBuyAndTrainHelper(ns, i, members, toBuyList, onlyNewRecruits) {
 		return;
 	}
 
-	if (isPrintingAll)
-		ns.tprint(beforeAsc);
+	// if (isPrintingAll)
+	// 	ns.tprint(beforeAsc);
 
-	if (!isPrintingAll && i == 0)
-		ns.tprint(beforeAsc);
+	// if (!isPrintingAll && i == 0)
+	// 	ns.tprint(beforeAsc);
 
-	if (!isPrintingAll && ns.args.includes("print-last") && i == members.length - 1)
-		ns.tprint(beforeAsc);
-	// member.ascDate = new Date();
-	// ascData.push(member);
+	// if (!isPrintingAll && ns.args.includes("print-last") && i == members.length - 1)
+	// 	ns.tprint(beforeAsc);
+
 	WeaponizeMemberHelper(ns, toBuyList, memberName);
 
 	if (ns.gang.setMemberTask(memberName, "Train Combat")) {
@@ -361,13 +345,18 @@ function AscendBuyAndTrainHelper(ns, i, members, toBuyList, onlyNewRecruits) {
 }
 
 function GetInfo(ns, members) {
-	for (let i = 0; i < members.length; i++) {
-		const member = members[i];
-		const memberInfo = ns.gang.getMemberInformation(member.name);
-		ns.tprint(ns.gang.getAscensionResult(member.name));
-		jtprint(ns, memberInfo);
-		ns.tprint("----- ----- ----- ----- ----- -----")
-	}
+	GetInfoHelper(ns, members[0]);
+	// for (let i = 0; i < members.length; i++) {
+	// 	const member = members[i];
+	// 	GetInfoHelper(ns, member);
+	// 	ns.tprint("----- ----- ----- ----- ----- -----")
+	// }
+}
+
+function GetInfoHelper(ns, member) {
+	const memberInfo = ns.gang.getMemberInformation(member.name);
+	// ns.tprint(ns.gang.getAscensionResult(member.name));
+	jtprint(ns, memberInfo);
 }
 
 function PrintMembers(ns, members) {
@@ -382,10 +371,10 @@ function PrintMembers(ns, members) {
 async function BatchRecruit(ns) {
 	ns.tprint("WHILE LOOP started. You must manually kill this script.");
 	let dead = JSON.parse(ns.read(ripTxt));
-	ns.tprint(`You are waiting for man${ZeroLeft(dead.length + 1, 2)}.`);
+	ns.tprint(`You are waiting for man${ZeroLeft(dead.length + 1, 4)}.`);
 	while (true) {
 
-		let newestMember = "man" + ZeroLeft(dead.length + 1, 2);
+		let newestMember = "man" + ZeroLeft(dead.length + 1, 4);
 		if (ns.gang.recruitMember(newestMember)) {
 			dead.push({ name: newestMember, date: new Date() });
 			ns.write(ripTxt, JSON.stringify(dead), "w");
@@ -397,3 +386,101 @@ async function BatchRecruit(ns) {
 	}
 }
 
+// Expecting args[1] to be something like 
+// "44-48"
+function SetMembersToTrain(ns, members) {
+	if (ns.args.length == 1) {
+		ns.write(gangTrainTxt, "[]", "w");
+		return;
+	}
+
+
+	let membersToTrain = [];
+	let theArgString = ns.args[1];
+	let parsedStringA = "";
+	let parsedStringB = "";
+	let x;
+
+	for (let i = 0; i < theArgString.length; i++) {
+		let s = theArgString[i];
+		if (!parseInt(s))
+			break;
+		parsedStringA += s;
+	}
+	x = parseInt(parsedStringA);
+
+	let connector = theArgString[parsedStringA.length];
+	if (connector == "-") {
+		let y;
+		for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
+			let s = theArgString[i];
+			if (!parseInt(s))
+				break;
+			parsedStringB += s;
+		}
+		y = parseInt(parsedStringB)
+
+		ns.tprint({ x, y })
+		for (let i = x; i <= y; i++) {
+			membersToTrain.push("man" + ZeroLeft(i, 2));
+			membersToTrain.push("man" + ZeroLeft(i, 4));
+		}
+	} else if (connector == "+") {
+		let manX = members.map(m => m.name).indexOf("man" + ZeroLeft(x, 2));
+		if (manX == -1)
+			manX = members.map(m => m.name).indexOf("man" + ZeroLeft(x, 4));
+		
+		for(let i = manX; i < members.length; i++){
+			membersToTrain.push(members[i].name);
+		}
+	}
+
+	ns.tprint(membersToTrain.join(" "));
+	ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+}
+
+function MakeBeforeAscNotes(ns, memberName) {
+	const memberInfo = ns.gang.getMemberInformation(memberName);
+	// const ascResult = ns.gang.getAscensionResult(memberName);
+
+	let beforeAsc = {
+		"date": new Date(),
+		"name": memberName,
+		"hack": memberInfo["hack"],
+		"str": memberInfo.str,
+		"def": memberInfo.def,
+		"dex": memberInfo.dex,
+		"agi": memberInfo.agi,
+		"cha": memberInfo.cha,
+		"upgrades": memberInfo.upgrades.length,
+		"money": Math.floor(memberInfo["moneyGain"])
+	};
+	let existingData = JSON.parse(ns.read(gangAscTxt));
+	existingData.push(beforeAsc);
+	ns.write(gangAscTxt, JSON.stringify(existingData), "w");
+	ns.tprint(`MoneyGains: ${ToDollars(beforeAsc.money)}`)
+}
+
+function SeeBeforeAscNotes(ns) {
+	let existingData = JSON.parse(ns.read(gangAscTxt));
+	let output = "\r\n";
+	for (let i = 0; i < existingData.length; i++) {
+		let eAscData = existingData[i];
+		output += StrLeft(new Date(eAscData.date).toLocaleString(), 22) +
+			" " + eAscData.name +
+			" " + NumLeft(eAscData["hack"], 13) +
+			" " + NumLeft(eAscData.str, 13) +
+			" " + NumLeft(eAscData.upgrades, 13) +
+			" " + NumLeft(eAscData["moneyGain"] || 0, 13) +
+			"\r\n";
+	}
+	output = ("\r\n" + StrLeft("Date", 22) +
+		" " + StrLeft("Name", 7) +
+		" " + StrLeft("Hack", 13) +
+		" " + StrLeft("Str", 13) +
+		" " + StrLeft("Upgrades", 13) +
+		" " + StrLeft("MoneyGain", 13) +
+		output
+	);
+	ns.tprint(output);
+}

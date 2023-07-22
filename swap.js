@@ -21,8 +21,7 @@ export async function main(ns) {
 
 	const iMv = ns.args.indexOf("--mv");
 
-	if (iMv == -1)
-	{
+	if (iMv == -1) {
 		ns.tprint("You forgot the mv command.")
 	}
 
@@ -86,7 +85,7 @@ function MainHelper(ns, host, actions, stats) {
 		const scriptTarget = process.args[0];
 		if (actions.oldTarget != scriptTarget)
 			continue;
-		
+
 		if (actions.oldAction != "max") {
 			ApplyNewAction(ns, process, host, actions, stats);
 		} else {
@@ -106,7 +105,7 @@ function MainHelper(ns, host, actions, stats) {
 // exec(script, hostname, threadOrOptions, args) returns pid/0
 function ApplyNewAction(ns, process, host, actions, stats) {
 	let killed = 0;
-	const {oldAction, oldTarget, newAction, newTarget} = actions;
+	const { oldAction, oldTarget, newAction, newTarget } = actions;
 	ns.print(`${oldAction} ${oldTarget} ${newAction} ${newTarget}`)
 
 	if (oldAction == "c") { killed += ns.kill("chrg.js", host) ? 1 : 0; }
@@ -146,12 +145,18 @@ function ApplyNewAction(ns, process, host, actions, stats) {
 		return;
 
 	let execID = 0;
+	if (host == "home") {
+		if (newAction == "g") { execID = ns.spawn("grow.js", threads, newTarget); }
+		if (newAction == "w") { execID = ns.spawn("weak.js", threads, newTarget); }
+		if (newAction == "h") { execID = ns.spawn("hack.js", threads, newTarget); }
+		// if (newAction == "a") { execID = ns.spawn(AlphExec(ns, host, newTarget, threads)); }
+	} else {
+		if (newAction == "g") { execID = ns.exec("grow.js", host, threads, newTarget); }
+		if (newAction == "w") { execID = ns.exec("weak.js", host, threads, newTarget); }
+		if (newAction == "h") { execID = ns.exec("hack.js", host, threads, newTarget); }
+		if (newAction == "a") { execID = AlphExec(ns, host, newTarget, threads); }
+	}
 
-	if (newAction == "c") { execID = ns.exec("chrg.js", host, threads); }
-	if (newAction == "g") { execID = ns.exec("grow.js", host, threads, newTarget); }
-	if (newAction == "w") { execID = ns.exec("weak.js", host, threads, newTarget); }
-	if (newAction == "h") { execID = ns.exec("hack.js", host, threads, newTarget); }
-	if (newAction == "a") { execID = AlphExec(ns, host, newTarget, threads); }
 
 	if (execID)
 		ns.tprint(`on ${StrLeft(host, 20)}, ran ${newAction} -t ${threads}`);

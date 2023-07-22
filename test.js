@@ -35,7 +35,8 @@ import augs from "./static/augs"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
-	jtprint(ns, ns.formulas.gang);
+	// jtprint(ns, ns.formulas.gang);
+	//ns["tprint"](GetTarget(ns));
 	// ns.tprint(StrRight("test", 50) + "x");
 	// ns.tprint(augs);
 	// jtprint(ns, ns.sleeve.getSleeve(0).skills);
@@ -142,19 +143,19 @@ export async function main(ns) {
 	ns.tprint("end test.");
 }
 
-function GetTickersAndOrganizations(ns){
-	let output = [];
-	let tickers = ns.stock.getSymbols().map(m => [m, ns.stock.getOrganization(m)]);
-	ns.tprint(tickers[0])
-	const servers = GetServers(ns).map(m => ns.getServer(m));
-	for (let i = 0; i < servers.length; i++){
-		let server = servers[i];
-		let ticker = tickers.find(f => f[1] == server.organizationName);
-		if(ticker)
-			output.push({hostname: server.hostname, ticker: ticker[0], organizationName: server.organizationName});
-	}
-	return output;
-}
+// function GetTickersAndOrganizations(ns){
+// 	let output = [];
+// 	let tickers = ns.stock.getSymbols().map(m => [m, ns.stock.getOrganization(m)]);
+// 	ns.tprint(tickers[0])
+// 	const servers = GetServers(ns).map(m => ns.getServer(m));
+// 	for (let i = 0; i < servers.length; i++){
+// 		let server = servers[i];
+// 		let ticker = tickers.find(f => f[1] == server.organizationName);
+// 		if(ticker)
+// 			output.push({hostname: server.hostname, ticker: ticker[0], organizationName: server.organizationName});
+// 	}
+// 	return output;
+// }
 
 function terminalWidth() {
 	let output = "";

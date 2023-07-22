@@ -11,14 +11,20 @@ export async function main(ns) {
 	const arg0 = ns.args[0];
 
 	if (ns.args.length == 0) {
-		ns.tprint("No args found. Program did not run. Args are " +
-			"\r\n rename" +
-			"\r\n script" +
-			"\r\n script [target] [a/w/g/h]" +
-			"\r\n upgrade" +
-			"\r\n calc" +
-			"\r\n hq" +
-			"\r\n");
+		ns.tprint(`No args found. Program did not run. Args are 
+			rename
+			script
+			script [target] [a/w/g/h]
+			upgrade
+			om >> upgrade lowest ram server to max
+			calc
+			info >> PrintPServInfo
+			l >> PrintPServInfo isExcludingMoreInfo = true
+			max >> all servers w/ max ram
+			hq >> loopThreads
+			k >> kill
+
+			`);
 	} else if (arg0 == "rename") {
 		RenamePServ(ns);
 	} else if (arg0 == "script") {

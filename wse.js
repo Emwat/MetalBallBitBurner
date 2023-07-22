@@ -1,4 +1,3 @@
-/** @param {NS} ns */
 import NumLeft from "./im/numLeft"
 import StrLeft from "./im/strLeft"
 import ToDollars from "./im/carat"
@@ -21,6 +20,7 @@ const profitsTxt = "profits.txt";
 const reqAbvForecast = 57;
 const reqBelForecast = reqAbvForecast - 2;
 
+/** @param {NS} ns */
 export async function main(ns) {
 	// ns.tprint(ns.stock.getPosition("FNS")[0] > 0);
 	// ns.tprint(ns.stock.getPosition("CTYS")[0] > 0);
@@ -89,7 +89,7 @@ export async function main(ns) {
 		SeeLogs(ns);
 	}
 	else if (arg0 == "s") {
-		SellEverything(ns);
+		SellEverything(ns, ns.args[1] ?? 0);
 	}
 	else if (arg0 == "xp") {
 		ns.write(portfolioTxt, "[]", "w");
@@ -231,7 +231,7 @@ function SellThings(ns, mySymbols, myPortfolio, myLogs) {
 	return [myPortfolio, myLogs];
 }
 
-function SellEverything(ns) {
+function SellEverything(ns, offset) {
 	let mySymbols = ns.stock.getSymbols().filter(f => ns.stock.getPosition(f)[0] > 0);
 	let myPortfolio = JSON.parse(ns.read(portfolioTxt));
 	let myLogs = JSON.parse(ns.read(profitsTxt));
@@ -250,7 +250,19 @@ function SellEverything(ns) {
 		return;
 	}
 
-	for (let i = 0; i < mySymbols.length; i++) {
+	if (offset) {
+		mySymbols = mySymbols.sort((a, b) => {
+			function findMyShares(x) {
+				return myPortfolio.find(f => f.iSym == x)?.myShares ?? 0;
+			}
+			return findMyShares(b) - findMyShares(a);
+		})
+
+		//mySymbols.forEach(f => ns.tprint(f)); return;
+	}
+
+
+	for (let i = 0 + offset; i < mySymbols.length; i++) {
 		const iSym = mySymbols[i];
 		const iData = myPortfolio.filter(f => f.iSym == iSym)[0];
 		const iForecast = Math.floor(ns.stock.getForecast(iSym) * 100);
@@ -264,6 +276,7 @@ function SellEverything(ns) {
 	}
 	ns.write(portfolioTxt, JSON.stringify(myPortfolio), "w");
 	ns.write(profitsTxt, JSON.stringify(myLogs), "w");
+	ns.tprint(`After profits, you have \$${ToDollars(getMoney(ns))}`);
 }
 
 function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {

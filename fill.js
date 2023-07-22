@@ -8,6 +8,7 @@ import StrLeft from "./im/strLeft"
 
 /** @param {NS} ns */
 const coreScriptRam = 1.75;
+const reservedKeywords = ["print"];
 
 export async function main(ns) {
 	const alphJS = "alph.js";
@@ -84,18 +85,18 @@ export async function main(ns) {
 			target = defaultTarget;
 		}
 
-		if (target.minDifficulty >= 90){
+		if (target.minDifficulty >= 90) {
 			target = defaultTarget;
 		}
 
 		if (arg0 == "target") {
 			target = defaultTarget;
 		}
-		else if (arg0) {
+		else if (arg0 && !reservedKeywords.includes(arg0)) {
 			target = arg0;
 		}
 
-		if (target.startsWith("hacknet-server-")){
+		if (target.startsWith("hacknet-server-")) {
 			target = defaultTarget;
 		}
 
@@ -128,9 +129,11 @@ export async function main(ns) {
 	if (serverWithMostMoney.hostname != "")
 		ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
 
-	ns.tprint("fill.js end " + new Date().toLocaleString());
+	ns.tprint("Applied " + myBugs.map(m => m.applied).reduce((a, b) => { return a + b }));
+	if (arg0 == "print")
+		PrintMyBugs(ns, myBugs);
 
-	PrintMyBugs(ns, myBugs);
+	ns.tprint("fill.js end " + new Date().toLocaleString());
 
 }
 
@@ -139,7 +142,7 @@ function tprintFill(ns, id, server, theScript, target) {
 
 }
 
-function PrintMyBugs(ns, myBugs){
+function PrintMyBugs(ns, myBugs) {
 	for (let i = 0; i < myBugs.length; i++) {
 		const myBug = myBugs[i];
 		ns.tprint(
