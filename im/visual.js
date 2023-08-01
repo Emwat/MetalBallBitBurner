@@ -15,14 +15,14 @@ export default function main(server, target, myHackingLevel) {
 		return reset;
 	if (server.cpuCores > 1)
 		return green;
+	if (server.hostname == target)
+		return red;
 	if (server.ramUsed == 0 && server.maxRam > 0)
 		return white;
 	if (myHackingLevel && server.requiredHackingSkill > myHackingLevel / 2)
 		return reset;
 	if (!server.hasAdminRights)
 		return black;
-	if (server.hostname == target)
-		return red;
 	// if (myHackingLevel && server.requiredHackingSkill > myHackingLevel)
 	// 	return reset;
 	if (server.minDifficulty + 5 < Math.floor(server.hackDifficulty))

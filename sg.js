@@ -18,7 +18,8 @@ export async function main(ns) {
 		g >> get, prints all fragments
 		i [X || 0] >> init, takes X and places it
 		rm [X || 0] >> remove, deletes X
-		b [T || 1] [X] >> batch, executes chrg.js with T threads
+		b [T/max] >> batch, executes chrg.js with T threads.
+				If T is not provided, default to home's free ram < 64 ? -11 : -40
 		k >> kill all chrg.js
 		upgrade >> imports var savedFrags inside this js file to frag.txt
 		`);
@@ -42,41 +43,28 @@ export async function main(ns) {
 		const [ignoreMe, fragName] = ns.args;
 		if (!fragName) {
 			ns.tprint("You forgot an argument: NAME")
-			ns.tprint("sg.js end.")
-			return;
+			ns.tprint("sg.js end."); return;
 		}
-		let myNewFrag = GetFrags(ns);
-		let width = ns.stanek.giftWidth();
-		let height = ns.stanek.giftHeight();
-		myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag, width, height };
-		let fragData = ns.read(fragTxt);
-		fragData = !fragData ? [] : JSON.parse(fragData);
-		if (fragData.filter(f => f.name == fragName).length > 0) {
-			const yesOverwrite = await ns.prompt(`${fragName} already exists. Overwrite ${fragName}?`);
-			if (yesOverwrite) {
-				fragData = fragData.filter(f => f.name != fragName);
-			} else {
-				ns.tprint(`Did not overwrite ${fragName}. Ending sg.js.`);
-				return;
-			}
-		}
-		fragData.push(myNewFrag);
-		fragData = fragData.sort((a, b) => a.name.localeCompare(b.name));
-		ns.write(fragTxt, JSON.stringify(fragData), "w");
+		let fragData = await SaveFragData(ns, fragName);
 		ns.tprint(`FragData ${fragName} saved. ${new Date().toLocaleString()}`)
+		WriteMostRecentFrag(ns, fragData);
 	} else if (arg0 == "i" || arg0 == "init") {
 		const [ignoreMe, fragName] = ns.args;
 		if (!fragName) {
 			ns.tprint("You forgot an argument: NAME")
-			ns.tprint("sg.js end.")
-			return;
+			ns.tprint("sg.js end."); return;
 		}
 		let fragData = ns.read(fragTxt);
 		fragData = !fragData ? [] : JSON.parse(fragData);
 		fragData = fragData.filter(f => f.name == fragName)[0];
+		if (!fragData) {
+			ns.tprint(`${fragName} not found.`)
+			ns.tprint(`sg.js end.`); return;
+		}
 		ns.stanek.clearGift();
 		InitFrags(ns, fragData.frag);
-		ns.write(lastGiftTxt, JSON.stringify(fragData.frag), "w");
+		WriteMostRecentFrag(ns, fragData.frag);
+
 		ns.exec("chrg.js", "home", 1, JSON.stringify(fragData.frag));
 	} else if (arg0 == "b") {
 		let [ignoreMe, threads] = ns.args;
@@ -85,7 +73,9 @@ export async function main(ns) {
 			let maxRam = ns.getServerMaxRam("home");
 			let usedRam = ns.getServerUsedRam("home");
 			maxRam -= usedRam;
-			if (maxRam < 64)
+			if (threads == "max")
+				threads = Math.floor((maxRam) / 2);
+			else if (maxRam < 64)
 				threads = Math.floor((maxRam - 11) / 2);
 			else
 				threads = Math.floor((maxRam - 40) / 2);
@@ -100,8 +90,7 @@ export async function main(ns) {
 			ns.tprint(`Fail chrg.js -- threads: ${threads}. ${ns.read(lastGiftTxt)}`);
 	} else if (arg0 == "w" || arg0 == "write") {
 		let myOldFrag = GetFrags(ns);
-		ns.write(lastGiftTxt, JSON.stringify(myOldFrag), "w");
-		ns.tprint(`Current Stanek's Gift has been saved on ${lastGiftTxt}. ${new Date().toLocaleString()}`)
+		WriteMostRecentFrag(ns, myOldFrag);
 	}
 	else if (arg0 == "k") {
 		if (ns.scriptKill("chrg.js", "home"))
@@ -116,16 +105,7 @@ export async function main(ns) {
 			ns.tprint("sg.js end.")
 			return;
 		}
-		let fragData = ns.read(fragTxt);
-		fragData = !fragData ? [] : JSON.parse(fragData);
-		if (fragData.length == 0) {
-			ns.tprint(`Error: There is no fragData in ${fragTxt}.`)
-			ns.tprint(`sg.js ${ns.args.concat()} end. ${new Date().toLocaleString()}`)
-			return;
-		}
-		fragData = fragData.filter(f => f.name != fragName);
-		ns.write(fragTxt, JSON.stringify(fragData), "w");
-		ns.tprint(`FragData ${fragName} deleted. ${new Date().toLocaleString()}`)
+		RemoveFragData(ns, fragName);
 	}
 	else {
 		ns.tprint("no valid arguments.")
@@ -174,4 +154,43 @@ function jtprint(ns, obj) {
 		const [key, value] = entry;
 		ns.tprint("   " + key + ": " + value + ", ");
 	});
+}
+
+async function SaveFragData(ns, fragName) {
+	let myNewFrag = GetFrags(ns);
+	let width = ns.stanek.giftWidth();
+	let height = ns.stanek.giftHeight();
+	myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag, width, height };
+	let fragData = ns.read(fragTxt);
+	fragData = !fragData ? [] : JSON.parse(fragData);
+	if (fragData.filter(f => f.name == fragName).length > 0) {
+		const yesOverwrite = await ns.prompt(`${fragName} already exists. Overwrite ${fragName}?`);
+		if (yesOverwrite) {
+			fragData = fragData.filter(f => f.name != fragName);
+		} else {
+			ns.tprint(`Did not overwrite ${fragName}. Ending sg.js.`);
+		}
+	}
+	fragData.push(myNewFrag);
+	fragData = fragData.sort((a, b) => a.name.localeCompare(b.name));
+	ns.write(fragTxt, JSON.stringify(fragData), "w");
+	return fragData;
+}
+
+function RemoveFragData(ns, fragName) {
+	let fragData = ns.read(fragTxt);
+	fragData = !fragData ? [] : JSON.parse(fragData);
+	if (fragData.length == 0) {
+		ns.tprint(`Error: There is no fragData in ${fragTxt}.`)
+		ns.tprint(`sg.js ${ns.args.concat()} end. ${new Date().toLocaleString()}`)
+		return;
+	}
+	fragData = fragData.filter(f => f.name != fragName);
+	ns.write(fragTxt, JSON.stringify(fragData), "w");
+	ns.tprint(`FragData ${fragName} deleted. ${new Date().toLocaleString()}`)
+}
+
+function WriteMostRecentFrag(ns, myOldFrag){
+	ns.write(lastGiftTxt, JSON.stringify(myOldFrag), "w");
+	ns.tprint(`Current Stanek's Gift has been saved on ${lastGiftTxt}. ${new Date().toLocaleString()}`)
 }

@@ -18,7 +18,7 @@ export async function main(ns) {
 }
 
 function sourceMan() {
-	return `Last Updated: 06/22/2023 03:33 PM
+	return `Last Updated: 07/23/2023 02:34 PM
 
 CSEC          CyberSec (1 port, hack 59)
 avmnite-02h   NiteSec (2 ports, hack 219)
@@ -28,6 +28,10 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	
 	alph.js [target] [securityThresh] [moneyThresh]
 	swap.js --mv [oldAction: all/c/a/g/w/h/k] [oldTarget] [newAction: c/a/g/w/h/k] [newTarget]
+	chrg.js [json] >> Shouldn't run on its own. Use sg.js or chll.js
+	kl.js [script] >> kills scripts with any arguments. helpful for blade.js
+	
+
 	
 # TRACKING
 	book.js [server] >> reads record.txt on another server
@@ -41,28 +45,39 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	print.js [server]
 	pi.js >> idk what formulas is supposed to help with...
 
+# CONTRACTS
 	cct.js contracts()
+	cct.js [a] >> solves contracts automatically
+	treasure.js >> looks at files
 	
 	crack.js [server]
-	hunt.js [server]
+	plant.js 
+	hunt.js [server] >> scans servers. Used to find specific servers.
 
 # HARD HITTING
 	afteraugs.js (no args needed) >> applies alpha.js to mostly one server.
 	batch.js >> unused. WHILE Loop, applies w/g/h topTargets evenly on every server except home.
 	dummy.js >> WHILE LOOP, applies alpha everything
 	expert.js >> WHILE LOOP, all servers hack themselves, home applies idk
+	call.js many >> execute and distribute alpha
+	call.js one >> does NOT apply, gives copy paste script for a/w/g/h
+	call.js [server] >> does NOT apply, gives copy paste script for a/w/g/h
+	call.js [server] [a/w/g/h] >> applies a/w/g/h
 	fill.js >> fills unused servers w/ alph and w
+	fwll.js [a/g/w/h/s] >> fills unused servers w/ a/g/w/h/s... mostly used for s
 	focus.js [k] >> Kills everything
 	focus.js [a/g/w/h, target] >> Kills everything, all servers apply a/g/w/h on one server
 	focus.js [b] >> WHILE LOOP, kills everything, all servers cycles through w, g, h all for one server
 	focus.js [max] >> kills everything, applies w, g, h, a on one server
-	homeHelper.js many >> execute and distribute alpha
-	homeHelper.js one >> does NOT apply, gives copy paste script for a/w/g/h
-	homeHelper.js [server] >> does NOT apply, gives copy paste script for a/w/g/h
-	homeHelper.js [server] [a/w/g/h] >> applies
+	hq.js [x1] [x2] >> x1 = loops, x2 = threads
+	hx.js >> copy of hq.js. idr.
+	control.js [thread] [xThread]/[loop] [xLoop]/[act] [w/g/h]>> idr. More specific hq.
+
+
 
 # GANG
-	gli.js [e/l/c/t]
+	gli.js >> defaults to help
+	gli.js [br] >> Batch recruit
 	heartb.js >> Gangs needs an insane amount of bad karma.
 	nite.js >> ascend gang members based on hacking
 	
@@ -72,22 +87,44 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	net.js [numberOfNodes] >> will also fully upgrade them
 	net.js [max] >> Buys nodes based on money and then fully upgrade
 	richnet.js [numberOfNodes]
+	nnet.js >> defaults to help
+	nnet.js bm >> batch, Sell for Money
+  nnet.js bs >> batch, Improve Studying
+  nnet.js bh >> batch, Reduce Minimum Security
+  nnet.js bo >> batch, Increase Maximum Money
+  nnet.js k >> empty hacknet servers
 	
+# PRIVATE SERVERS
+	pserv.js >> defaults to help
 	pserv.js rename
-	pserv.js script >> applies g/w/h and leftover h
 	pserv.js script >> applies g/w/h and leftover h
 	pserv.js script [target] PushScriptToMany topTargets
 	pserv.js script [target] [a/w/g/h] PushOneScript(single target)
 	pserv.js upgrade
 	pserv.js calc
 	pserv.js max
-	purchase.js (no args needed) >> applies alpha.js
+	purchase.js >> defaults to help
 	purchase.js i >> find the last purchased server index
 	purchase.js p >> (same as no args. purchases 25 servers of 8 GB)
 	
-	-----------
+# BLADE
+	blade.js >> defaults to help. Has exec for helperBlade.js
+	helperBlade.js [c] >> cities chaos
+		Note: I need to incorporate communities
+	helperBlade.js [cm] >> city with min chaos
+	bskills.js >> upgrade skills
+
+# STOCK
+	wse.js >> defaults to help.
 	wse.js info >> all symbols
-	wse.js batch >> WHILE LOOP, if good forecast, buy it! If not, sell it!
+	wse.js b >> WHILE LOOP, if good forecast, buy it! If not, sell it!
+	w1.js [symbol] >> finds the symbol's company and grows it. 
+			This is not really implemented b/c I have to check if server has been hacked yet.
+
+# SLEEVE
+	sli.js >> defaults to help.
+		Note: I need to update numSleeves var.
+
 
 	`;
 }

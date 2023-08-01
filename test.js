@@ -35,7 +35,10 @@ import augs from "./static/augs"
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint(GetTarget(ns));
-	// jtprint(ns, ns.formulas.gang);
+	//jtprint(ns, ns.sleeve.getSleeve(1).skills)
+	//ns.tprint(ns.getServer('w0r1d_d43m0n').requiredHackingSkill);
+	 //jtprint(ns, ns);
+	// jtprint(ns, ns.corporation.getMaterialData("Water"));
 	//ns["tprint"](GetTarget(ns));
 	// ns.tprint(StrRight("test", 50) + "x");
 	// ns.tprint(augs);

@@ -30,6 +30,16 @@ function jtprint(ns, obj, showAll) {
 
 		if (value > 10)
 			color = "";
+		else if (key == "PurchasedServerLimit") {
+			color = SpecialValue(myDictionary[key], true)
+			if (color == "")
+				return;
+		}
+		else if (key == "DaedalusAugsRequirement") {
+			color = SpecialValue(myDictionary[key], false)
+			if (color == "")
+				return;
+		}
 		else if (myDictionary[key] == 2)
 			color = "";
 		else if (MoreIsBetter(key) && value > 1)
@@ -41,7 +51,27 @@ function jtprint(ns, obj, showAll) {
 		else if (!MoreIsBetter(key) && value < 1)
 			color = cyan;
 
-		ns.tprint(` ${color}${key}: ${value}${reset}`);
+		ns.tprint(` ${color}${CapsToSpace(key)}: ${value}${reset}`);
+
+		function CapsToSpace(str) {
+			let ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			for (let i = 0; i < str.length; i++) {
+				let letter = ABC[i];
+				str = str.replaceAll(letter, " " + letter);
+			}
+			return str.trim();
+		}
+
+		function SpecialValue(defaultValue, biggerNumberIsBetter) {
+			if (value > defaultValue)
+				return biggerNumberIsBetter ? cyan : red;
+			else if (value == defaultValue && showAll)
+				return reset;
+			else if (value == defaultValue && !showAll)
+				return "";
+			else if (value < defaultValue)
+				return biggerNumberIsBetter ? red : cyan;
+		}
 	});
 }
 
@@ -65,7 +95,7 @@ const myDictionary = {
 	, PurchasedServerCost: 0
 	, PurchasedServerSoftcap: 0
 	, PurchasedServerLimit: 25
-	, PurchasedServerMaxRam: 2
+	, PurchasedServerMaxRam: 1
 	, CompanyWorkMoney: 1
 	, CrimeMoney: 1
 	, HacknetNodeMoney: 1
@@ -103,35 +133,35 @@ const myDictionary = {
 // BN12 HARD.
 const BN12Dictionary = {
 	HackingLevelMultiplier: 0.25
-,StrengthLevelMultiplier: 0.7
-,DefenseLevelMultiplier: 0.7
-,DexterityLevelMultiplier: 0.7
-,AgilityLevelMultiplier: 0.7
-,ServerMaxMoney: 0.3375
-,ServerStartingMoney: 0.75
-,ServerStartingSecurity: 3
-,PurchasedServerSoftcap: 1.6
-,CompanyWorkMoney: 0.4
-,CrimeMoney: 0.4
-,HacknetNodeMoney: 0.4
-,ScriptHackMoney: 0.2
-,CodingContractMoney: 0.4
-,ClassGymExpGain: 0.5
-,CompanyWorkExpGain: 0.5
-,CrimeExpGain: 0.5
-,FactionWorkExpGain: 0.5
-,HackExpGain: 0.1
-,FactionWorkRepGain: 0.6
-,FourSigmaMarketDataCost: 10
-,FourSigmaMarketDataApiCost: 10
-,CorporationValuation: 0.001
-,CorporationSoftcap: 0.4
-,CorporationDivisions: 0.4
-,BladeburnerRank: 0.45
-,BladeburnerSkillCost: 2
-,GangSoftcap: 0.3
-,GangUniqueAugs: 0.1
-,DaedalusAugsRequirement: 30
-,StaneksGiftPowerMultiplier: 2
-,WorldDaemonDifficulty: 3
+	, StrengthLevelMultiplier: 0.7
+	, DefenseLevelMultiplier: 0.7
+	, DexterityLevelMultiplier: 0.7
+	, AgilityLevelMultiplier: 0.7
+	, ServerMaxMoney: 0.3375
+	, ServerStartingMoney: 0.75
+	, ServerStartingSecurity: 3
+	, PurchasedServerSoftcap: 1.6
+	, CompanyWorkMoney: 0.4
+	, CrimeMoney: 0.4
+	, HacknetNodeMoney: 0.4
+	, ScriptHackMoney: 0.2
+	, CodingContractMoney: 0.4
+	, ClassGymExpGain: 0.5
+	, CompanyWorkExpGain: 0.5
+	, CrimeExpGain: 0.5
+	, FactionWorkExpGain: 0.5
+	, HackExpGain: 0.1
+	, FactionWorkRepGain: 0.6
+	, FourSigmaMarketDataCost: 10
+	, FourSigmaMarketDataApiCost: 10
+	, CorporationValuation: 0.001
+	, CorporationSoftcap: 0.4
+	, CorporationDivisions: 0.4
+	, BladeburnerRank: 0.45
+	, BladeburnerSkillCost: 2
+	, GangSoftcap: 0.3
+	, GangUniqueAugs: 0.1
+	, DaedalusAugsRequirement: 30
+	, StaneksGiftPowerMultiplier: 2
+	, WorldDaemonDifficulty: 3
 }

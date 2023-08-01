@@ -15,13 +15,15 @@ export async function main(ns) {
 
 	if (!arg) {
 		ns.tprint(`"No args found. Available arguments are " +
-	c [ram] - Cost
+	c/cost [ram] - Cost
 	i - FindIterator
 	p [ram]- Make Purchases
+	o [ram]- Make 1 purchase
+	om - Make 1 purchase with max ram
 	
 	Ending program."`)
 		return;
-	} else if (arg == "c" || arg == "cost") {
+	} else if (["c", "cost"].includes(arg)) {
 		let serverLimit = ns.getPurchasedServerLimit();
 		ns.tprint(`With (${ram}) ram: ` +
 			`  One Server: ${ToDollars(ns.getPurchasedServerCost(ram))} ` +

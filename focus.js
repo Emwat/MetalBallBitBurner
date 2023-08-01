@@ -95,6 +95,7 @@ function MainHelper(ns, myArg, targetServer, totalThreads) {
 
 		ns.scriptKill("alph.js", server);
 		ns.scriptKill("chrg.js", server);
+		ns.scriptKill("shar.js", server);
 		for (let b = 0; b < burners.length; b++) {
 			const burner = burners[b];
 			ns.scriptKill(burner, server);

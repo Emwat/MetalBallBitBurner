@@ -34,14 +34,16 @@ export async function main(ns) {
 			ba [X] >> WHILE LOOP, batch ascend every 10 * X seconds
 			br >> WHILE LOOP, batch recruit
 
-			a ["print-all"] >> ascend
+			a >> ascend (excludes ${gangTrainTxt})
 			an >> ascend only the members in ${gangTrainTxt}
 			e >> weaponmizeMember
+			max >> weaponmizeMember if you're rich
 			qa >> quick vigilante justice and ascend
 			q [m/h/v/t] >> quick vigilante justice and then action
 			i >> info
 			ia >> see ${gangAscTxt}
 			member >> print all member names
+			draft [44-48/all] >> write to ${gangTrainTxt}
 			train [44-48/44+] >> write to ${gangTrainTxt}
 		`);
 		return;
@@ -62,13 +64,19 @@ export async function main(ns) {
 	} else if (arg0 == "q") {
 		await quickGetUnwanted(ns, members, ns.args[1]);
 	} else if (arg0 == "e") {
-		`WeaponizeMembers function does NOT check for prices!!`
-		WeaponizeMembers(ns, members);
+		WeaponizeMemberToSpeed(ns, members);
+	} else if (arg0 == "max") {
+		const includeRootkits = true;
+		WeaponizeMembersMax(ns, members, includeRootkits);
 	} else if (arg0 == "a") {
 		ascendBuyAndTrain(ns, members);
 	} else if (arg0 == "an") {
-		let onlyGangTrain = true;
+		const onlyGangTrain = true;
 		ascendBuyAndTrain(ns, members, onlyGangTrain);
+	} else if (arg0 == "ah") {
+		const onlyGangTrain = true;
+		const includeRootkits = true;
+		ascendBuyAndTrain(ns, members, onlyGangTrain, includeRootkits);
 	} else if (arg0 == "ba") {
 		const seconds = ns.args[1] || 300;
 		while (true) {
@@ -83,6 +91,8 @@ export async function main(ns) {
 		PrintMembers(ns, members);
 	} else if (arg0 == "br") {
 		await BatchRecruit(ns);
+	} else if (arg0 == "draft") {
+		SetMembersToDraft(ns, members);
 	} else if (arg0 == "train") {
 		SetMembersToTrain(ns, members);
 	} else {
@@ -190,26 +200,30 @@ const equips = [
 	, { category: "h", cost: 75, name: "Demon Rootkit" }
 	, { category: "h", cost: 40, name: "Hmap Node" }
 	, { category: "h", cost: 75, name: "Jack the Ripper" }
-];
+]
 
-function WeaponizeMember(ns, member) {
+function WeaponizeMember(ns, member, includeRootkits = false) {
 	myMoney = ns.getServerMoneyAvailable("home");
 	let ongoingCost = 0;
 	let sortedEquips = equips.sort((a, b) => a.cost - b.cost);
 	let toBuyList = [];
 
-	for (let i = 0; i < equips.length; i++) {
+	if (!includeRootkits)
+		sortedEquips = sortedEquips.filter(f => f.category != "h");
+
+	for (let i = 0; i < sortedEquips.length; i++) {
 		const equip = sortedEquips[i];
 		if (member.upgrades.indexOf(equip) > -1)
 			continue;
 
+		// ns.tprint(equip);
 		let cost = equip.cost * Math.pow(10, 6);
 		if (ongoingCost + cost > myMoney) {
 			break;
 		}
 		//ns.tprint(sortedEquips[i].name);
 		ongoingCost += cost;
-		toBuyList.push(sortedEquips[i].name);
+		toBuyList.push(equip.name);
 
 		// ns.tprint(`${ToDollars(cost)} ${sortedEquips[i].name}`)
 	}
@@ -230,14 +244,14 @@ function WeaponizeMemberHelper(ns, toBuyList, member) {
 	});
 }
 
-function WeaponizeMembers(ns, members) {
+function WeaponizeMembersMax(ns, members, includeRootkits = false) {
 	for (let i = 0; i < members.length; i++) {
 		const member = members[i];
-		WeaponizeMember(ns, member);
+		WeaponizeMember(ns, member, includeRootkits);
 	}
 }
 
-function GetEquipmentCost(ns, members) {
+function GetEquipmentCost(ns, members, includeRootkits) {
 	// return ["Baseball Bat"
 	// 	, "Bulletproof Vest"
 	// 	, "Full Body Armor"
@@ -249,15 +263,19 @@ function GetEquipmentCost(ns, members) {
 	let sortedEquips = equips.sort((a, b) => a.cost - b.cost);
 	let toBuyList = [];
 
-	for (let i = 0; i < equips.length; i++) {
+	if (!includeRootkits)
+		sortedEquips = equips.filter(f => f.category != "h");
 
-		let cost = sortedEquips[i].cost * Math.pow(10, 6) * members.length;
+	for (let i = 0; i < sortedEquips.length; i++) {
+		let equip = sortedEquips[i];
+		// ns.tprint(equip);
+		let cost = equip.cost * Math.pow(10, 6) * members.length;
 		if (ongoingCost + cost > myMoney) {
 			break;
 		}
 		//ns.tprint(sortedEquips[i].name);
 		ongoingCost += cost;
-		toBuyList.push(sortedEquips[i].name);
+		toBuyList.push(equip.name);
 
 		// ns.tprint(`${ToDollars(cost)} ${sortedEquips[i].name}`)
 	}
@@ -273,8 +291,8 @@ async function quickGetUnwanted(ns, members, nextAction) {
 	assignMembersToTask(ns, nextAction ?? "t", members);
 }
 
-function ascendBuyAndTrain(ns, members, onlyNewRecruits = false) {
-	const toBuyList = GetEquipmentCost(ns, members);
+function ascendBuyAndTrain(ns, members, onlyNewRecruits = false, includeRootkits = false) {
+	const toBuyList = GetEquipmentCost(ns, members, includeRootkits);
 	const stayInTraining = JSON.parse(ns.read(gangTrainTxt));
 
 	if (toBuyList.length < equips.length)
@@ -296,19 +314,16 @@ function ascendBuyAndTrain(ns, members, onlyNewRecruits = false) {
 		if (onlyNewRecruits && !stayInTraining.includes(members[i].name)) {
 			continue;
 		}
-		AscendBuyAndTrainHelper(ns, i, members, toBuyList);
+		AscendBuyAndTrainHelper(ns, members[i], toBuyList);
 	}
 	// ns.write(ascTxt, JSON.stringify(ascData), "w");
 
 }
 
-function AscendBuyAndTrainHelper(ns, i, members, toBuyList) {
-	const member = members[i];
+function AscendBuyAndTrainHelper(ns, member, toBuyList) {
 	const memberName = member.name;
 	//const memberInfo = ns.gang.getMemberInformation(member);
 	const ascResult = ns.gang.getAscensionResult(memberName);
-	const isPrintingAll = ns.args.includes("print-all");
-
 
 	if (!ascResult) {
 		ns.gang.setMemberTask(memberName, "Train Combat");
@@ -326,15 +341,6 @@ function AscendBuyAndTrainHelper(ns, i, members, toBuyList) {
 		return;
 	}
 
-	// if (isPrintingAll)
-	// 	ns.tprint(beforeAsc);
-
-	// if (!isPrintingAll && i == 0)
-	// 	ns.tprint(beforeAsc);
-
-	// if (!isPrintingAll && ns.args.includes("print-last") && i == members.length - 1)
-	// 	ns.tprint(beforeAsc);
-
 	WeaponizeMemberHelper(ns, toBuyList, memberName);
 
 	if (ns.gang.setMemberTask(memberName, "Train Combat")) {
@@ -342,6 +348,13 @@ function AscendBuyAndTrainHelper(ns, i, members, toBuyList) {
 	}
 	else
 		ns.tprint(`${memberName} is error.`)
+}
+
+function WeaponizeMemberToSpeed(ns, members) {
+	const toBuyList = GetEquipmentCost(ns, members);
+	for (let i = 0; i < members.length; i++) {
+		WeaponizeMemberHelper(ns, toBuyList, members[i].name);
+	}
 }
 
 function GetInfo(ns, members) {
@@ -378,6 +391,10 @@ async function BatchRecruit(ns) {
 		if (ns.gang.recruitMember(newestMember)) {
 			dead.push({ name: newestMember, date: new Date() });
 			ns.write(ripTxt, JSON.stringify(dead), "w");
+			let membersToTrain = JSON.parse(ns.read(gangTrainTxt));
+			membersToTrain.push(newestMember);
+			ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+
 			if (ns.gang.setMemberTask(newestMember, "Train Combat"))
 				ns.tprint(`${newestMember} (the new hire) is now training in combat.`);
 
@@ -388,12 +405,67 @@ async function BatchRecruit(ns) {
 
 // Expecting args[1] to be something like 
 // "44-48"
-function SetMembersToTrain(ns, members) {
-	if (ns.args.length == 1) {
-		ns.write(gangTrainTxt, "[]", "w");
+function SetMembersToDraft(ns, members) {
+	let theArgString = ns.args[1];
+	let parsedStringA = "";
+	let parsedStringB = "";
+	let x;
+	if (theArgString == "all") {
+		let membersToTrain = [];
+		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+		ns.tprint(gangTrainTxt + ": " + ns.read(gangTrainTxt));
 		return;
 	}
 
+	for (let i = 0; i < theArgString.length; i++) {
+		let s = theArgString[i];
+		if (s !== "0" && !parseInt(s))
+			break;
+		parsedStringA += s;
+	}
+	x = parseInt(parsedStringA);
+
+	let connector = theArgString[parsedStringA.length];
+	if (connector == "-") {
+		let membersToDraft = [];
+		function GetY() {
+			for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
+				let s = theArgString[i];
+				if (s != "0" && !parseInt(s))
+					break;
+				parsedStringB += s;
+			}
+			return parseInt(parsedStringB)
+		}
+		let y = GetY();
+
+		ns.tprint({ x, y })
+
+		for (let i = x; i <= y; i++) {
+			membersToDraft.push("man" + String(i).padStart(4, "0"));
+		}
+		let membersToTrain = JSON.parse(ns.read(gangTrainTxt) || "[]");
+		membersToTrain = membersToTrain.filter(f => !membersToDraft.includes(f));
+		ns.tprint(membersToDraft);
+		// ns.tprint(membersToTrain);
+		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+	} else {
+		let membersToTrain = JSON.parse(ns.read(gangTrainTxt) || "[]");
+		membersToTrain = membersToTrain.filter(f => f != "man" + x.padStart(4, "0"));
+		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+	}
+
+	ns.tprint(gangTrainTxt + ": " + ns.read(gangTrainTxt));
+}
+
+// Expecting args[1] to be something like 
+// "44-48"
+function SetMembersToTrain(ns, members) {
+	if (ns.args.length == 1) {
+		ns.write(gangTrainTxt, "[]", "w");
+		ns.tprint("membersToTrain: []");
+		return;
+	}
 
 	let membersToTrain = [];
 	let theArgString = ns.args[1];
@@ -403,18 +475,19 @@ function SetMembersToTrain(ns, members) {
 
 	for (let i = 0; i < theArgString.length; i++) {
 		let s = theArgString[i];
-		if (!parseInt(s))
+		if (s !== "0" && !parseInt(s))
 			break;
-		parsedStringA += s;
+		parsedStringA += String(s);
 	}
 	x = parseInt(parsedStringA);
 
 	let connector = theArgString[parsedStringA.length];
+	// ns.tprint({x, parsedStringA, connector})
 	if (connector == "-") {
 		let y;
 		for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
 			let s = theArgString[i];
-			if (!parseInt(s))
+			if (s != "0" && !parseInt(s))
 				break;
 			parsedStringB += s;
 		}
@@ -422,20 +495,17 @@ function SetMembersToTrain(ns, members) {
 
 		ns.tprint({ x, y })
 		for (let i = x; i <= y; i++) {
-			membersToTrain.push("man" + ZeroLeft(i, 2));
 			membersToTrain.push("man" + ZeroLeft(i, 4));
 		}
 	} else if (connector == "+") {
-		let manX = members.map(m => m.name).indexOf("man" + ZeroLeft(x, 2));
-		if (manX == -1)
-			manX = members.map(m => m.name).indexOf("man" + ZeroLeft(x, 4));
-		
-		for(let i = manX; i < members.length; i++){
+		let xIndex = members.map(m => m.name).indexOf("man" + ZeroLeft(x, 4));
+		// ns.tprint(x + " " + xIndex);
+		for (let i = xIndex; i < members.length; i++) {
 			membersToTrain.push(members[i].name);
 		}
 	}
 
-	ns.tprint(membersToTrain.join(" "));
+	ns.tprint("Members To Train: " + JSON.stringify(membersToTrain));
 	ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
 }
 

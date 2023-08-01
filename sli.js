@@ -1,5 +1,4 @@
-/** @param {NS} ns */
-const numSleeves = 6; // ns.getNumSleeves();
+const numSleeves = 7; // ns.getNumSleeves();
 
 const crimeTypes = [
 	"Shoplift"
@@ -20,9 +19,13 @@ const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ish
 
 const uniClasses = ["Computer Science", "Data Structures"
 	, "Networks", "Algorithms", "Management", "Leadership"];
+	
 
 const universities = ["Rothman University", "Summit University", "ZB Institute of Technology"];
 
+const folder = "/q/";
+
+/** @param {NS} ns */
 export async function main(ns) {
 	// const argRabbit = ns.args[0];
 	const [argAction, argParams] = ns.args;
@@ -41,18 +44,21 @@ export async function main(ns) {
 
 	if (false) { }
 	else if (argAction == "t") {
-		let myFunc = function (x) { ns.tprint(ns.sleeve.getTask(x)) };
-		if (toAllSleeves) loop(ns, myFunc);
-		else ns.sleeve.getTask(argRabbit);
+		// let myFunc = function (x) { ns.tprint(ns.sleeve.getTask(x)) };
+		// if (toAllSleeves) loop(ns, myFunc);
+		// else ns.sleeve.getTask(argRabbit);
+		ns.exec(`${folder}getTask.js`, "home", 1, numSleeves);
 	}
 	else if (argAction == "c") {
-		let crimeType = crimeTypes.find(f => f[0] == argParams.toUpperCase());
-		if (argParams.toLowerCase() == "heist")
-			crimeType = "Heist";
+		// let crimeType = crimeTypes.find(f => f[0] == argParams.toUpperCase());
+		// if (argParams.toLowerCase() == "heist")
+		// 	crimeType = "Heist";
 
-		ns.tprint(`Crime ${crimeType}`);
-		if (toAllSleeves) loop(ns, ns.sleeve.setToCommitCrime, [crimeType]);
-		else ns.sleeve.setToCommitCrime(argRabbit, crimeType);
+		// ns.tprint(`Crime ${crimeType}`);
+		// if (toAllSleeves) loop(ns, ns.sleeve.setToCommitCrime, [crimeType]);
+		// else ns.sleeve.setToCommitCrime(argRabbit, crimeType);
+		ns.exec(`${folder}setToCommitCrime.js`, "home", 1, numSleeves, argParams);
+
 	}
 	else if (argAction == "j") {
 		ns.tprint(`Company Time`);
@@ -61,13 +67,13 @@ export async function main(ns) {
 
 	}
 	else if (argAction == "r") {
-		let myCity = argParams.toUpperCase();
-		ns.tprint(`Travel to ${myCity}`);
+		// let myCity = argParams.toUpperCase();
+		// ns.tprint(`Travel to ${myCity}`);
 
-		myCity = cities.find(f => f[0] == myCity);
-		if (toAllSleeves) loop(ns, ns.sleeve.travel, [myCity]);
-		else ns.sleeve.travel(argRabbit, myCity);
-
+		// myCity = cities.find(f => f[0] == myCity);
+		// if (toAllSleeves) loop(ns, ns.sleeve.travel, [myCity]);
+		// else ns.sleeve.travel(argRabbit, myCity);
+		ns.exec(`${folder}travel.js`, "home", 1, numSleeves, argParams);
 	}
 	else if (argAction == "f") {
 		ns.tprint(`Faction`);
@@ -76,33 +82,35 @@ export async function main(ns) {
 
 	}
 	else if (argAction == "g") {
-		ns.tprint(`Gym`);
-		let gyms = ["Powerhouse Gym"];
-		let stats = ["str", "def", "dex", "agi"]
-		let gym = gyms[0];
-		let stat = stats.find(f => f == argParams);
-		ns.tprint(`${gym} ${stat}`);
-		if (argParams == "all") {
-			let i = 0;
-			let s = 0;
-			while (i < numSleeves) {
-				if (s >= stats.length)
-					s = 0;
-				ns.sleeve.setToGymWorkout(i, gym, stats[s]);
-				i++;
-				s++;
-			}
-		} else {
-			if (toAllSleeves) loop(ns, ns.sleeve.setToGymWorkout, [gym, stat]);
-			else ns.sleeve.setToGymWorkout(argRabbit, gym, stat);
-		}
-		// setToGymWorkout(sleeveNumber, gymName, stat) 	Set a sleeve to workout at the gym.
+		// ns.tprint(`Gym`);
+		// let gyms = ["Powerhouse Gym"];
+		// let stats = ["str", "def", "dex", "agi"]
+		// let gym = gyms[0];
+		// let stat = stats.find(f => f == argParams);
+		// ns.tprint(`${gym} ${stat}`);
+		// if (argParams == "all") {
+		// 	let i = 0;
+		// 	let s = 0;
+		// 	while (i < numSleeves) {
+		// 		if (s >= stats.length)
+		// 			s = 0;
+		// 		ns.sleeve.setToGymWorkout(i, gym, stats[s]);
+		// 		i++;
+		// 		s++;
+		// 	}
+		// } else {
+		// 	if (toAllSleeves) loop(ns, ns.sleeve.setToGymWorkout, [gym, stat]);
+		// 	else ns.sleeve.setToGymWorkout(argRabbit, gym, stat);
+		// }
+		// // setToGymWorkout(sleeveNumber, gymName, stat) 	Set a sleeve to workout at the gym.
+		ns.exec(`${folder}setToGymWorkout.js`, "home", 1, numSleeves, argParams);
 
 	}
 	else if (argAction == "s") {
-		ns.tprint("Shock Recovery Time");
-		if (toAllSleeves) loop(ns, ns.sleeve.setToShockRecovery);
-		else ns.sleeve.setToShockRecovery(argRabbit);
+		// ns.tprint("Shock Recovery Time");
+		// if (toAllSleeves) loop(ns, ns.sleeve.setToShockRecovery);
+		// else ns.sleeve.setToShockRecovery(argRabbit);
+		ns.exec(`${folder}setToShockRecovery.js`, "home", 1, numSleeves);
 	}
 	// else if (argAction == "sy") {
 	// 	if (toAllSleeves) loop(ns.sleeve.setToSynchronize);
@@ -154,17 +162,18 @@ export async function main(ns) {
 		else
 			loop(ns, ns.sleeve.setToBladeburnerAction, [action]);
 	} else if (argAction == "i") {
-		ns.tprint("idling...");
-		if (argParams == "all")
-			loop(ns, ns.sleeve.setToIdle);
-		else
-		ns.sleeve.setToIdle(0);
+		// ns.tprint("idling...");
+		// if (argParams == "all")
+		// 	loop(ns, ns.sleeve.setToIdle);
+		// else
+		// ns.sleeve.setToIdle(0);
+		ns.exec(`${folder}setToIdle.js`, "home", 1, numSleeves, argParams || "");
 	}
 
 	else {
 		ns.tprint(`${argAction} is an invalid argument.`)
 	}
-	ns.tprint(`sli.js ${ns.args.concat()} ended. ${new Date().toLocaleString()}`)
+	//ns.tprint(`sli.js ${ns.args.concat()} ended. ${new Date().toLocaleString()}`)
 }
 
 // "Shoplift"
@@ -180,26 +189,38 @@ export async function main(ns) {
 
 function emptyArgsError() {
 	return `You haven't entered any arguments. Valid arguments are
-	
+
 	argAction:
 
 		t >> getTask
 
-		c [crime: s/m/l/h... ]>> commit crime
-		f >> faction
+		c [crime: s/m/l/h/heist... ]>> commit crime
 		g [all/str/def/dex/agi] >> gym
+		WIP f >> faction
 		WIP >> j >> job
 		b >> bladeburner
+		b [f/r/d/h/i/s/t] [t/b/r]>> bladeburner
 		r [city: s/a/v/c/n/i] >> travel 
 		s >> shock recovery
-		u >> university
-		b [f/r/d/h/i/s/t] [t/b/r]>> bladeburner
+		u [c/d/n/a m/l] >> university
 		i >> idle
+		i [all] >> all sleeves to idle
 	
 	argRabbit: 
 		max
 		1/2/3/4/5/6
 	`;
+}
+
+
+function loopExec(ns, myFunction, moreArgs) {
+	for (let i = 0; i < numSleeves; i++) {
+		if (moreArgs)
+			myFunction(i, ...moreArgs);
+		else
+			myFunction(i);
+
+	}
 }
 
 function loop(ns, myFunction, moreArgs) {

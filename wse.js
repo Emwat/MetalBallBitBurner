@@ -40,6 +40,7 @@ export async function main(ns) {
 			info [pcs] >> purchase cost short
 			info [me] >> me
 			s >> SellsEverything
+			s [x] >> SellsEverything but skip the symbols with most bought shares a number of x times
 			k >> Kills wse.js b
 			l >> SeeLogs
 			x >> Reset files. Does not sell anything.
@@ -47,28 +48,23 @@ export async function main(ns) {
 		return;
 	}
 	ns.disableLog("getServerMoneyAvailable");
-	const iHasAccess = ns.stock.hasTIXAPIAccess();
-	const iHasData = ns.stock.has4SDataTIXAPI();
 
-	if (!iHasAccess) {
-		ns.tprint("I don't have access to the stock market api yet.");
-		return;
-	}
-	if (!iHasData) {
-		ns.tprint("I don't have access to the data yet.");
-		return;
-	}
 
-	let symbols = ns.stock.getSymbols();
 
-	ns.tprint(`You have \$${ToDollars(getMoney(ns))} on ${new Date().toLocaleString()}`);
+
 	if (false) { }
 	else if (ns.args[0] == "b") {
+		if (!HasApiAccess) return;
+		ns.tprint(`You have \$${ToDollars(getMoney(ns))} on ${new Date().toLocaleString()}`);
+
 		ns.tprint(`WHILE LOOP STARTED. You must kill this program to end it.`)
 		let waitTime = 1000 * 7;
 		await BatchBuyAndSell(ns, waitTime);
 	}
-	else if (arg0 == "i" || arg0 == "info") {
+	else if (["i", "info"].includes(arg0)) {
+		if (!HasApiAccess) return;
+		let symbols = ns.stock.getSymbols();
+
 		if (false) { }
 		else if (arg1 == "abc") symbols = symbols.sort();
 		else if (arg1 == "a") symbols = symbols.sort((a, b) => ns.stock.getAskPrice(a) - ns.stock.getAskPrice(b));
@@ -89,6 +85,8 @@ export async function main(ns) {
 		SeeLogs(ns);
 	}
 	else if (arg0 == "s") {
+		if (!HasApiAccess) return;
+		ns.tprint(`You have \$${ToDollars(getMoney(ns))} on ${new Date().toLocaleString()}`);
 		SellEverything(ns, ns.args[1] ?? 0);
 	}
 	else if (arg0 == "xp") {
@@ -108,6 +106,21 @@ export async function main(ns) {
 	//ftprint(ns, symbols);
 	//jtprint(ns, ns);
 
+}
+
+function HasApiAccess() {
+	const iHasAccess = ns.stock.hasTIXAPIAccess();
+	const iHasData = ns.stock.has4SDataTIXAPI();
+
+	if (!iHasAccess) {
+		ns.tprint("I don't have access to the stock market api yet.");
+		return false;
+	}
+	if (!iHasData) {
+		ns.tprint("I don't have access to the data yet.");
+		return false;
+	}
+	return true;
 }
 
 function getMoney(ns) {

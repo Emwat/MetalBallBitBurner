@@ -24,24 +24,39 @@ export async function main(ns) {
 	// MainHelper(ns, servers, threads);
 	let output = 0;
 	let looped = 0;
-	for (let i = 0; i < loopThreads; i++) {
-		let o = HQHelper(ns, servers, threads);
-		output += o;
-		if (o == 0)
-			break;
-		looped++;
-		await ns.sleep(1000 * 1);
+
+	let hosts = servers.slice();
+	function filterMyServers(f) {
+		if (f.hostname.startsWith("pserv")) return true;
+		if (f.hostname.startsWith("hacknet-")) return true;
+		if (f.hostname == "home") return true;
+		return false;
 	}
+
+	hosts = hosts.filter(filterMyServers);
+	// ns.tprint(hosts.map(m => m.hostname))
+	for (let i = 0; i < hosts.length; i++) {
+
+		for (let j = 0; j < loopThreads; j++) {
+			let o = HQHelper(ns, servers, threads, hosts[i].hostname);
+			output += o;
+			if (o == 0)
+				break;
+			looped++;
+			await ns.sleep(1000 * 1);
+		}
+	}
+
 	ns.tprint(`Applied a total of ${output} threads. (Looped ${looped} times)`)
 	ns.tprint(`hq.js ended ${new Date().toLocaleString()}`)
 }
 
 
-function HQHelper(ns, servers, threads) {
-
+function HQHelper(ns, servers, threads, host) {
 	if (ns.args[2]) {
 		servers = [ns.getServer(ns.args[2])];
 	}
+
 	// servers = [
 	// 	// ns.getServer("n00dles"),
 	// 	// ns.getServer("phantasy"),
@@ -68,16 +83,16 @@ function HQHelper(ns, servers, threads) {
 		}
 
 		if (server.minDifficulty <= 90) {
-			if (AlphExec(ns, "home", server.hostname, lessThreads) > 0) { t++ }
-			if (ns.exec("weak.js", "home", Math.floor(lessThreads * 0.3), server.hostname) > 0) { t++ }
-			if (ns.exec("grow.js", "home", Math.floor(1000), server.hostname) > 0) { t++ }
-			if (ns.exec("hack.js", "home", Math.floor(lessThreads * 0.1), server.hostname) > 0) { t++ }
+			if (AlphExec(ns, host, server.hostname, lessThreads) > 0) { t++ }
+			if (ns.exec("weak.js", host, Math.floor(lessThreads * 0.3), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", host, Math.floor(1000), server.hostname) > 0) { t++ }
+			if (ns.exec("hack.js", host, Math.floor(lessThreads * 0.1), server.hostname) > 0) { t++ }
 		} else {
 			continue;
-			if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
-			if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
-			if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }
-		  if (ns.exec("hack.js", "home", Math.floor(lessThreads * 0.2), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", host, Math.floor(lessThreads), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", host, Math.floor(lessThreads), server.hostname) > 0) { t++ }
+			if (ns.exec("grow.js", host, Math.floor(lessThreads), server.hostname) > 0) { t++ }
+			if (ns.exec("hack.js", host, Math.floor(lessThreads * 0.2), server.hostname) > 0) { t++ }
 		}
 
 		// if (ns.exec("grow.js", "home", Math.floor(lessThreads), server.hostname) > 0) { t++ }

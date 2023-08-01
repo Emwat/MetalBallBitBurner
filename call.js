@@ -1,3 +1,4 @@
+import GetTarget from "./im/target"
 import TopTargets from './im/topTarget'
 
 /** @param {NS} ns */
@@ -66,15 +67,14 @@ export async function main(ns) {
 				HelperExec(ns, "hack.js", "home", target, Math.floor(maxThreads * 0.4));
 			}
 		}
-	} else if (ns.args[0] == "one") {
-		const topTargets = TopTargets(ns);
-		const target = topTargets[0];
+	} else if (ns.args[0] == "one" || ns.args[0] == "target") {
+		const target = GetTarget(ns);
 
-
-		Helper(ns, "alph.js", target, alphMaxThreads);
-		Helper(ns, "weak.js", target, growMaxThreads);
-		Helper(ns, "hack.js", target, hackMaxThreads);
-
+		let output = "\r\n";
+		output += "\r\n " + Helper(ns, "alph.js", target, alphMaxThreads);
+		output += "\r\n " + Helper(ns, "weak.js", target, growMaxThreads);
+		output += "\r\n " + Helper(ns, "hack.js", target, hackMaxThreads);
+		ns.tprint(output);
 	}  else if (ns.args[0] == "s") {
 		ns.exec("shar.js", "home", sharMaxThreads );
 		ns.tprint(`running shar.js -t ${sharMaxThreads}`);

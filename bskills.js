@@ -1,34 +1,80 @@
+const forBladeTxt = "forBlade.txt";
+
 /** @param {NS} ns */
 export async function main(ns) {
 
+	if (ns.args.length == 0) {
+		ns.tprint(`No arguments provided. Valid arguments are
+		e >> distributed
+		m >> Hands of Midas (${ns.bladeburner.getSkillUpgradeCost("Hands of Midas")})
+		o >> Overclock (${ns.bladeburner.getSkillUpgradeCost("Overclock")})
+		s >> Cyber's Edge (${ns.bladeburner.getSkillUpgradeCost("Cyber's Edge")})
+
+		You have ${ns.bladeburner.getSkillPoints()} skill points.
+		`)
+
+	}
+	else if (ns.args[0] == "e") {
+		await DistributeSkillPoints(ns);
+	} else if (ns.args[0] == "m") {
+		await DistributeSkillPoints(ns, "Hands of Midas");
+	} else if (ns.args[0] == "o") {
+		await DistributeSkillPoints(ns, "Overclock");
+	} else if (ns.args[0] == "s") {
+		await DistributeSkillPoints(ns, "Cyber's Edge");
+	}
+}
+
+/** @param {NS} ns */
+async function DistributeSkillPoints(ns, focusName = "") {
 	let myPoints = ns.bladeburner.getSkillPoints();
+
 	let bbSkills = skillNames.map(m => { return { name: m, cost: ns.bladeburner.getSkillUpgradeCost(m) } })
 	let bbSkillWithMinCost = bbSkills.sort((a, b) => a.cost - b.cost)[0];
+	if (focusName != "Cyber's Edge")
+	{
+		bbSkills = bbSkills.filter(f => f.name != "Cyber's Edge")
+	}
 	// bbSkillWithMinCost = bbSkills.reduce((output, r) => { return r.cost < output.cost ? r : output;});
-  // ns.tprint(`${bbSkillWithMinCost.name} ${bbSkillWithMinCost.cost}`);
+	// ns.tprint(`${bbSkillWithMinCost.name} ${bbSkillWithMinCost.cost}`);
 	// return;
+	//const maxOverclockCost = 258; // bn7
+	const maxOverclockCost = 129;
 
 	while (true) {
+		
 		myPoints = ns.bladeburner.getSkillPoints();
-		bbSkills = skillNames.map(m => { return { name: m, cost: ns.bladeburner.getSkillUpgradeCost(m) } })
+		bbSkills = bbSkills.map(m => { return { name: m.name, cost: ns.bladeburner.getSkillUpgradeCost(m.name) } })
 		// bbSkillWithMinCost = bbSkills.sort((a, b) => a.cost - b.cost)[0];
 		bbSkillWithMinCost = bbSkills.reduce((output, r) => {
 			return r.cost < output.cost ? r : output;
 		});
+		if (focusName) {
+			bbSkillWithMinCost = bbSkills.find(f => f.name == focusName);
+			if (!bbSkillWithMinCost)
+				return;
+		}
 
-		if (bbSkillWithMinCost.name == "Overclock" && bbSkillWithMinCost.cost == 258){
+
+
+		if (bbSkillWithMinCost.name == "Overclock" && bbSkillWithMinCost.cost == maxOverclockCost) {
 			bbSkills = bbSkills.filter(f => f.name != "Overclock");
 
 			bbSkillWithMinCost = bbSkills.reduce((output, r) => {
-			return r.cost < output.cost ? r : output;
-		});
+				return r.cost < output.cost ? r : output;
+			});
 		}
 
-		
+
 		if (bbSkillWithMinCost.cost > myPoints)
 			break;
-		if (ns.bladeburner.upgradeSkill(bbSkillWithMinCost.name))
-			ns.tprint(`Upgraded ${bbSkillWithMinCost.name}`)
+		if (ns.bladeburner.upgradeSkill(bbSkillWithMinCost.name)) {
+			ns.tprint(`Spent ${bbSkillWithMinCost.cost} skill points on ${bbSkillWithMinCost.name}`)
+			if (!focusName) {
+				ns.write(forBladeTxt, bbSkillWithMinCost.cost, "w");
+			}
+
+		}
 		else {
 			ns.tprint(`Could not upgrade ${bbSkillWithMinCost.name}`);
 			break;
@@ -38,8 +84,9 @@ export async function main(ns) {
 
 	myPoints = ns.bladeburner.getSkillPoints();
 	ns.tprint(`The next skill "${bbSkillWithMinCost.name}" costs ${bbSkillWithMinCost.cost}.` +
-	` You have ${myPoints} skill points.`);
+		` You have ${myPoints} skill points.`);
 }
+
 
 const skillNames = ["Blade's Intuition",
 	"Cloak",
@@ -50,6 +97,7 @@ const skillNames = ["Blade's Intuition",
 	"Reaper",
 	"Evasive System",
 	"Datamancer",
-	// "Cyber's Edge",
+	"Cyber's Edge",
 	"Hands of Midas",
 	"Hyperdrive"]
+

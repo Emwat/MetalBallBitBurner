@@ -10,7 +10,7 @@ import GetMostAffordableNode from './im/nodeCosts'
 // 20 nodes, level 200, ram 64, 16 cores. -$6.5b
 
 
-
+let numberOfNodes = 0;
 
 
 export async function main(ns) {
@@ -18,108 +18,60 @@ export async function main(ns) {
 	ns.disableLog("getServerMoneyAvailable");
 	ns.disableLog("sleep");
 	ns.tprint(`Activating Hacknet program ${(ns.args.length > 0 ? ns.args[0] : "default")}`);
-	let arg = ns.args[0];
-	let number = ns.args[1];
-	let count = 8;
-	function GetMaxAmount(arg, goAllTheWay) {
-		const theMaxLevel = 200;
-		const theMaxRam = 64;
-		const theMaxCores = 16;
 
-		let maxLevel = 200;
-		let maxRam = 16;
-		let maxCores = 8;
+	numberOfNodes = ns.hacknet.numNodes();
 
-		if (goAllTheWay) {
-			maxLevel = theMaxLevel;
-			maxRam = theMaxRam;
-			maxCores = theMaxCores;
-		}
+	if (ns.args[0] == "help") {
+		ns.tprint(`
+		[n/node/nodes] [X ]>> buy until you reach X nodes
+		maxout >> focus on buying max nodes and then fully upgrade them 200/16/8
+		[l/r/c] [X/max] >> focus on l/r/c and upgrade to level X.
 
-		if (false) { }
-		else if (arg == "l")
-			return maxLevel;
-		else if (arg == "r")
-			return maxRam;
-		else if (arg == "c")
-			return maxCores;
-
-		throw (`error -> GetMaxAmount(arg: ${arg})`);
-	}
-
-	// if the argument is a number, focus on buying that many nodes
-	// and then fully upgrade them
-	if (!isNaN(arg)) {
-		await PurchaseNodes(ns, arg);
-		await UpgradeNodes(ns, arg, "l", GetMaxAmount("l", true));
-		await UpgradeNodes(ns, arg, "r", GetMaxAmount("r", true));
-		await UpgradeNodes(ns, arg, "c", GetMaxAmount("c", true));
-		ns.tprint(`net.js ended.`)
+		`);
 		return;
 	}
 
-	if (arg == "max") {
-		const i = GetMostAffordableNode(ns);
-		if (i == undefined) {
-			ns.tprint(`MostAffordableNode is undefined.`)
-			ns.tprint(`net.js ended.`)
-			return;
+	let indexN = Math.max(
+		ns.args.indexOf("n"), 
+		ns.args.indexOf("node"), 
+		ns.args.indexOf("nodes")
+		);
+	if (indexN > -1) {
+		let number = ns.args[indexN + 1];
+		// if (number == "max")
+		// 	await PurchaseNodes(ns, numberOfNodes);
+		// else
+		await PurchaseNodes(ns, number);
+	}
+
+	let actions = "lrc".split("");
+	for (let i = 0; i < actions.length; i++) {
+		let action = actions[i];
+		let index = ns.args.indexOf(action);
+		if (index > -1) {
+			let number = ns.args[index + 1];
+			if (!number)
+				continue;
+			if (number == "max")
+				await UpgradeNodes(ns, action, GetMaxAmount("l", true));
+			else
+				await UpgradeNodes(ns, action, number);
 		}
-		ns.tprint(`Most affordable node index is ${i}.`)
-		await PurchaseNodes(ns, i);
-		await UpgradeNodes(ns, i, "l", GetMaxAmount("l", true));
-		await UpgradeNodes(ns, i, "r", GetMaxAmount("r", true));
-		await UpgradeNodes(ns, i, "c", GetMaxAmount("c", true));
-		ns.tprint(`net.js ended.`)
-		return;
 	}
-
-
-
-
-	let ownedNodes = ns.hacknet.numNodes();
-	if (arg == "o" || arg == "owned") {
-		count = ownedNodes;
-	}
-	else if (ownedNodes < count)
-		await PurchaseNodes(ns, count);
-	else
-		count = ownedNodes;
-
-	if (!isValidAction(arg)) {
-		await UpgradeNodes(ns, count, "l", 100);
-	} else {
-		await UpgradeNodes(ns, count, arg, number ?? GetMaxAmount(arg));
-	}
-
-
-	// // UPGRADE RAM
-	// if (ns.args[0] == "r") {
-	// 	await UpgradeRam(ns, cnt, maxRam);
-	// }
-
-	// // UPGRADE CORES
-	// if (ns.args[0] == "c") {
-	// 	await UpgradeCores(ns, cnt, maxCores);
-	// }
-
 
 	ns.tprint(`net.js ended.`)
 
 }
+
 function myMoney(ns) {
 	return ns.getServerMoneyAvailable("home");
 }
 
-function isValidAction(action) {
-	return action == "l" || action == "r" || action == "c";
-}
-
-async function PurchaseNodes(ns, numberOfNodes) {
-	ns.tprint(`Purchasing ${numberOfNodes} nodes...`)
+async function PurchaseNodes(ns, numberOfNodesToBuy) {
+	ns.tprint(`Purchasing ${numberOfNodesToBuy} nodes...`)
 	let res = null;
 
-	while (ns.hacknet.numNodes() < numberOfNodes) {
+	while (ns.hacknet.numNodes() < numberOfNodesToBuy) {
 		res = ns.hacknet.purchaseNode();
 		if (res != -1) {
 			ns.print("Purchased hacknet Node with index " + res);
@@ -127,20 +79,13 @@ async function PurchaseNodes(ns, numberOfNodes) {
 		await ns.sleep(1000);
 	};
 
-	ns.tprint("All " + numberOfNodes + " nodes purchased")
+	ns.tprint("All " + numberOfNodesToBuy + " nodes purchased")
 }
 
-async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
+async function UpgradeNodes(ns, arg, maxAmount) {
 	ns.print(`UpgradeNodes(ns, numOfNodes: ${numberOfNodes}, arg: ${arg}, maxAmt: ${maxAmount})`);
 	let levels = [];
-	function IsStillUpgradingB(levels, numberOfNodes, maxLevel, arg) {
-		const allNodesMaxLevel = numberOfNodes * maxLevel;
-		const allNodesCurrentLevel = levels.reduce((a, b) => a + b, 0);
-
-		ns.print(`${allNodesMaxLevel} ${allNodesCurrentLevel}`);
-		return allNodesCurrentLevel < allNodesMaxLevel;
-	}
-	function IsStillUpgrading(levels, numberOfNodes, maxLevel, arg) {
+	function IsStillUpgrading(levels, maxLevel) {
 		let remainingLevels = levels.filter(f => { return f < maxLevel });
 		let allNodesMaxLevel = remainingLevels.length * maxLevel;
 		let allNodesCurrentLevel = remainingLevels.reduce((a, b) => a + b, 0);
@@ -149,14 +94,13 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 		return allNodesCurrentLevel < allNodesMaxLevel;
 	}
 
-
 	for (var i = 0; i < numberOfNodes; i++) {
 		levels.push(GetNodeArg(ns.hacknet.getNodeStats(i), arg));
 	}
 
-	while (IsStillUpgrading(levels, numberOfNodes, maxAmount, arg)) {
+	while (IsStillUpgrading(levels, numberOfNodes, maxAmount)) {
 		let ex = 0;
-		const maxEx = 9999;
+		const failSafe = 9999;
 		for (var i = 0; i < numberOfNodes; i++) {
 			let waitTime = 3000;
 
@@ -170,9 +114,7 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 			if (cost == 0 || !isFinite(cost)) {
 				ns.tprint(`error -> Cost: ${cost}` +
 					` -> UpgradeNodes(ns, ${numberOfNodes}, ${arg}, ${maxAmount})`)
-				throw "Blagh"
-				await ns.sleep(30);
-				break;
+				throw "Blagh";
 			}
 
 			if (myMoney(ns) > cost && DoUpgrade(ns, i, arg)) {
@@ -186,7 +128,7 @@ async function UpgradeNodes(ns, numberOfNodes, arg, maxAmount) {
 			await ns.sleep(waitTime);
 
 			ex++;
-			if (ex > maxEx) {
+			if (ex > failSafe) {
 				ns.tprint(`error ${i} ${cost} ${GetNodeArg(ns.hacknet.getNodeStats(i), arg)} ${maxAmount}`);
 				break;
 			}
@@ -229,4 +171,49 @@ function DoUpgrade(ns, i, arg) {
 		return ns.hacknet.upgradeCore(i, 1);
 
 	throw (`error -> DoUpgrade(ns, i: ${i}, arg: ${arg})`);
+}
+
+function GetMaxAmount(arg, goAllTheWay) {
+	const theMaxLevel = 200;
+	const theMaxRam = 64;
+	const theMaxCores = 16;
+
+	let maxLevel = 200;
+	let maxRam = 16;
+	let maxCores = 8;
+
+	if (goAllTheWay) {
+		maxLevel = theMaxLevel;
+		maxRam = theMaxRam;
+		maxCores = theMaxCores;
+	}
+
+	if (false) { }
+	else if (arg == "l")
+		return maxLevel;
+	else if (arg == "r")
+		return maxRam;
+	else if (arg == "c")
+		return maxCores;
+
+	throw (`error -> GetMaxAmount(arg: ${arg})`);
+}
+
+async function BuyMaxNodes(arg) {
+
+	if (arg == "max") {
+		const i = GetMostAffordableNode(ns);
+		if (i == undefined) {
+			ns.tprint(`MostAffordableNode is undefined.`)
+			ns.tprint(`net.js ended.`)
+			return;
+		}
+		ns.tprint(`Most affordable node index is ${i}.`)
+		await PurchaseNodes(ns, i);
+		await UpgradeNodes(ns, i, "l", GetMaxAmount("l", true));
+		await UpgradeNodes(ns, i, "r", GetMaxAmount("r", true));
+		await UpgradeNodes(ns, i, "c", GetMaxAmount("c", true));
+		ns.tprint(`net.js ended.`)
+		return;
+	}
 }

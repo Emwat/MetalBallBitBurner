@@ -1,8 +1,12 @@
+
+
+// 07/26/2023 08:00 AM asked for help. Got told to get rid of power and stopper.
+
 /** @param {NS} ns */
 export async function main(ns) {
 	ns.tail();
 	// ns.disableLog("scan");
-	GetAllServers(ns, ns.args[0], 0, 10);
+	GetAllServers(ns, ns.args[0], 0, 15);
 }
 let alreadyScanned = [];
 
@@ -24,6 +28,8 @@ function GetAllServers(ns, target, power, stopper) {
 	for (var i = 0; i < servers.length; i++) {
 		const server = servers[i];
 		if (server.substr(0, "pserv-".length) == "pserv-")
+			continue;
+		if (server.substr(0, "hacknet-".length) == "hacknet-")
 			continue;
 
 		if (alreadyScanned.indexOf(server) == -1) {

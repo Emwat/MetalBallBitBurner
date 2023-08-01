@@ -39,10 +39,10 @@ export async function main(ns) {
 		ns.exec("power.js", "home", 1);
 
 	} else if (arg0 == "upgrade") {
-		UpgradePServ(ns, ns.args[1] || 128);
+		Upgrade_All_P_Servers(ns, ns.args[1] || 128);
 	} else if (arg0 == "upgradehax") {
 		ns.tail();
-		UpgradePServHax(ns, ns.args[1]);
+		Upgrade_All_P_Servers_Hax(ns, ns.args[1]);
 	}
 	else if (arg0 == "om") {
 		//ns.tail();
@@ -55,7 +55,7 @@ export async function main(ns) {
 	else if (arg0 == "l") {
 		PrintPServInfo(ns, true);
 	} else if (arg0 == "max") {
-		PrintPServMax(ns);
+		Upgrade_P_Servers_To_Max(ns);
 	} else if (arg0 == "hq") {
 		const [ignoreMe, loopThreads] = ns.args;
 		await HQMain(ns, loopThreads || 1);
@@ -109,7 +109,7 @@ function PushScriptToMany(ns) {
 				ns.exec(myScript, server, threads, target);
 		}
 
-		const wThreads = Math.floor(threads * 0.6);
+		const wThreads = Math.floor(threads * 0.2);
 		const gThreads = Math.floor(threads * 0.2);
 		const hThreads = Math.floor(threads * 0.1);
 
@@ -271,15 +271,19 @@ function PrintPServInfo(ns, isExcludingMoreInfo = false) {
 
 }
 
-function PrintPServMax(ns) {
+function Upgrade_P_Servers_To_Max(ns) {
 	const allServers = GetAllPServ(ns);
 	const ram = GetMaxAffordableRam(ns);
 	ns.tprint(`You started with ${ToDollars(ns.getServerMoneyAvailable("home"))}`);
 	for (let i = 0; i < allServers.length; i++) {
 		const server = allServers[i];
-		if (ns.getServerMoneyAvailable("home") > ns.getPurchasedServerCost(ram)) {
+		const cost = ns.getPurchasedServerCost(ram);
+		if (ns.getServerMoneyAvailable("home") > cost) {
 			const oldRam = ns.getServer(server).maxRam;
-			if (ns.upgradePurchasedServer(server, ram))
+			// ns.tprint(`debug ${server} ${cost}`)
+			if (oldRam >= ram)
+				continue;
+			else if (ns.upgradePurchasedServer(server, ram))
 				ns.tprint(`Upgraded ${server} from ${oldRam} to ${ram}.`);
 		} else {
 			ns.tprint(`You did not have enough money at ${i}.`)
@@ -305,7 +309,7 @@ function RenamePServ(ns) {
 	}
 }
 
-function UpgradePServ(ns, ram) {
+function Upgrade_All_P_Servers(ns, ram) {
 	const allServers = GetAllPServ(ns);
 
 	for (let i = 0; i < allServers.length; i++) {
@@ -320,7 +324,7 @@ function UpgradePServ(ns, ram) {
 	}
 }
 
-function UpgradePServHax(ns, power) {
+function Upgrade_All_P_Servers_Hax(ns, power) {
 	const allServers = GetAllPServ(ns);
 
 	for (let i = 0; i < allServers.length; i++) {
@@ -422,12 +426,11 @@ function KillPServScripts(ns) {
 
 function UpgradePServOM(ns) {
 	let x = 21;
-	while (x > 0) {
+	while (x > 3) {
 		let attemptRam = 2 ** x;
 		let hostname = FindWeakestServer(ns);
-		let newHostname = ns.upgradePurchasedServer(hostname, attemptRam);
-		if (newHostname != "") {
-			ns.tprint(`Purchased server ${newHostname} with ${attemptRam} ram. (2 ** ${x})`)
+		if (ns.upgradePurchasedServer(hostname, attemptRam)) {
+			ns.tprint(`Upgraded server ${hostname} with ${attemptRam} ram. (2 ** ${x})`)
 			break;
 		}
 		x--;

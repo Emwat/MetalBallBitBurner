@@ -3,14 +3,14 @@
 // cost, incrementCost, Name
 let upgrades = [
 	[4, 0, "Sell for Money"]
-	//, [100, , "Sell for Corporation Funds"]
-	, [50 ,50,"Reduce Minimum Security"]
-	, [50 ,50,"Increase Maximum Money"]
+	, [50, 50, "Reduce Minimum Security"]
+	, [50, 50, "Increase Maximum Money"]
+	, [50, 50, "Improve Gym Training"]
 	, [100, 50, "Improve Studying"]
-	, [50 ,50,"Improve Gym Training"]
-	// , [200,, "Exchange for Corporation Research"]
+	, [100, 100, "Sell for Corporation Funds"]
+	, [200, 100, "Exchange for Corporation Research"]
 	, [250, 250, "Exchange for Bladeburner Rank"]
-	// , [250,, "Exchange for Bladeburner SP"]
+	, [250, 50, "Exchange for Bladeburner SP"]
 	// , [200, 200, "Generate Coding Contract"]
 	// , [400,, "Company Favor"]
 ];

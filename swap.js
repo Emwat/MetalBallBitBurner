@@ -21,59 +21,73 @@ export async function main(ns) {
 
 	const iMv = ns.args.indexOf("--mv");
 
-	if (iMv == -1) {
-		ns.tprint("You forgot the mv command.")
+	if (iMv > -1) {
+		MoveAction(ns, iMv);
+	} else if (ns.args[0] == "k") {
+		let killStat = 0;
+		const servers = GetServers(ns);
+		for (let server of servers) {
+			for (let script of ns.ps(server)) {
+				if (script.filename == "alph.js" && script.threads < 30)
+					if (ns.scriptKill(script.filename, server))
+						killStat++
+			}
+		}
+		ns.tprint(`Killed ${killStat} alph scripts.`)
 	}
+
 
 	//ns.disableLog("scan");
 	//ns.disableLog("scp");
 	//ns.disableLog("getServer");
 
-	if (iMv > -1) {
-		if (iMv + 4 > ns.args.length) {
-			ns.tprint(`-mv must have 4 following arguments. oldAction/oldTarget/newAction/newTarget`)
-		}
-		let actions = {
-			oldAction: ns.args[iMv + 1],
-			oldTarget: ns.args[iMv + 2],
-			newAction: ns.args[iMv + 3],
-			newTarget: ns.args[iMv + 4]
-		};
-		// let actions = [
-		// 	ns.args[iMv + 1],
-		// 	ns.args[iMv + 2],
-		// 	ns.args[iMv + 3],
-		// 	ns.args[iMv + 4]
-		// ];
-		if (
-			actions.oldAction == undefined ||
-			actions.oldTarget == undefined ||
-			actions.newAction == undefined ||
-			actions.newTarget == undefined
-		) {
-			ns.tprint("Fail. " +
-				" " + actions.oldAction +
-				" " + actions.newTarget +
-				" " + actions.oldAction +
-				" " + actions.newTarget
-			);
-			return;
-		}
 
-		const stats = { killed: 0 };
-		const servers = GetServers(ns);
-
-		for (let i = 0; i < servers.length; i++) {
-			let host = servers[i];
-			MainHelper(ns, host, actions, stats)
-		}
-		ns.tprint(`Stats.Killed ${stats.killed}`);
-	}
 
 	ns.tprint(`swap.js ${ns.args.concat()} end ${new Date().toLocaleString()}`);
 }
 
-function MainHelper(ns, host, actions, stats) {
+function MoveAction(ns, iMv) {
+
+	if (iMv + 4 > ns.args.length) {
+		ns.tprint(`-mv must have 4 following arguments. oldAction/oldTarget/newAction/newTarget`)
+	}
+	let actions = {
+		oldAction: ns.args[iMv + 1],
+		oldTarget: ns.args[iMv + 2],
+		newAction: ns.args[iMv + 3],
+		newTarget: ns.args[iMv + 4]
+	};
+	// let actions = [
+	// 	ns.args[iMv + 1],
+	// 	ns.args[iMv + 2],
+	// 	ns.args[iMv + 3],
+	// 	ns.args[iMv + 4]
+	// ];
+	// if (
+	// 	actions.oldAction == undefined ||
+	// 	actions.oldTarget == undefined ||
+	// 	actions.newAction == undefined ||
+	// 	actions.newTarget == undefined
+	// ) {
+	// 	ns.tprint("Fail. " +
+	// 		" " + actions.oldAction +
+	// 		" " + actions.newTarget +
+	// 		" " + actions.oldAction +
+	// 		" " + actions.newTarget
+	// 	);
+	// 	return;
+	// }
+
+	const stats = { killed: 0 };
+	const servers = GetServers(ns);
+
+	for (let i = 0; i < servers.length; i++) {
+		let host = servers[i];
+		MoveHelper(ns, host, actions, stats)
+	}
+}
+
+function MoveHelper(ns, host, actions, stats) {
 	const processes = ns.ps(host);
 	for (let j = 0; j < processes.length; ++j) {
 		const process = processes[j];
@@ -118,7 +132,6 @@ function ApplyNewAction(ns, process, host, actions, stats) {
 	}
 
 	stats.killed += killed;
-	ns.tprint(`killed ${killed} ${oldAction} scripts on ${host}.`);
 
 	if (newAction == "k")
 		return;
@@ -133,8 +146,10 @@ function ApplyNewAction(ns, process, host, actions, stats) {
 			, ["h", hRam]
 			, ["a", aRam]
 		];
-		let output = things.filter(f => f[0] == action);
-		return output[0][1];
+		let output = things.find(f => f[0] == action);
+		if (output)
+			return output[0][1];
+		return 0;
 	}
 
 	if (killed > 0) {

@@ -47,6 +47,7 @@ export async function main(ns) {
 	ns.tprint(GenerateIPAddresses(ns, "202721319")); // fail 07/06/2023 11:37 AM
 	ns.tprint(GenerateIPAddresses(ns, "4951957")); // fail 07/21/2023 10:01 AM
 	ns.tprint(["4.95.19.57","4.95.195.7","49.5.19.57","49.5.195.7","49.51.9.57","49.51.95.7"]);
+	ns.tprint(GenerateIPAddresses(ns, "121406372")); // fail 07/22/2023 12:51 AM
 
 	// ns.tprint(HammingCodes(ns, 8));
 	// ns.tprint(HammingCodes(ns, 21));

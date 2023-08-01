@@ -12,26 +12,25 @@ export async function main(ns) {
 	//ns.tprint(ns.read(usedTxt));
 	let fragJSON = ns.read(usedTxt);
 
-	let stats = {servers: 0, threads:0};
+	let stats = { servers: 0, threads: 0 };
 	ns.disableLog("scp");
 	// ns.disableLog("exec");
 	ns.disableLog("getServer");
 
 	let arg0 = ns.args[0];
-	
+
 	// ns.tprint(arg);
 	if (arg0 == "k") {
 		await ns.sleep(200);
 		KillCharge(ns, servers);
-	} else if (arg0 == "kh"){
+	} else if (arg0 == "kh") {
 		KillCharge(ns, servers, true);
-	} else if (arg0 == "h"){
+	} else if (arg0 == "h") {
 		await TestFragments(ns, JSON.parse(fragJSON));
 		await ChargeServers(ns, servers, fragJSON, stats, false);
 	} else {
 		await TestFragments(ns, JSON.parse(fragJSON));
 		await ChargeServers(ns, servers, fragJSON, stats, true);
-		ns.tprint(`Executed chrg.js on ${stats.servers} servers. Total threads: ${stats.threads}`)
 	}
 
 
@@ -74,17 +73,19 @@ async function ChargeServers(ns, servers, arg, stats, avoidHacknet) {
 			// ns.tprint(`${stats.servers} ${stats.threads}`)
 		}
 	}
+	ns.tprint(`Executed chrg.js on ${stats.servers} servers. Total threads: ${stats.threads}`)
 }
 
- function KillCharge(ns, servers, onlyHacknet) {
+function KillCharge(ns, servers, onlyHacknet) {
 	ns.tprint(`Killing charge scripts...`)
-
+	let killStat = 0;
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
 		if (onlyHacknet && !server.startsWith("hacknet"))
 			continue;
 
 		ns.scp("chrg.js", server);
-		ns.scriptKill("chrg.js", server);
+		if (ns.scriptKill("chrg.js", server)) killStat++
 	}
+	ns.tprint(`Killed ${killStat} scripts.`);
 }
