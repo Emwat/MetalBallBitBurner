@@ -1,1 +1,1 @@
-[{"iSym":"FSIG","myShares":7500000,"buyPrice":69272,"iForecast":65,"date":"2023-08-01T12:01:56.755Z"},{"iSym":"SLRS","myShares":8000000,"buyPrice":11956,"iForecast":59,"date":"2023-08-01T12:01:56.755Z"},{"iSym":"OMTK","myShares":9400000,"buyPrice":62281,"iForecast":60,"date":"2023-08-01T12:01:56.755Z"},{"iSym":"APHE","myShares":8900000,"buyPrice":8059,"iForecast":57,"date":"2023-08-01T12:02:10.757Z"},{"iSym":"MDYN","myShares":4500000,"buyPrice":15390,"iForecast":58,"date":"2023-08-01T12:06:57.990Z"}]
+[]

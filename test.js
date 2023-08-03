@@ -1,5 +1,3 @@
-/** @param {NS} ns */
-
 import GetProgramLevel from "./im/files"
 
 import AlphExec from "./im/exec"
@@ -19,6 +17,8 @@ import Get from "get.js"
 
 import tickers from "./static/symbols"
 import augs from "./static/augs"
+import FormatTime from './im/time'
+
 // carat.js
 // exec.js
 // files.js
@@ -31,10 +31,11 @@ import augs from "./static/augs"
 // topTarget.js
 // zeroLeft.js
 
-
+/** @param {NS} ns */
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
-	ns.tprint(GetTarget(ns));
+	ns.tprint([200, 2000, 20000].map(t=>FormatTime(t, "m:s")))
+	// ns.tprint(GetTarget(ns));
 	//jtprint(ns, ns.sleeve.getSleeve(1).skills)
 	//ns.tprint(ns.getServer('w0r1d_d43m0n').requiredHackingSkill);
 	 //jtprint(ns, ns);
@@ -102,12 +103,12 @@ export async function main(ns) {
 	// ftprint(ns, GetServers(ns));
 	// ns.tprint(GetMostAffordableNode(ns));
 
-	// const processes = ns.ps("pserv-00");
-	// for (let i = 0; i < processes.length; ++i) {
-	// 	ns.tprint(processes[i].filename + ' ' + processes[i].threads);
-	// 	ns.tprint(processes[i].args);
-	// 	ns.tprint(processes[i].pid);
-	// }
+	const processes = ns.ps("home");
+	for (let i = 0; i < processes.length; ++i) {
+		ns.tprint(processes[i].filename + ' ' + processes[i].threads);
+		ns.tprint(processes[i].args);
+		ns.tprint(processes[i].pid);
+	}
 	// jtprint(ns, processes[0]);
 	// ns.tprint(`ScriptIncome: ${ns.getScriptIncome(processes[0].filename, "iron-gym", ...processes[0].args)}`)
 	// ns.tprint("asdf write");
@@ -191,7 +192,6 @@ async function testPrompt(ns) {
 function getRandomInt(max) {
 	return Math.floor(Math.random() * (max + 1));
 }
-
 
 function jtprint(ns, obj) {
 	Object.entries(obj).forEach(entry => {

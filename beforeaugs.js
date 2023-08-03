@@ -1,10 +1,11 @@
-/** @param {NS} ns */
 import StrLeft from './im/strLeft'
 import NumLeft from './im/numLeft'
 import ToDollars from './im/carat'
 import ZeroLeft from './im/zeroLeft'
 
+/** @param {NS} ns */
 export async function main(ns) {
+	ns.killall("home");
 	ns.exec("wse.js", "home", 1, "l"); await ns.sleep(200);
 	ns.exec("wse.js", "home", 1, "k"); await ns.sleep(200);
 	ns.exec("wse.js", "home", 1, "s"); await ns.sleep(200);

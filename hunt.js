@@ -4,9 +4,10 @@
 
 /** @param {NS} ns */
 export async function main(ns) {
+	const stopper = 15;
 	ns.tail();
-	// ns.disableLog("scan");
-	GetAllServers(ns, ns.args[0], 0, 15);
+	ns.disableLog("scan");
+	GetAllServers(ns, ns.args[0], 0, stopper);
 }
 let alreadyScanned = [];
 
@@ -33,8 +34,8 @@ function GetAllServers(ns, target, power, stopper) {
 			continue;
 
 		if (alreadyScanned.indexOf(server) == -1) {
-			ns.tprint(power + " " + padd(server, power));
-			ns.print(power + " " + padd(server, power));
+			ns.tprint(power + " " + padd(ns, server, power));
+			ns.print(power + " " + padd(ns, server, power));
 			alreadyScanned.push(server);
 		}
 
@@ -44,7 +45,7 @@ function GetAllServers(ns, target, power, stopper) {
 	return servers;
 }
 
-function padd(str, newLength) {
+function padd(ns, str, newLength) {
 	try {
 		let output = ">" + str;
 		for (let i = str.length; i < newLength + str.length; i++) {
@@ -52,6 +53,7 @@ function padd(str, newLength) {
 		}
 		return output;
 	} catch {
+		ns.print({ error: "padd", str, newLength })
 	}
 	return output;
 

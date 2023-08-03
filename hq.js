@@ -1,7 +1,10 @@
-/** @param {NS} ns */
+
 import AlphExec from "./im/exec"
 import GetServers from "./im/servers"
 import GetTargets from "./im/topTarget"
+import GetTarget from "./im/target"
+import GetProgramLevel from "./im/files"
+
 
 const hackScriptRam = 1.7;
 const coreScriptRam = 1.75;
@@ -19,8 +22,17 @@ export async function main(ns) {
 	if (ns.args[1]) {
 		threads = ns.args[1];
 	}
-	const hostnames = GetServers(ns).sort();
-	let servers = hostnames.map(m => ns.getServer(m));
+
+	function SortByMoney(a, b) {
+		// if (a.hostname == redTarget) return -1;
+		// if (b.hostname == redTarget) return 1;
+
+		return b.moneyMax - a.moneyMax;
+	}
+
+	const redTarget = GetTarget(ns);
+	const hostnames = GetServers(ns);
+	let servers = hostnames.map(m => ns.getServer(m)).sort(SortByMoney);
 	// MainHelper(ns, servers, threads);
 	let output = 0;
 	let looped = 0;
@@ -36,7 +48,6 @@ export async function main(ns) {
 	hosts = hosts.filter(filterMyServers);
 	// ns.tprint(hosts.map(m => m.hostname))
 	for (let i = 0; i < hosts.length; i++) {
-
 		for (let j = 0; j < loopThreads; j++) {
 			let o = HQHelper(ns, servers, threads, hosts[i].hostname);
 			output += o;
@@ -51,7 +62,6 @@ export async function main(ns) {
 	ns.tprint(`hq.js ended ${new Date().toLocaleString()}`)
 }
 
-
 function HQHelper(ns, servers, threads, host) {
 	if (ns.args[2]) {
 		servers = [ns.getServer(ns.args[2])];
@@ -65,20 +75,34 @@ function HQHelper(ns, servers, threads, host) {
 	// 	// ns.getServer("megacorp"),
 	// 	];
 	let output = 0;
+	const myProgramsLevel = GetProgramLevel(ns);
 	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
-		let isTooStrong = server.requiredHackingSkill > myHackingLevel;
+		const isTooStrong = server.requiredHackingSkill > myHackingLevel;
+		const isAboveMyProgramsLevel = server.numOpenPortsRequired > myProgramsLevel;
+		const hostObject = ns.getServer(host);
 		let lessThreads = threads;
 		let capAtSilverHelix = 10 ** 9;
 		let capAtSyscore = 10 ** 10;
 		let capAtTaiyang = 10 ** 10 * 2;
 		// ns.tprint(`${server.requiredHackingSkill} ${myHackingLevel} ${isTooStrong}`)
 		let t = 0;
+		if (hostObject.maxRam - hostObject.ramUsed < threads)
+			break;
+
+		if (["n00dles", "foodnstuff"].includes(server.hostname)) {
+			continue;
+		}
+
 		if (server.moneyMax <= 0) {
 			continue;
 		}
 
 		if (isTooStrong) {
+			continue;
+		}
+
+		if (isAboveMyProgramsLevel) {
 			continue;
 		}
 
@@ -123,10 +147,9 @@ function HQHelper(ns, servers, threads, host) {
 		// 	// if (ns.exec("hack.js", "home", lessThreads, server.hostname) > 0) { t++ }
 		// }
 
-
 		output += lessThreads * t;
-
 	}
-	ns.tprint(`Applied ${output} threads.`);
+	if (["pserv-00", "hacknet-server-0", "home"].includes(host))
+		ns.tprint(`Applied ${output} threads on ${host}.`);
 	return output;
 }

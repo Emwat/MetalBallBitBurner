@@ -29,13 +29,17 @@ export async function main(ns) {
 	}
 	else if (arg0 == "frag") {
 		let fragData = ns.read(fragTxt);
+		let width = ns.stanek.giftWidth();
+		let height = ns.stanek.giftHeight();
 		fragData = !fragData ? [] : JSON.parse(fragData);
+		ns.tprint(`Stanek's Gift is ${width} x ${height} right now.`);
 		let output = "";
 		for (let i = 0; i < fragData.length; i++) {
-			const fragD = fragData[i];
-			output += ("\r\n    " + StrRight(fragD.name, 20) +
-				" " + StrRight((fragD.width ? fragD.width + " x " + fragD.height : ""), 7) +
-				" " + (fragD.date != "" ? new Date(fragD.date).toLocaleString() : ""));
+			const fragFile = fragData[i];
+			output += ("\r\n    " + StrRight(fragFile.name, 20) +
+				" " + StrRight((fragFile.width ? fragFile.width + " x " + fragFile.height : ""), 7) +
+				" " + StrRight(String((fragFile?.bn || "")), 5) +
+				" " + (fragFile.date != "" ? new Date(fragFile.date).toLocaleString() : ""));
 		}
 		ns.tprint(output);
 	}
@@ -45,6 +49,8 @@ export async function main(ns) {
 			ns.tprint("You forgot an argument: NAME")
 			ns.tprint("sg.js end."); return;
 		}
+		
+
 		let fragData = await SaveFragData(ns, fragName);
 		ns.tprint(`FragData ${fragName} saved. ${new Date().toLocaleString()}`)
 		WriteMostRecentFrag(ns, fragData);
@@ -125,7 +131,7 @@ function GetFrags(ns) {
 	maxStanekSize = ns.stanek.giftWidth();
 	let myFrags = [];
 	for (let x = 0; x < maxStanekSize; x++) {
-		for (let y = 0; y < maxStanekSize; y++) {
+		for (let y = 0; y < ns.stanek.giftHeight(); y++) {
 			let frag = ns.stanek.getFragment(x, y);
 			// if(frag)
 			// 	jtprint(ns, frag);
@@ -160,7 +166,8 @@ async function SaveFragData(ns, fragName) {
 	let myNewFrag = GetFrags(ns);
 	let width = ns.stanek.giftWidth();
 	let height = ns.stanek.giftHeight();
-	myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag, width, height };
+	let bn = ns.getResetInfo().currentNode;
+	myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag, width, height, bn };
 	let fragData = ns.read(fragTxt);
 	fragData = !fragData ? [] : JSON.parse(fragData);
 	if (fragData.filter(f => f.name == fragName).length > 0) {

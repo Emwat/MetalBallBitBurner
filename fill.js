@@ -5,11 +5,13 @@ import GetServers from "./im/servers"
 import GetProgramLevel from "./im/files"
 import NumLeft from "./im/numLeft"
 import StrLeft from "./im/strLeft"
+import FormatTime from './im/time'
 
-/** @param {NS} ns */
+
 const coreScriptRam = 1.75;
 const reservedKeywords = ["print"];
 
+/** @param {NS} ns */
 export async function main(ns) {
 	const alphJS = "alph.js";
 	const weakJS = "weak.js";
@@ -132,6 +134,25 @@ export async function main(ns) {
 	ns.tprint("Applied " + myBugs.map(m => m.applied).reduce((a, b) => { return a + b }));
 	if (arg0 == "print")
 		PrintMyBugs(ns, myBugs);
+
+	if (arg0 && !reservedKeywords.includes(arg0)) {
+		let target = (arg0 == "target" ? defaultTarget : arg0);
+		target = ns.getServer(target);
+		if(target.hackDifficulty > target.minDifficulty + 5)
+		{
+			let time = Math.floor(ns.formulas.hacking.weakenTime(target, ns.getPlayer()));
+			time = FormatTime(time / 6000, "m:s")
+			ns.tprint(`Weaken Time for ${target.hostname}: ${time}`);
+		} else if (target.moneyAvailable < target.moneyMax * 0.75) {
+			let time = Math.floor(ns.formulas.hacking.growTime(target, ns.getPlayer()));
+			time = FormatTime(time / 6000, "m:s")
+			ns.tprint(`Grow Time for ${target.hostname}: ${time}`);
+		} else {
+			let time = Math.floor(ns.formulas.hacking.hackTime(target, ns.getPlayer()));
+			time = FormatTime(time / 6000, "m:s")
+			ns.tprint(`Hack Time for ${target.hostname}: ${time}`);
+		}
+	}
 
 	ns.tprint("fill.js end " + new Date().toLocaleString());
 

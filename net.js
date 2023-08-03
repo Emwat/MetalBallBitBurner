@@ -12,7 +12,7 @@ import GetMostAffordableNode from './im/nodeCosts'
 
 let numberOfNodes = 0;
 
-
+/** @param {NS} ns */
 export async function main(ns) {
 
 	ns.disableLog("getServerMoneyAvailable");
@@ -67,21 +67,24 @@ function myMoney(ns) {
 	return ns.getServerMoneyAvailable("home");
 }
 
+/** @param {NS} ns */
 async function PurchaseNodes(ns, numberOfNodesToBuy) {
 	ns.tprint(`Purchasing ${numberOfNodesToBuy} nodes...`)
-	let res = null;
 
 	while (ns.hacknet.numNodes() < numberOfNodesToBuy) {
-		res = ns.hacknet.purchaseNode();
-		if (res != -1) {
-			ns.print("Purchased hacknet Node with index " + res);
+		let newNodeIndex = ns.hacknet.purchaseNode();
+		if (newNodeIndex != -1) {
+			ns.print("Purchased hacknet Node with index " + newNodeIndex);
 		}
-		await ns.sleep(1000);
+
+		if (myMoney(ns) < ns.hacknet.getPurchaseNodeCost())
+			await ns.sleep(6000 * 60);
 	};
 
 	ns.tprint("All " + numberOfNodesToBuy + " nodes purchased")
 }
 
+/** @param {NS} ns */
 async function UpgradeNodes(ns, arg, maxAmount) {
 	ns.print(`UpgradeNodes(ns, numOfNodes: ${numberOfNodes}, arg: ${arg}, maxAmt: ${maxAmount})`);
 	let levels = [];
@@ -175,7 +178,7 @@ function DoUpgrade(ns, i, arg) {
 
 function GetMaxAmount(arg, goAllTheWay) {
 	const theMaxLevel = 200;
-	const theMaxRam = 64;
+	const theMaxRam = 64; //or 8192?
 	const theMaxCores = 16;
 
 	let maxLevel = 200;
@@ -199,6 +202,7 @@ function GetMaxAmount(arg, goAllTheWay) {
 	throw (`error -> GetMaxAmount(arg: ${arg})`);
 }
 
+/** @param {NS} ns */
 async function BuyMaxNodes(arg) {
 
 	if (arg == "max") {

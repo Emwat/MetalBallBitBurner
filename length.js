@@ -23,8 +23,7 @@ export async function main(ns) {
 	// wait Number minutes and then run
 	if (waitArgIndex > -1) {
 		let xMinutes = ns.args[waitArgIndex + 1];
-		if (isNaN(xMinutes))
-		{
+		if (isNaN(xMinutes)) {
 			ns.tprint(`${xMinutes} is not a number. It is ${typeof xMinutes}`)
 			return;
 		}
@@ -33,11 +32,14 @@ export async function main(ns) {
 		ns.tprint(`This program will run in ${xMinutes} minute(s).`);
 		await ns.sleep(waitTime);
 		let stats = GetStats(ns)
-		stats = stats.sort((a, b) => a.minDifficulty - b.minDifficulty );
+		stats = stats.sort((a, b) => a.minDifficulty - b.minDifficulty);
 		MainHelper(ns, stats);
 	} else {
 		let stats = GetStats(ns)
-		stats = stats.sort((a, b) => a.minDifficulty - b.minDifficulty );
+		if (ns.args[0] == "i")
+			stats = stats.sort((a, b) => a.i - b.i);
+		else
+			stats = stats.sort((a, b) => a.minDifficulty - b.minDifficulty);
 		MainHelper(ns, stats);
 	}
 
@@ -45,7 +47,7 @@ export async function main(ns) {
 }
 
 function MainHelper(ns, stats) {
-	
+
 	PrintHeaders(ns);
 	let totals = DeclareTotals();
 	let info = [];
@@ -125,17 +127,16 @@ function GetStats(ns) {
 	}
 
 	for (let i = 0; i < hosts.length; i++) {
+		
 		const processes = ns.ps(hosts[i]);
-		for (let j = 0; j < processes.length; ++j) {
-			const process = processes[j];
-			if (!process)
+		for (const script of processes) {
+			if (!script)
 				continue;
 
-			if (process.args.length == 0)
+			if (script.args.length == 0)
 				continue;
 
-
-			const server = process.args[0];
+			const server = script.args[0];
 			let serverObject = stats.filter(f => f.hostname == server)[0];
 			// ns.tprint(`${hosts[i]} ${server} ${process.filename}`)
 
@@ -148,13 +149,13 @@ function GetStats(ns) {
 
 			}
 
-			if (serverObject) serverObject.t += process.threads;
-			if (process.filename == "alph.js") serverObject.a += process.threads;
-			if (process.filename == "alph.js") incrementIncome(serverObject, hosts[i], process);
-			if (process.filename == "weak.js") serverObject.w += process.threads;
-			if (process.filename == "grow.js") serverObject.g += process.threads;
-			if (process.filename == "hack.js") serverObject.h += process.threads;
-			if (process.filename == "hack.js") serverObject.i += ns.getScriptIncome("hack.js", hosts[i], process.args[0]);
+			if (serverObject) serverObject.t += script.threads;
+			if (script.filename == "alph.js") serverObject.a += script.threads;
+			if (script.filename == "alph.js") incrementIncome(serverObject, hosts[i], script);
+			if (script.filename == "weak.js") serverObject.w += script.threads;
+			if (script.filename == "grow.js") serverObject.g += script.threads;
+			if (script.filename == "hack.js") serverObject.h += script.threads;
+			if (script.filename == "hack.js") serverObject.i += ns.getScriptIncome("hack.js", hosts[i], script.args[0]);
 
 
 		}
@@ -204,9 +205,9 @@ function PrintLineBreak(ns) {
 
 		" ";
 
-		str = str.replaceAll(" ","-");
-		ns.tprint(str);
-		return str;
+	str = str.replaceAll(" ", "-");
+	ns.tprint(str);
+	return str;
 }
 
 function PrintInfo(server, i) {

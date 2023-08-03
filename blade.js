@@ -21,6 +21,7 @@ export async function main(ns) {
 	} else if (arg0 == "ba") {
 		await DoWhile(ns);
 	} else if (arg0 == "bb") {
+		ns.exec("kl.js", "home", 1, "blade", "others");
 		let [general, action] = GetActionOrDefault(ns.args[1], ns.args[2]);
 		ns.tprint(`Flipper (ns, ${general.name}, ${action.name})`)
 		await Flipper(ns, general, action);
@@ -62,11 +63,11 @@ async function DoWhile(ns, name) {
 			ns.tprint(`There are no more contracts for ${name}`);
 			break;
 		}
-		
+
 		await ns.sleep(ms);
 		upg++;
-		if (upg > upgradeCounterCap) {
-			ns.exec("bSkills.js", "home", 1, "e");
+		if (ns.args.includes("buy") && upg >= upgradeCounterCap) {
+			ns.exec("bskills.js", "home", 1, "e");
 			upg = 0;
 		}
 	}
@@ -93,7 +94,7 @@ async function Flipper(ns, general, action) {
 		}
 		ns.bladeburner.startAction(action.type, action.name);
 		await DoWhile(ns);
-		
+
 	}
 
 }
