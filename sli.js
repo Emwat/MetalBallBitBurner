@@ -19,35 +19,63 @@ const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ish
 
 const uniClasses = ["Computer Science", "Data Structures"
 	, "Networks", "Algorithms", "Management", "Leadership"];
-	
+
 
 const universities = ["Rothman University", "Summit University", "ZB Institute of Technology"];
 
 const folder = "/q/";
 
+function emptyArgsError() {
+	return `You haven't entered any arguments. Valid arguments are
+	[argAction] [argRabbit]
+	argAction:
+
+		t >> getTask
+
+		c [crime: s/m/l/h/heist... ]>> commit crime
+		g [all/str/def/dex/agi] >> gym
+		WIP f >> faction
+		WIP >> j >> job
+		b >> bladeburner
+		b [f/r/d/h/i/s/t] [t/b/r]>> bladeburner
+		r [city: s/a/v/c/n/i] >> travel 
+		s >> shock recovery
+		u [c/d/n/a m/l] >> university
+		i [all] >> idle
+	
+	argRabbit: 0/1/2/3/4/5/6
+	`;
+}
+
 /** @param {NS} ns */
 export async function main(ns) {
 	// const argRabbit = ns.args[0];
-	const [argAction, argParams] = ns.args;
-	const toAllSleeves = true; // argRabbit == "max";
+	let [argAction, argParams] = ns.args;
+	let argRabbit;
+	let toAllSleeves = true; // argRabbit == "max";
 
 	if (!argAction) {
 		ns.tprint(emptyArgsError());
 		return;
 	}
 
-	if (!toAllSleeves && isNaN(ns.args[1])) {
-		ns.tprint("You must enter \"max\" or a number for the second argument.")
-		ns.tprint(`sli.js ${ns.args.concat()} ended. ${new Date().toLocaleString()}`)
-		return;
+	if (!isNaN(ns.args[0])) {
+		argRabbit = ns.args[0];
+		([argRabbit, argAction, argParams] = ns.args);
+	} else if (!isNaN(ns.args[1])) {
+		([argAction, argRabbit] = ns.args);
+	} else if (!isNaN(ns.args[2])) {
+		([argAction, argParams, argRabbit] = ns.args);
 	}
+
+	argParams = JSON.stringify({ numSleeves, argRabbit: argRabbit, argAction, argParams });
 
 	if (false) { }
 	else if (argAction == "t") {
 		// let myFunc = function (x) { ns.tprint(ns.sleeve.getTask(x)) };
 		// if (toAllSleeves) loop(ns, myFunc);
 		// else ns.sleeve.getTask(argRabbit);
-		ns.exec(`${folder}getTask.js`, "home", 1, numSleeves);
+		ns.exec(`${folder}getTask.js`, "home", 1, argParams);
 	}
 	else if (argAction == "c") {
 		// let crimeType = crimeTypes.find(f => f[0] == argParams.toUpperCase());
@@ -57,7 +85,7 @@ export async function main(ns) {
 		// ns.tprint(`Crime ${crimeType}`);
 		// if (toAllSleeves) loop(ns, ns.sleeve.setToCommitCrime, [crimeType]);
 		// else ns.sleeve.setToCommitCrime(argRabbit, crimeType);
-		ns.exec(`${folder}setToCommitCrime.js`, "home", 1, numSleeves, argParams);
+		ns.exec(`${folder}setToCommitCrime.js`, "home", 1, argParams);
 
 	}
 	else if (argAction == "j") {
@@ -73,7 +101,7 @@ export async function main(ns) {
 		// myCity = cities.find(f => f[0] == myCity);
 		// if (toAllSleeves) loop(ns, ns.sleeve.travel, [myCity]);
 		// else ns.sleeve.travel(argRabbit, myCity);
-		ns.exec(`${folder}travel.js`, "home", 1, numSleeves, argParams);
+		ns.exec(`${folder}travel.js`, "home", 1, argParams);
 	}
 	else if (argAction == "f") {
 		ns.tprint(`Faction`);
@@ -103,7 +131,7 @@ export async function main(ns) {
 		// 	else ns.sleeve.setToGymWorkout(argRabbit, gym, stat);
 		// }
 		// // setToGymWorkout(sleeveNumber, gymName, stat) 	Set a sleeve to workout at the gym.
-		ns.exec(`${folder}setToGymWorkout.js`, "home", 1, numSleeves, argParams);
+		ns.exec(`${folder}setToGymWorkout.js`, "home", 1, argParams);
 
 	}
 	else if (argAction == "s") {
@@ -150,10 +178,9 @@ export async function main(ns) {
 		}
 
 		let [ignoreMe, action, contract] = ns.args;
-		ns.tprint({ action, contract })
 		action = actions.find(f => f[0] == action?.toUpperCase());
 		contract = contracts.find(f => f[0] == contract?.toUpperCase());
-		ns.tprint(`BladeBurner ${action} ${contract}`);
+		ns.tprint({ action, contract: contract || "" })
 
 		if (contract) {
 			loop(ns, ns.sleeve.setToBladeburnerAction, ["Support main sleeve"]);
@@ -167,7 +194,7 @@ export async function main(ns) {
 		// 	loop(ns, ns.sleeve.setToIdle);
 		// else
 		// ns.sleeve.setToIdle(0);
-		ns.exec(`${folder}setToIdle.js`, "home", 1, numSleeves, argParams || "");
+		ns.exec(`${folder}setToIdle.js`, "home", 1, argParams);
 	}
 
 	else {
@@ -187,30 +214,6 @@ export async function main(ns) {
 // , "Kidnap"
 // , "Assassination"
 
-function emptyArgsError() {
-	return `You haven't entered any arguments. Valid arguments are
-
-	argAction:
-
-		t >> getTask
-
-		c [crime: s/m/l/h/heist... ]>> commit crime
-		g [all/str/def/dex/agi] >> gym
-		WIP f >> faction
-		WIP >> j >> job
-		b >> bladeburner
-		b [f/r/d/h/i/s/t] [t/b/r]>> bladeburner
-		r [city: s/a/v/c/n/i] >> travel 
-		s >> shock recovery
-		u [c/d/n/a m/l] >> university
-		i >> idle
-		i [all] >> all sleeves to idle
-	
-	argRabbit: 
-		max
-		1/2/3/4/5/6
-	`;
-}
 
 
 function loopExec(ns, myFunction, moreArgs) {

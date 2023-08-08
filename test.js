@@ -18,6 +18,7 @@ import Get from "get.js"
 import tickers from "./static/symbols"
 import augs from "./static/augs"
 import FormatTime from './im/time'
+import operations from './static/blackops'
 
 // carat.js
 // exec.js
@@ -35,6 +36,11 @@ import FormatTime from './im/time'
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
 	ns.tprint([200, 2000, 20000].map(t=>FormatTime(t, "m:s")))
+	ns.tprint(ns.bladeburner.getRank());
+	//ns.tprint(ns.bladeburner.getActionEstimatedSuccessChance("BlackOps", "Operation Morpheus"));
+	//ns.tprint(ns.bladeburner.getBlackOpRank());
+	// ns.tprint({shy: ns.args.includes("shy")});
+	// jtprint(ns, ns.gang.getGangInformation())
 	// ns.tprint(GetTarget(ns));
 	//jtprint(ns, ns.sleeve.getSleeve(1).skills)
 	//ns.tprint(ns.getServer('w0r1d_d43m0n').requiredHackingSkill);
@@ -103,12 +109,12 @@ export async function main(ns) {
 	// ftprint(ns, GetServers(ns));
 	// ns.tprint(GetMostAffordableNode(ns));
 
-	const processes = ns.ps("home");
-	for (let i = 0; i < processes.length; ++i) {
-		ns.tprint(processes[i].filename + ' ' + processes[i].threads);
-		ns.tprint(processes[i].args);
-		ns.tprint(processes[i].pid);
-	}
+	// const processes = ns.ps("home");
+	// for (let i = 0; i < processes.length; ++i) {
+	// 	ns.tprint(processes[i].filename + ' ' + processes[i].threads);
+	// 	ns.tprint(processes[i].args);
+	// 	ns.tprint(processes[i].pid);
+	// }
 	// jtprint(ns, processes[0]);
 	// ns.tprint(`ScriptIncome: ${ns.getScriptIncome(processes[0].filename, "iron-gym", ...processes[0].args)}`)
 	// ns.tprint("asdf write");

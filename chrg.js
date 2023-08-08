@@ -6,6 +6,7 @@ export async function main(ns) {
 		throw "no arguments found."
 
 	const frags = JSON.parse(ns.args[0]);
+	ns.print(frags[0]);
 
 	while (true) {
 		ns.print(new Date().toLocaleString());

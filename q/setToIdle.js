@@ -1,19 +1,19 @@
-let numSleeves;
+let numberOfSleeves;
 
 /** @param {NS} ns */
 export async function main(ns) {
-	ns.tprint("idling...");
-	numSleeves = ns.args[0];
-	let argParams = ns.args[1];
+	ns.tprint("idling...")
+	let {numSleeves, argRabbit, argParams} = JSON.parse(ns.args[0]);
+	numberOfSleeves = numSleeves;
 
-	if (argParams == "all")
+	if (argRabbit|| argRabbit == "0")
+		ns.sleeve.setToIdle(argRabbit);
+	else
 		loop(ns, ns.sleeve.setToIdle);
-	else 
-		ns.sleeve.setToIdle(argParams || 0);
 }
 
 function loop(ns, myFunction, moreArgs) {
-	for (let i = 0; i < numSleeves; i++) {
+	for (let i = 0; i < numberOfSleeves; i++) {
 		if (moreArgs)
 			myFunction(i, ...moreArgs);
 		else

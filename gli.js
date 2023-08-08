@@ -1,4 +1,4 @@
-/** @param {NS} ns */
+
 import ToDollars from "./im/carat"
 import StrLeft from "./im/strLeft"
 import NumLeft from "./im/numLeft"
@@ -12,7 +12,11 @@ let myMoney = 0;
 const ripTxt = "./terr/rip.txt";
 const gangAscTxt = "gangAsc.txt";
 const gangTrainTxt = "gangTrain.txt";
+const gangPowerTaskTxt = "gangPowerTask.txt";
+const gangInventoryTxt = "gangInventory.txt";
+const maxRep = 5830000;
 
+/** @param {NS} ns */
 export async function main(ns) {
 	if (ns.args.length == 0) {
 		ns.tprint(`You haven't entered any arguments. Acceptable args are ...
@@ -27,24 +31,26 @@ export async function main(ns) {
 			th >> train hacking
 			tc >> train charisma
 			tw >> Territorial Warfare
-			terror >> Terrorism
+			p >> Terrorism (power)
 			q >> quick vigilante justice and then train
 
 			ba >> WHILE LOOP, batch ascend
 			ba [X] >> WHILE LOOP, batch ascend every 10 * X seconds
 			br >> WHILE LOOP, batch recruit
+			bp [m/s/h/v/f/t] >> WHILE LOOP, train and power up
 
 			a >> ascend (excludes ${gangTrainTxt})
 			an >> ascend only the members in ${gangTrainTxt}
 			e >> weaponmizeMember
-			max >> weaponmizeMember if you're rich
+			eh >> weaponmizeMember w/ combat gear and rootkits
 			qa >> quick vigilante justice and ascend
 			q [m/h/v/t] >> quick vigilante justice and then action
 			i >> info
 			ia >> see ${gangAscTxt}
+			it >> see ${gangTrainTxt}
 			member >> print all member names
-			draft [44-48/all] >> write to ${gangTrainTxt}
-			train [44-48/44+] >> write to ${gangTrainTxt}
+			draft [44-48/all] >> subtracts from ${gangTrainTxt}
+			train [44-48/44+] >> overwrites ${gangTrainTxt}
 		`);
 		return;
 	}
@@ -59,43 +65,53 @@ export async function main(ns) {
 		else
 			ns.tprint("didn't kill anything.");
 	}
-	else if (gliKey(arg0)) {
-		assignMembersToTask(ns, arg0, members);
-	} else if (arg0 == "q") {
-		await quickGetUnwanted(ns, members, ns.args[1]);
-	} else if (arg0 == "e") {
-		WeaponizeMemberToSpeed(ns, members);
-	} else if (arg0 == "max") {
-		const includeRootkits = true;
-		WeaponizeMembersMax(ns, members, includeRootkits);
-	} else if (arg0 == "a") {
-		ascendBuyAndTrain(ns, members);
-	} else if (arg0 == "an") {
-		const onlyGangTrain = true;
-		ascendBuyAndTrain(ns, members, onlyGangTrain);
-	} else if (arg0 == "ah") {
+	else if (gliKey(arg0)) { AssignMembersToTask(ns, arg0, members); if (arg0) ns.write(gangPowerTaskTxt, arg0, "w"); }
+	else if (arg0 == "q") { await quickGetUnwanted(ns, members, ns.args[1]); }
+	else if (arg0 == "e") { WeaponizeMemberToSpeed(ns, members); }
+	else if (arg0 == "eh") { const includeRootkits = true; WeaponizeMembersMax(ns, members, includeRootkits); }
+	else if (arg0 == "a") { AscendBuyAndTrain(ns, members); }
+	else if (arg0 == "an") { const onlyGangTrain = true; AscendBuyAndTrain(ns, members, onlyGangTrain); }
+	else if (arg0 == "ah") {
 		const onlyGangTrain = true;
 		const includeRootkits = true;
-		ascendBuyAndTrain(ns, members, onlyGangTrain, includeRootkits);
-	} else if (arg0 == "ba") {
+		AscendBuyAndTrain(ns, members, onlyGangTrain, includeRootkits);
+	}
+	else if (arg0 == "i") { GetInfo(ns, members); }
+	else if (arg0 == "ia") { SeeBeforeAscNotes(ns); }
+	else if (arg0 == "it") { SeeDraftAndTraining(ns, members); }
+	else if (["member", "members"].includes(arg0)) { PrintMembers(ns, members); }
+	// else if (arg0 == "br") { await BatchRecruit(ns); }
+	//else if (arg0 == "btw") { await BatchPowerUp(ns, members); }
+	else if (arg0 == "ba") {
+		ns.exec("kl.js", "home", 1, "gaba");
 		const seconds = ns.args[1] || 300;
 		while (true) {
-			ascendBuyAndTrain(ns, members);
+			AscendBuyAndTrain(ns, members);
 			await ns.sleep(1000 * seconds);
 		}
-	} else if (arg0 == "i") {
-		GetInfo(ns, members);
-	} else if (arg0 == "ia") {
-		SeeBeforeAscNotes(ns);
-	} else if (["member", "members"].includes(arg0)) {
-		PrintMembers(ns, members);
-	} else if (arg0 == "br") {
-		await BatchRecruit(ns);
-	} else if (arg0 == "draft") {
-		SetMembersToDraft(ns, members);
-	} else if (arg0 == "train") {
-		SetMembersToTrain(ns, members);
-	} else {
+	}
+	else if (arg0 == "br") {
+		ns.exec("gabr.js", "home", 1, JSON.stringify({
+			members: members.map(m => m.name),
+			ripTxt, gangTrainTxt
+		}));
+		ns.exec("kl.js", "home", 1, "gabr", "others");
+
+	}
+	else if (arg0 == "bp") {
+		let task = ns.args[1];
+		if (task)
+			ns.write(gangPowerTaskTxt, task, "w");
+		ns.exec("gabp.js", "home", 1, JSON.stringify({
+			members: members.map(m => m.name),
+			gangTrainTxt,
+			gangPowerTaskTxt
+		}))
+		ns.exec("kl.js", "home", 1, "gabp", "others");
+	}
+	else if (arg0 == "draft") { SetMembersToDraft(ns, members); }
+	else if (arg0 == "train") { SetMembersToTrain(ns, members); }
+	else {
 		ns.tprint("Argument is invalid. Nothing was done.");
 	}
 
@@ -104,7 +120,7 @@ export async function main(ns) {
 
 
 
-function assignMembersToTask(ns, arg, members) {
+function AssignMembersToTask(ns, arg, members, disablePrint = false) {
 	let total = 0;
 	let stayInTraining = JSON.parse(ns.read(gangTrainTxt));
 	for (let i = 0; i < members.length; i++) {
@@ -116,9 +132,10 @@ function assignMembersToTask(ns, arg, members) {
 		if (stayInTraining.includes(member.name))
 			continue;
 
-		total += setTaskGetBit(ns, arg, member.name);
+		total += ns.gang.setMemberTask(member.name, gliKey(arg)) ? 1 : 0;
 	}
-	ns.tprint(`${total} members are now working on ${gliKey(arg)}`);
+	if (disablePrint)
+		ns.tprint(`${total} members are now working on ${gliKey(arg)}`);
 }
 
 function gliKey(arg) {
@@ -152,15 +169,12 @@ function gliKey(arg) {
 	else if (arg == "tw") {
 		return "Territory Warfare";
 	}
-	else if (arg == "terror") {
+	else if (arg == "terror" || arg == "p") {
 		return "Terrorism";
 	}
 	return "";
 }
 
-function setTaskGetBit(ns, arg, member) {
-	return ns.gang.setMemberTask(member, gliKey(arg)) ? 1 : 0;
-}
 
 function jtprint(ns, obj) {
 	Object.entries(obj).forEach(entry => {
@@ -202,18 +216,20 @@ const equips = [
 	, { category: "h", cost: 75, name: "Jack the Ripper" }
 ]
 
+/** @param {NS} ns */
 function WeaponizeMember(ns, member, includeRootkits = false) {
 	myMoney = ns.getServerMoneyAvailable("home");
 	let ongoingCost = 0;
 	let sortedEquips = equips.sort((a, b) => a.cost - b.cost);
 	let toBuyList = [];
+	let upgrades = ns.gang.getMemberInformation(member.name).upgrades;
 
 	if (!includeRootkits)
 		sortedEquips = sortedEquips.filter(f => f.category != "h");
 
 	for (let i = 0; i < sortedEquips.length; i++) {
 		const equip = sortedEquips[i];
-		if (member.upgrades.indexOf(equip) > -1)
+		if (upgrades.indexOf(equip) > -1)
 			continue;
 
 		// ns.tprint(equip);
@@ -232,14 +248,13 @@ function WeaponizeMember(ns, member, includeRootkits = false) {
 
 }
 
+/** @param {NS} ns */
 function WeaponizeMemberHelper(ns, toBuyList, member) {
-	let rejectedMen = [];
-	Object.values(toBuyList).forEach(r => {
-		if (!ns.gang.purchaseEquipment(member, r) &&
-			rejectedMen.indexOf(member) == -1) {
-			ns.tprint(`Could not buy ${member} ${r}.`)
-			rejectedMen.push(member);
-			//ns.print(rejectedMen.concat());
+	Object.values(toBuyList).forEach(equipName => {
+		if (!ns.gang.getMemberInformation(member).upgrades.includes(equipName)) {
+			if (ns.gang.purchaseEquipment(member, equipName)) {
+
+			}
 		}
 	});
 }
@@ -251,6 +266,7 @@ function WeaponizeMembersMax(ns, members, includeRootkits = false) {
 	}
 }
 
+/** @param {NS} ns */
 function GetEquipmentCost(ns, members, includeRootkits) {
 	// return ["Baseball Bat"
 	// 	, "Bulletproof Vest"
@@ -261,6 +277,9 @@ function GetEquipmentCost(ns, members, includeRootkits) {
 	myMoney = ns.getServerMoneyAvailable("home");
 	let ongoingCost = 0;
 	let sortedEquips = equips.sort((a, b) => a.cost - b.cost);
+	const memberStuff = members
+		.map(member => ns.gang.getMemberInformation(member.name).upgrades);
+
 	let toBuyList = [];
 
 	if (!includeRootkits)
@@ -269,7 +288,13 @@ function GetEquipmentCost(ns, members, includeRootkits) {
 	for (let i = 0; i < sortedEquips.length; i++) {
 		let equip = sortedEquips[i];
 		// ns.tprint(equip);
-		let cost = equip.cost * Math.pow(10, 6) * members.length;
+		let owned = memberStuff
+			.reduce((a, b) => {
+				return a + (b.includes(equip.name) ? 1 : 0);
+			}, 0);
+
+		let cost = equip.cost * Math.pow(10, 6) * (members.length - owned);
+		// ns.tprint({ cost, m: members.length, c: owned, equip: equip.name });
 		if (ongoingCost + cost > myMoney) {
 			break;
 		}
@@ -284,14 +309,14 @@ function GetEquipmentCost(ns, members, includeRootkits) {
 
 async function quickGetUnwanted(ns, members, nextAction) {
 
-	assignMembersToTask(ns, "v", members);
-	// while(ns.gang.getGangInformation().wantedLevel != 1)
-	// 	await ns.sleep(200);	
-	await ns.sleep(Math.pow(10, 4) * 2);
-	assignMembersToTask(ns, nextAction ?? "t", members);
+	AssignMembersToTask(ns, "v", members);
+	while (ns.gang.getGangInformation().wantedLevel > 10)
+		await ns.sleep(1000);
+	//await ns.sleep(Math.pow(10, 4) * 2);
+	AssignMembersToTask(ns, nextAction ?? "t", members);
 }
 
-function ascendBuyAndTrain(ns, members, onlyNewRecruits = false, includeRootkits = false) {
+function AscendBuyAndTrain(ns, members, onlyNewRecruits = false, includeRootkits = false) {
 	const toBuyList = GetEquipmentCost(ns, members, includeRootkits);
 	const stayInTraining = JSON.parse(ns.read(gangTrainTxt));
 
@@ -381,32 +406,10 @@ function PrintMembers(ns, members) {
 	ns.tprint(output);
 }
 
-async function BatchRecruit(ns) {
-	ns.tprint("WHILE LOOP started. You must manually kill this script.");
-	let dead = JSON.parse(ns.read(ripTxt));
-	ns.tprint(`You are waiting for man${ZeroLeft(dead.length + 1, 4)}.`);
-	while (true) {
-
-		let newestMember = "man" + ZeroLeft(dead.length + 1, 4);
-		if (ns.gang.recruitMember(newestMember)) {
-			dead.push({ name: newestMember, date: new Date() });
-			ns.write(ripTxt, JSON.stringify(dead), "w");
-			let membersToTrain = JSON.parse(ns.read(gangTrainTxt));
-			membersToTrain.push(newestMember);
-			ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
-
-			if (ns.gang.setMemberTask(newestMember, "Train Combat"))
-				ns.tprint(`${newestMember} (the new hire) is now training in combat.`);
-
-		}
-		await ns.sleep(1000 * 10);
-	}
-}
-
 // Expecting args[1] to be something like 
 // "44-48"
 function SetMembersToDraft(ns, members) {
-	let theArgString = ns.args[1];
+	let theArgString = String(ns.args[1] || "");
 	let parsedStringA = "";
 	let parsedStringB = "";
 	let x;
@@ -417,6 +420,7 @@ function SetMembersToDraft(ns, members) {
 		return;
 	}
 
+
 	for (let i = 0; i < theArgString.length; i++) {
 		let s = theArgString[i];
 		if (s !== "0" && !parseInt(s))
@@ -426,7 +430,12 @@ function SetMembersToDraft(ns, members) {
 	x = parseInt(parsedStringA);
 
 	let connector = theArgString[parsedStringA.length];
-	if (connector == "-") {
+	if (!connector) {
+		let membersToTrain = JSON.parse(ns.read(gangTrainTxt) || "[]");
+		membersToTrain = membersToTrain.filter(f => f != "man" + x.padStart(4, "0"));
+		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+	}
+	else if (connector == "-") {
 		let membersToDraft = [];
 		function GetY() {
 			for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
@@ -468,22 +477,28 @@ function SetMembersToTrain(ns, members) {
 	}
 
 	let membersToTrain = [];
-	let theArgString = ns.args[1];
+	let theArgString = String(ns.args[1] || "");
 	let parsedStringA = "";
 	let parsedStringB = "";
 	let x;
 
+
 	for (let i = 0; i < theArgString.length; i++) {
 		let s = theArgString[i];
-		if (s !== "0" && !parseInt(s))
+		ns.tprint(s)
+		if (s !== "0" && !parseInt(s)) {
 			break;
+		}
 		parsedStringA += String(s);
 	}
 	x = parseInt(parsedStringA);
 
 	let connector = theArgString[parsedStringA.length];
-	// ns.tprint({x, parsedStringA, connector})
-	if (connector == "-") {
+	// ns.tprint({ x, parsedStringA, connector })
+	if (!connector) {
+		membersToTrain.push("man" + ZeroLeft(x, 4));
+	}
+	else if (connector == "-") {
 		let y;
 		for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
 			let s = theArgString[i];
@@ -554,3 +569,29 @@ function SeeBeforeAscNotes(ns) {
 	);
 	ns.tprint(output);
 }
+
+function SeeDraftAndTraining(ns, members) {
+	let existingData = JSON.parse(ns.read(gangTrainTxt));
+	let output = "\r\n";
+	for (let i = 0; i < members.length; i++) {
+		let member = members[i];
+		let isDraft = !existingData.includes(member.name);
+		output += ZeroLeft(i, 3) +
+			" " + member.name.padEnd(7) +
+			" " + NumLeft(member.str, 13) +
+			" " + NumLeft(member.upgrades.length, 5) +
+			" " + (isDraft ? "  D  " : "     ") +
+			" " + (!isDraft ? "  T  " : "     ") +
+			"\r\n";
+	}
+	output = ("\r\n   " +
+		" " + StrLeft("Name", 7) +
+		" " + StrLeft("Str", 13) +
+		" " + StrLeft("Upgr", 5) +
+		" " + StrLeft("Draft", 5) +
+		" " + StrLeft("Train", 5) +
+		output
+	);
+	ns.tprint(output);
+}
+

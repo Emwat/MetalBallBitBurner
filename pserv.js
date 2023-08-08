@@ -207,9 +207,9 @@ function PrintPServCalc(ns) {
 
 		ns.tprint(
 			" " + NumLeft(i + 1, 3) +
-			" " + NumLeft(costs[i], 6) +
-			" " + NumLeft(cost, 13) +
-			" " + NumLeft(costAllServers, 13) +
+			" " + NumLeft(costs[i], 13) +
+			" " + NumLeft(cost, 20) +
+			" " + NumLeft(costAllServers, 20) +
 			// " " + readableCostAllServers +
 			" " + readableCostMaxServers
 		);

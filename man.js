@@ -5,33 +5,35 @@ export async function main(ns) {
 	const r = "\u001b[0m"; //reset
 	const y = "\u001b[33m";
 
+
 	let output = sourceMan();
 	output = output.replaceAll(">>", `${w}>>`);
 	output = output.replaceAll(".js", `${y}`);
 	output = output.replace(/(?:\r\n|\r|\n)/g, `${r}\r\n`);
-	
-	ns.tail();
-	await ns.sleep(0);
-	ns.moveTail(960, 10);
-	ns.resizeTail(900, 900);
-	ns.print(output);
+	if (ns.args[0] == "t") {
+		ns.tprint(output);
+	} else {
+		ns.tail();
+		await ns.sleep(0);
+		ns.moveTail(960, 10);
+		ns.resizeTail(900, 900);
+		ns.print(output);
+	}
+
 }
 
 function sourceMan() {
-	return `Last Updated: 07/23/2023 02:34 PM
+	return `Last Updated: 07/23/2023 02:34 PM08/05/2023 08:32 AM
 
 CSEC          CyberSec (1 port, hack 59)
 avmnite-02h   NiteSec (2 ports, hack 219)
 I.I.I.I       Black Hand (3 ports, hack 360)
 run4theh111z  Bitrunners (4 ports, hack 550)
-
 	
 	alph.js [target] [securityThresh] [moneyThresh]
 	swap.js --mv [oldAction: all/c/a/g/w/h/k] [oldTarget] [newAction: c/a/g/w/h/k] [newTarget]
 	chrg.js [json] >> Shouldn't run on its own. Use sg.js or chll.js
 	kl.js [script] >> kills scripts with any arguments. helpful for blade.js
-	
-
 	
 # TRACKING
 	book.js [server] >> reads record.txt on another server
@@ -73,8 +75,6 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	hx.js >> copy of hq.js. idr.
 	control.js [thread] [xThread]/[loop] [xLoop]/[act] [w/g/h]>> idr. More specific hq.
 
-
-
 # GANG
 	gli.js >> defaults to help
 	gli.js [br] >> Batch recruit
@@ -82,10 +82,7 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 	nite.js >> ascend gang members based on hacking
 	
 # HACKNET
-	net.js >> buys 8 nodes and upgrades to level 100
-	net.js [l/r/c] >> upgrades to 200/16/8
-	net.js [numberOfNodes] >> will also fully upgrade them
-	net.js [max] >> Buys nodes based on money and then fully upgrade
+	net.js >> advanced. See net.js help.
 	richnet.js [numberOfNodes]
 	nnet.js >> defaults to help
 	nnet.js bm >> batch, Sell for Money
@@ -124,7 +121,5 @@ run4theh111z  Bitrunners (4 ports, hack 550)
 # SLEEVE
 	sli.js >> defaults to help.
 		Note: I need to update numSleeves var.
-
-
 	`;
 }

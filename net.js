@@ -10,32 +10,63 @@ import GetMostAffordableNode from './im/nodeCosts'
 // 20 nodes, level 200, ram 64, 16 cores. -$6.5b
 
 
+// c argument fails rn 08/05/2023 08:47 AM
+
 let numberOfNodes = 0;
+let fs = 0;
+let failSafeCap = 999;
+
+let lrc = {
+	l : {
+		text: "level",
+		med: 100,
+		max: 200,
+		cost: "getLevelUpgradeCost",
+		upgrade: "upgradeLevel"
+	},
+	r : {
+		text: "ram",
+		med: 64,
+		max: 8192,
+		cost: "getRamUpgradeCost",
+		upgrade: "upgradeRam"
+	},
+	c : {
+		text: "core",
+		med: 8,
+		max: 8,
+		cost: "getCoreUpgradeCost",
+		upgrade: "upgradeCore",
+	}, 
+}
 
 /** @param {NS} ns */
 export async function main(ns) {
-
 	ns.disableLog("getServerMoneyAvailable");
 	ns.disableLog("sleep");
 	ns.tprint(`Activating Hacknet program ${(ns.args.length > 0 ? ns.args[0] : "default")}`);
 
 	numberOfNodes = ns.hacknet.numNodes();
 
-	if (ns.args[0] == "help") {
+	if (ns.args.length == 0 || ns.args[0] == "help") {
 		ns.tprint(`
-		[n/node/nodes] [X ]>> buy until you reach X nodes
+		[n/node/nodes] [X]>> buy until you reach X nodes
+			run net.js n 4
 		maxout >> focus on buying max nodes and then fully upgrade them 200/16/8
+			run net.js maxout
 		[l/r/c] [X/max] >> focus on l/r/c and upgrade to level X.
+			run net.js l 100
+			run net.js r 8
 
 		`);
 		return;
 	}
 
 	let indexN = Math.max(
-		ns.args.indexOf("n"), 
-		ns.args.indexOf("node"), 
+		ns.args.indexOf("n"),
+		ns.args.indexOf("node"),
 		ns.args.indexOf("nodes")
-		);
+	);
 	if (indexN > -1) {
 		let number = ns.args[indexN + 1];
 		// if (number == "max")
@@ -60,7 +91,6 @@ export async function main(ns) {
 	}
 
 	ns.tprint(`net.js ended.`)
-
 }
 
 function myMoney(ns) {
@@ -72,6 +102,7 @@ async function PurchaseNodes(ns, numberOfNodesToBuy) {
 	ns.tprint(`Purchasing ${numberOfNodesToBuy} nodes...`)
 
 	while (ns.hacknet.numNodes() < numberOfNodesToBuy) {
+		fs++; if (fs >= failSafeCap) { failSafely(ns); break; }
 		let newNodeIndex = ns.hacknet.purchaseNode();
 		if (newNodeIndex != -1) {
 			ns.print("Purchased hacknet Node with index " + newNodeIndex);
@@ -88,22 +119,27 @@ async function PurchaseNodes(ns, numberOfNodesToBuy) {
 async function UpgradeNodes(ns, arg, maxAmount) {
 	ns.print(`UpgradeNodes(ns, numOfNodes: ${numberOfNodes}, arg: ${arg}, maxAmt: ${maxAmount})`);
 	let levels = [];
-	function IsStillUpgrading(levels, maxLevel) {
-		let remainingLevels = levels.filter(f => { return f < maxLevel });
-		let allNodesMaxLevel = remainingLevels.length * maxLevel;
-		let allNodesCurrentLevel = remainingLevels.reduce((a, b) => a + b, 0);
-
-		ns.print(`${remainingLevels.length} ${allNodesMaxLevel} ${allNodesCurrentLevel}`);
-		return allNodesCurrentLevel < allNodesMaxLevel;
+	function IsStillUpgrading() {
+		for (let i = 0; i < levels.length; i++) {
+			if (levels[i] < maxAmount) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	for (var i = 0; i < numberOfNodes; i++) {
 		levels.push(GetNodeArg(ns.hacknet.getNodeStats(i), arg));
 	}
 
-	while (IsStillUpgrading(levels, numberOfNodes, maxAmount)) {
-		let ex = 0;
-		const failSafe = 9999;
+	let ex = 0;
+	const failSafe = 999;
+	while (IsStillUpgrading(maxAmount)) {
+		ex++;
+		if (ex > failSafe) {
+			ns.tprint({ error: "IsStillUpgrading", levels, numberOfNodes, maxAmount });
+			break;
+		}
 		for (var i = 0; i < numberOfNodes; i++) {
 			let waitTime = 3000;
 
@@ -220,4 +256,8 @@ async function BuyMaxNodes(arg) {
 		ns.tprint(`net.js ended.`)
 		return;
 	}
+}
+
+function failSafely(ns, location) {
+	ns.tprint({ loc: location, error: "Failed safely." });
 }

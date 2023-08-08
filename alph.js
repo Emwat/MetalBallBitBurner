@@ -4,6 +4,9 @@
 export async function main(ns) {
 	const [target, moneyThresh, securityThresh] = ns.args;
 
+	if (isNaN(moneyThresh) || isNaN(securityThresh))
+		return;
+
 	while (true) {
 		ns.print(new Date().toLocaleString());
 
