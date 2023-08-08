@@ -11,7 +11,7 @@ function CopyNukeExe(ns, targetHost, targetMoney, threads) {
 	const targetHostServer = ns.getServer(targetHost);
 	const targetMoneyServer = ns.getServer(targetMoney);
 
-	const moneyThresh = targetMoneyServer.moneyMax * 0.75;
+	const moneyThresh = Math.floor(targetMoneyServer.moneyMax * 0.75);
 	const securityThresh = targetMoneyServer.minDifficulty + 5;
 	if (!threads)
 	threads = Math.floor(

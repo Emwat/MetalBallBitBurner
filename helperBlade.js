@@ -1,5 +1,6 @@
 /** @param {NS} ns */
 import Cities from './static/cities'
+import StrLeft from './im/strLeft'
 import StrRight from './im/strRight'
 import NumLeft from './im/numLeft'
 
@@ -34,6 +35,11 @@ function PrintCities(ns) {
 
 
 	let cities = intel.sort((a, b) => a.chaos - b.chaos);
+	output += (StrRight("name", 10) +
+			" " + StrLeft("chaos", 5) +
+			" " + StrLeft("community", 10) +
+			" " + StrLeft("est. Pop", 12) +
+			"\r\n");
 	for (const c in cities) {
 		let city = cities[c];
 		output += (StrRight(city.name, 10) +

@@ -4,6 +4,8 @@ import FormatTime from './im/time'
 
 export async function main(ns) {
 	ns.tprint(Hair(ns));
+	let todo = ns.read("todo.txt");
+	ns.tprint(todo);
 }
 
 

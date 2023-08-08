@@ -40,14 +40,14 @@ export async function main(ns) {
 	//  25525511135 -> ["255.255.11.135", "255.255.111.35"]
 	//  1938718066 -> ["193.87.180.66"]
 	// `);
-	ns.tprint(GenerateIPAddresses(ns, "25525511135"));
-	ns.tprint(GenerateIPAddresses(ns, "1938718066"));
-	ns.tprint(GenerateIPAddresses(ns, "1921680101")); // + " / 192.168.010.1 is not a valid IP.");
-	ns.tprint(GenerateIPAddresses(ns, "3520617070"));
-	ns.tprint(GenerateIPAddresses(ns, "202721319")); // fail 07/06/2023 11:37 AM
-	ns.tprint(GenerateIPAddresses(ns, "4951957")); // fail 07/21/2023 10:01 AM
-	ns.tprint(["4.95.19.57","4.95.195.7","49.5.19.57","49.5.195.7","49.51.9.57","49.51.95.7"]);
-	ns.tprint(GenerateIPAddresses(ns, "121406372")); // fail 07/22/2023 12:51 AM
+	// ns.tprint(GenerateIPAddresses(ns, "25525511135"));
+	// ns.tprint(GenerateIPAddresses(ns, "1938718066"));
+	// ns.tprint(GenerateIPAddresses(ns, "1921680101")); // + " / 192.168.010.1 is not a valid IP.");
+	// ns.tprint(GenerateIPAddresses(ns, "3520617070"));
+	// ns.tprint(GenerateIPAddresses(ns, "202721319")); // fail 07/06/2023 11:37 AM
+	// ns.tprint(GenerateIPAddresses(ns, "4951957")); // fail 07/21/2023 10:01 AM
+	// ns.tprint(["4.95.19.57","4.95.195.7","49.5.19.57","49.5.195.7","49.51.9.57","49.51.95.7"]);
+	// ns.tprint(GenerateIPAddresses(ns, "121406372")); // fail 07/22/2023 12:51 AM
 
 	// ns.tprint(HammingCodes(ns, 8));
 	// ns.tprint(HammingCodes(ns, 21));
@@ -58,7 +58,8 @@ export async function main(ns) {
 	// ns.tprint(MergeOverlappingIntervals(ns, [[1, 3], [8, 10], [2, 6], [10, 16]]));
 	// ns.tprint(MergeOverlappingIntervals(ns, [[25, 33], [17, 18], [8, 18], [9, 11], [15, 23], [4, 7], [6, 16], [2, 6], [2, 8], [12, 19]]));
 	// [[2,23],[25,33]]
-	// ns.tprint(MinimumPathSumInATriangle(ns, MinimumPathSumInATriangleExample));
+
+	//ns.tprint(MinimumPathSumInATriangle(ns, MinimumPathSumInATriangleExample));
 
 	// ns.tprint(`
 	//  "()())()" -> ["()()()", "(())()"]
@@ -92,7 +93,7 @@ const contractDictionary = [
 	, ["Algorithmic Stock Trader II", null]
 	, ["Algorithmic Stock Trader III", null]
 	, ["Algorithmic Stock Trader IV", null]
-	, ["Minimum Path Sum in a Triangle", null]
+	, ["Minimum Path Sum in a Triangle", MinimumPathSumInATriangle]
 	, ["Unique Paths in a Grid I", null]
 	, ["Unique Paths in a Grid II", null]
 	, ["Shortest Path in a Grid", null]
@@ -213,7 +214,7 @@ function ArrayJumpingGame(ns, arr) {
 	let myPosition = 0;
 	let failsafe = 20;
 	let f = 0;
-	while (true) {
+	while (f < failsafe) {
 		let maxJumpLength = arr[myPosition];
 		let bestJump = maxJumpLength;
 		for (let b = 1; b <= maxJumpLength; b++) {
@@ -595,7 +596,7 @@ function GenerateIPAddresses(ns, str) {
 				return false;
 		}
 
-		if (theAttempt.replaceAll(".", "").replaceAll("0", "") != input.replaceAll("0", "")){
+		if (theAttempt.replaceAll(".", "").replaceAll("0", "") != input.replaceAll("0", "")) {
 			return false;
 		}
 
@@ -802,8 +803,38 @@ const MinimumPathSumInATriangleExample = [
 // 4,1,8,3
 
 // The minimum path sum is 11 (2 -> 3 -> 5 -> 1).
-
 function MinimumPathSumInATriangle(ns, triangle) {
+
+	let collection = [];
+	function RecursiveFunction(triangle, layer, i, array) {
+		let value = triangle[layer];
+		if (value)
+			value = value[i];
+
+		if (!value) {
+			collection.push(array);
+			return;
+		} else {
+			let arrayA = [...array, value];
+			RecursiveFunction(triangle, layer + 1, i, arrayA);
+			RecursiveFunction(triangle, layer + 1, i + 1, arrayA);
+		}
+
+	}
+	RecursiveFunction(triangle, 0, 0, []);
+
+	let minimumSum = Number.MAX_SAFE_INTEGER;
+	for (let c of collection) {
+		let sum = c.reduce((a, b) => a + b, 0);
+		if (sum < minimumSum)
+			minimumSum = sum;
+	}
+
+	return minimumSum;
+}
+
+// Never got this to work. Tried really hard to visualize it.
+function MinimumPathSumInATriangleB(ns, triangle) {
 	let miniSum = 999;
 	let allPossiblePaths = [
 		"0000", // LLL

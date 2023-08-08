@@ -1,4 +1,5 @@
-/** @param {NS} ns */
+// Remember to press Ctrl + K, Ctrl + 0
+
 import StrLeft from './im/strLeft'
 import StrRight from './im/strRight'
 
@@ -7,126 +8,66 @@ const lastGiftTxt = "forStanek1.txt"; // Stores the last saved fragment batch
 
 let maxStanekSize = 5;
 
-export async function main(ns) {
-
-	// InitPlaces(ns);
-	const arg0 = ns.args[0];
-
-	if (!arg0) {
-		ns.tprint(`You have not entered any arguments. Valid arguments are 
-		frag >> print every frag name in frag.txt
-		g >> get, prints all fragments
-		i [X || 0] >> init, takes X and places it
-		rm [X || 0] >> remove, deletes X
+function MainHelp(ns, index) {
+	ns.tprint(`You have not entered any arguments. Valid arguments are 
+		list >> print every frag name in frag.txt
+		s [name] >> save, gets all fragments as NAME and appends to ${fragTxt}
+		l [name] >> load, loads NAME from ${fragTxt} and places it
+		rm [name] >> delete, deletes NAME
 		b [T/max] >> batch, executes chrg.js with T threads.
 				If T is not provided, default to home's free ram < 64 ? -11 : -40
 		k >> kill all chrg.js
 		upgrade >> imports var savedFrags inside this js file to frag.txt
 		`);
-	}
-	else if (arg0 == "a") {
-		// ns.tprint(ns.stanek.acceptGift());
-	}
-	else if (arg0 == "frag") {
-		let fragData = ns.read(fragTxt);
-		let width = ns.stanek.giftWidth();
-		let height = ns.stanek.giftHeight();
-		fragData = !fragData ? [] : JSON.parse(fragData);
-		ns.tprint(`Stanek's Gift is ${width} x ${height} right now.`);
-		let output = "";
-		for (let i = 0; i < fragData.length; i++) {
-			const fragFile = fragData[i];
-			output += ("\r\n    " + StrRight(fragFile.name, 20) +
-				" " + StrRight((fragFile.width ? fragFile.width + " x " + fragFile.height : ""), 7) +
-				" " + StrRight(String((fragFile?.bn || "")), 5) +
-				" " + (fragFile.date != "" ? new Date(fragFile.date).toLocaleString() : ""));
-		}
-		ns.tprint(output);
-	}
-	else if (arg0 == "g") {
-		const [ignoreMe, fragName] = ns.args;
-		if (!fragName) {
-			ns.tprint("You forgot an argument: NAME")
-			ns.tprint("sg.js end."); return;
-		}
-		
+}
 
-		let fragData = await SaveFragData(ns, fragName);
-		ns.tprint(`FragData ${fragName} saved. ${new Date().toLocaleString()}`)
-		WriteMostRecentFrag(ns, fragData);
-	} else if (arg0 == "i" || arg0 == "init") {
-		const [ignoreMe, fragName] = ns.args;
-		if (!fragName) {
-			ns.tprint("You forgot an argument: NAME")
-			ns.tprint("sg.js end."); return;
-		}
-		let fragData = ns.read(fragTxt);
-		fragData = !fragData ? [] : JSON.parse(fragData);
-		fragData = fragData.filter(f => f.name == fragName)[0];
-		if (!fragData) {
-			ns.tprint(`${fragName} not found.`)
-			ns.tprint(`sg.js end.`); return;
-		}
-		ns.stanek.clearGift();
-		InitFrags(ns, fragData.frag);
-		WriteMostRecentFrag(ns, fragData.frag);
-
-		ns.exec("chrg.js", "home", 1, JSON.stringify(fragData.frag));
-	} else if (arg0 == "b") {
-		let [ignoreMe, threads] = ns.args;
-
-		if (threads == "max" || threads == void 0) {
-			let maxRam = ns.getServerMaxRam("home");
-			let usedRam = ns.getServerUsedRam("home");
-			maxRam -= usedRam;
-			if (threads == "max")
-				threads = Math.floor((maxRam) / 2);
-			else if (maxRam < 64)
-				threads = Math.floor((maxRam - 11) / 2);
-			else
-				threads = Math.floor((maxRam - 40) / 2);
-		}
-		if (threads < 0) {
-			ns.tprint(`You don't have any threads left.`)
-			return;
-		}
-		if (ns.exec("chrg.js", "home", threads, ns.read(lastGiftTxt)) > 0)
-			ns.tprint(`Applied ${threads} threads to chrg.js.`);
-		else
-			ns.tprint(`Fail chrg.js -- threads: ${threads}. ${ns.read(lastGiftTxt)}`);
-	} else if (arg0 == "w" || arg0 == "write") {
-		let myOldFrag = GetFrags(ns);
-		WriteMostRecentFrag(ns, myOldFrag);
+/** @param {NS} ns */
+export async function main(ns) {
+	if (ns.args.length == 0) {
+		MainHelp();
+		return;
 	}
-	else if (arg0 == "k") {
-		if (ns.scriptKill("chrg.js", "home"))
-			ns.tprint("killed chrg.js");
-		else
-			ns.tprint("couldn't find chrg.js to kill.");
 
-	} else if (arg0 == "rm") {
-		const [ignoreMe, fragName] = ns.args;
-		if (!fragName) {
-			ns.tprint("You forgot an argument: NAME")
-			ns.tprint("sg.js end.")
-			return;
-		}
-		RemoveFragData(ns, fragName);
+	for (let i = 0; i < ns.args.length; i++) {
+		await MainHelper(ns, ns.args[i], i);
 	}
-	else {
-		ns.tprint("no valid arguments.")
-	}
+
 	ns.tprint(`sg.js ${ns.args.concat()} ended. ${new Date().toLocaleString()}`);
 }
 
 
-function InitFrags(ns, frags) {
+
+async function MainHelper(ns, arg, index) {
+	ns.print({ arg, index });
+	if (false) { }
+	else if (["help"].includes(arg)) { MainHelp(ns, index); }
+	else if (["list", "lsit"].includes(arg)) { MainListFrags(ns, index); }
+	else if (["s", "save"].includes(arg)) { await MainSaveFrags(ns, index); }
+	else if (["l", "load"].includes(arg)) { MainPlacesFrags(ns, index); }
+	else if (["rm"].includes(arg)) { MainDeleteFrags(ns, index); }
+	else if (["b"].includes(arg)) { MainBatch(ns, index); }
+	else if (["w", "write"].includes(arg)) {
+		let myOldFrag = GetFrags(ns);
+		WriteMostRecentFrag(ns, myOldFrag);
+	}
+	else if (["k"].includes(arg)) {
+		if (ns.scriptKill("chrg.js", "home"))
+			ns.tprint("killed chrg.js");
+		else
+			ns.tprint("couldn't find chrg.js to kill.");
+	}
+	// else {
+	// 	ns.tprint(`${arg} is an invalid argument`)
+	// }
+}
+
+function PlacesFrags(ns, frags) {
 	for (let i = 0; i < frags.length; i++) {
 		let f = frags[i];
 		ns.stanek.placeFragment(f.x, f.y, f.rotation, f.id);
 	}
-
 }
+
 function GetFrags(ns) {
 	maxStanekSize = ns.stanek.giftWidth();
 	let myFrags = [];
@@ -137,7 +78,6 @@ function GetFrags(ns) {
 			// 	jtprint(ns, frag);
 			if (frag && !myFrags.includes(frag)) {
 				myFrags.push(frag);
-
 			}
 		}
 	}
@@ -162,11 +102,12 @@ function jtprint(ns, obj) {
 	});
 }
 
-async function SaveFragData(ns, fragName) {
+async function PromptAndSaveFragData(ns, fragName) {
 	let myNewFrag = GetFrags(ns);
-	let width = ns.stanek.giftWidth();
-	let height = ns.stanek.giftHeight();
-	let bn = ns.getResetInfo().currentNode;
+	const width = ns.stanek.giftWidth();
+	const height = ns.stanek.giftHeight();
+	const bn = ns.getResetInfo().currentNode;
+	//const holes = CountEmptySpace(ns, width, height);
 	myNewFrag = { name: fragName, date: new Date(), frag: myNewFrag, width, height, bn };
 	let fragData = ns.read(fragTxt);
 	fragData = !fragData ? [] : JSON.parse(fragData);
@@ -176,15 +117,16 @@ async function SaveFragData(ns, fragName) {
 			fragData = fragData.filter(f => f.name != fragName);
 		} else {
 			ns.tprint(`Did not overwrite ${fragName}. Ending sg.js.`);
+			return false;
 		}
 	}
 	fragData.push(myNewFrag);
 	fragData = fragData.sort((a, b) => a.name.localeCompare(b.name));
 	ns.write(fragTxt, JSON.stringify(fragData), "w");
-	return fragData;
+	return myNewFrag;
 }
 
-function RemoveFragData(ns, fragName) {
+function DeleteFragData(ns, fragName) {
 	let fragData = ns.read(fragTxt);
 	fragData = !fragData ? [] : JSON.parse(fragData);
 	if (fragData.length == 0) {
@@ -197,7 +139,132 @@ function RemoveFragData(ns, fragName) {
 	ns.tprint(`FragData ${fragName} deleted. ${new Date().toLocaleString()}`)
 }
 
-function WriteMostRecentFrag(ns, myOldFrag){
+function WriteMostRecentFrag(ns, myOldFrag) {
+	if (myOldFrag && myOldFrag[0].x == void 0) {
+		throw "WriteMostRecentFrag(ns, myOldFrag) has invalid parameter.";
+	}
+
 	ns.write(lastGiftTxt, JSON.stringify(myOldFrag), "w");
 	ns.tprint(`Current Stanek's Gift has been saved on ${lastGiftTxt}. ${new Date().toLocaleString()}`)
+}
+
+function HasArg(ns, argOption) {
+	if (typeof argOption == "string") {
+		return ns.args.includes(argOption);
+	} else if (typeof argOption == "object") {
+		for (const arg in argOption) {
+			if (ns.args.includes(arg) || ns.args.includes("-" + arg))
+				return arg;
+		}
+		return false;
+	}
+	throw "went through all arg options";
+}
+
+function MainListFrags(ns, index) {
+	let fragData = ns.read(fragTxt);
+	let width = ns.stanek.giftWidth();
+	let height = ns.stanek.giftHeight();
+	fragData = !fragData ? [] : JSON.parse(fragData);
+	ns.tprint(`Stanek's Gift is ${width} x ${height} right now.`);
+	let output = "";
+	for (let i = 0; i < fragData.length; i++) {
+		const fragFile = fragData[i];
+		output += ("\r\n    " + StrRight(fragFile.name, 20) +
+			" " + StrRight((fragFile.width ? fragFile.width + " x " + fragFile.height : ""), 7) +
+			" " + StrLeft(String((fragFile?.bn || "")), 5) +
+			// " " + StrLeft(String((fragFile?.holes || "")), 3) +
+			" " + (fragFile.date == void 0 ? "" : new Date(fragFile.date).toLocaleString()) +
+			" "
+		);
+	}
+	ns.tprint(output);
+}
+
+async function MainSaveFrags(ns, index) {
+	const fragName = ns.args[index + 1];
+
+	if (!fragName) {
+		ns.tprint("You forgot an argument: NAME")
+		ns.tprint("sg.js end."); return;
+	}
+
+	let fragData = await PromptAndSaveFragData(ns, fragName);
+	if (fragData == false)
+		return;
+	ns.tprint(`FragData ${fragName} saved. ${new Date().toLocaleString()}`)
+	WriteMostRecentFrag(ns, fragData.frag);
+}
+
+function MainPlacesFrags(ns, index) {
+	const fragName = ns.args[index + 1];
+
+	if (!fragName) {
+		ns.tprint("You forgot an argument: NAME")
+		ns.tprint("sg.js end."); return;
+	}
+	let fragData = ns.read(fragTxt);
+	fragData = !fragData ? [] : JSON.parse(fragData);
+	fragData = fragData.find(f => f.name == fragName);
+	if (!fragData) {
+		ns.tprint(`${fragName} not found.`)
+		ns.tprint(`sg.js end.`); return;
+	}
+	ns.stanek.clearGift();
+	PlacesFrags(ns, fragData.frag);
+	WriteMostRecentFrag(ns, fragData.frag);
+
+	ns.exec("chrg.js", "home", 1, JSON.stringify(fragData.frag));
+}
+
+function MainBatch(ns, index) {
+	let threads = ns.args[index + 1];
+
+	if (threads == "max" || threads == void 0) {
+		let maxRam = ns.getServerMaxRam("home");
+		let usedRam = ns.getServerUsedRam("home");
+		maxRam -= usedRam;
+		if (threads == "max")
+			threads = Math.floor((maxRam) / 2);
+		else if (maxRam < 64)
+			threads = Math.floor((maxRam - 11) / 2);
+		else
+			threads = Math.floor((maxRam - 40) / 2);
+	}
+	if (threads < 0) {
+		ns.tprint(`You don't have any threads left.`)
+		return;
+	}
+	if (ns.exec("chrg.js", "home", threads, ns.read(lastGiftTxt)) > 0)
+		ns.tprint(`Applied ${threads} threads to chrg.js.`);
+	else
+		ns.tprint(`Fail chrg.js -- threads: ${threads}. ${ns.read(lastGiftTxt)}`);
+}
+
+function MainDeleteFrags(ns, index) {
+	const fragName = ns.args[index + 1];
+	if (!fragName) {
+		ns.tprint("You forgot an argument: NAME")
+		ns.tprint("sg.js end.")
+		return;
+	}
+	DeleteFragData(ns, fragName);
+}
+
+// Fail. 08/07/2023 10:01 AM
+// You have to individually count the empty spaces after a rotation to determine if spaces are empty.
+/** @param {NS} ns */
+function CountEmptySpace(ns, width, height) {
+	// const width = ns.stanek.giftWidth();
+	// const height = ns.stanek.giftHeight();
+	let output = 0;
+	for (let y = 0; y < height; y++) {
+		for (let x = 0; x < width; x++) {
+			let frag = ns.stanek.getFragment(x, y);
+			if (!frag) {
+				output++;
+			}
+		}
+	}
+	return output;
 }

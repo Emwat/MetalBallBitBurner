@@ -1,8 +1,8 @@
-let numSleeves;
+let numberOfSleeves;
 
 /** @param {NS} ns */
 export async function main(ns) {
-	numSleeves = ns.args[0];
+	numberOfSleeves = numSleeves;
 	let myCity = ns.args[1].toUpperCase();
 
 	let myCity = cities.find(f => f[0] == myCity);
@@ -10,7 +10,7 @@ export async function main(ns) {
 }
 
 function loop(ns, myFunction, moreArgs) {
-	for (let i = 0; i < numSleeves; i++) {
+	for (let i = 0; i < numberOfSleeves; i++) {
 		if (moreArgs)
 			myFunction(i, ...moreArgs);
 		else

@@ -15,10 +15,9 @@ function GetAllServers(ns, target, power, stopper) {
 	if (power + 1 == stopper)
 		return;
 
-	if (target == "home") {
-		// ns.tprint(power + " " + padd(target, power));
-		// return;
-	}
+	// if (target == "home") {
+	// 	return;
+	// }
 
 	// if (alreadyScanned.indexOf(target) > -1)
 	// 	return;
@@ -38,8 +37,8 @@ function GetAllServers(ns, target, power, stopper) {
 			ns.print(power + " " + padd(ns, server, power));
 			alreadyScanned.push(server);
 		}
-
 		GetAllServers(ns, server, power + 1, stopper)
+
 	}
 
 	return servers;

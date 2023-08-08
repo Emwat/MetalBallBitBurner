@@ -6,6 +6,7 @@ See man.js for the overview for all of my scripts.
 ### Tips
 
 If you're copying/pasting scripts, make sure to include the folder named 'im'.
+Look for ".js" files in the code.
 
 	Double click to select a word
 	Triple click to select the line

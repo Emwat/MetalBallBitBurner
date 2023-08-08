@@ -21,7 +21,6 @@ export async function main(ns) {
 	const arg0 = ns.args[0];
 	let servers = GetServers(ns);
 
-	let { i, a, w } = { i: 0, a: 0, w: 0 };
 	let serverWithMostMoney = { hostname: "", moneyMax: 0 };
 	ns.disableLog("scp");
 	// ns.disableLog("exec");
@@ -57,7 +56,7 @@ export async function main(ns) {
 		// ns.tprint(StrLeft(server, 20) +
 		// 	"	" + ns.formatNumber(serverObject.maxRam - serverObject.ramUsed, 2)
 		// );
-		let myBug = { server: server, applied: 0, alph: 0, weak: 0 };
+		let myBug = { server: server, applied: 0, alph: 0, weak: 0, threads: 0 };
 
 		if (server == "home") {
 			myBug.note = "isHome";
@@ -108,6 +107,7 @@ export async function main(ns) {
 		if (AlphExec(ns, server, target) > 0) {
 			myBug.alph += 1;
 			myBug.applied += 1;
+			myBug.threads += Math.floor((serverObject.maxRam - serverObject.ramUsed) / coreScriptRam);
 			tprintFill(ns, i, server, alphJS, target);
 		}
 
@@ -121,6 +121,7 @@ export async function main(ns) {
 			if (ns.exec(weakJS, server, 1, target) > 0) {
 				myBug.weak += 1;
 				myBug.applied += 1;
+				myBug.threads += Math.floor((serverObject.maxRam - serverObject.ramUsed) / coreScriptRam);
 				tprintFill(ns, i, server, weakJS, target);
 			}
 		}
@@ -129,27 +130,27 @@ export async function main(ns) {
 
 	//ns.tprint(`a ${a} w ${w} servers of ${servers.length}.`);
 	if (serverWithMostMoney.hostname != "")
-		ns.tprint(`Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
+		ns.tprint(`	Server with the Most Money: ${serverWithMostMoney.hostname} ${serverWithMostMoney.moneyMax}`);
 
-	ns.tprint("Applied " + myBugs.map(m => m.applied).reduce((a, b) => { return a + b }));
+	ns.tprint("	Applied " + myBugs.map(m => m.applied).reduce((a, b) => { return a + b }));
+	ns.tprint("	Threads " + myBugs.map(m => m.threads).reduce((a, b) => { return a + b }));
 	if (arg0 == "print")
 		PrintMyBugs(ns, myBugs);
 
 	if (arg0 && !reservedKeywords.includes(arg0)) {
 		let target = (arg0 == "target" ? defaultTarget : arg0);
 		target = ns.getServer(target);
-		if(target.hackDifficulty > target.minDifficulty + 5)
-		{
+		if (target.hackDifficulty > target.minDifficulty + 5) {
 			let time = Math.floor(ns.formulas.hacking.weakenTime(target, ns.getPlayer()));
-			time = FormatTime(time / 6000, "m:s")
+			time = FormatTime(time / 6000, "m:s");
 			ns.tprint(`Weaken Time for ${target.hostname}: ${time}`);
 		} else if (target.moneyAvailable < target.moneyMax * 0.75) {
 			let time = Math.floor(ns.formulas.hacking.growTime(target, ns.getPlayer()));
-			time = FormatTime(time / 6000, "m:s")
+			time = FormatTime(time / 6000, "m:s");
 			ns.tprint(`Grow Time for ${target.hostname}: ${time}`);
 		} else {
 			let time = Math.floor(ns.formulas.hacking.hackTime(target, ns.getPlayer()));
-			time = FormatTime(time / 6000, "m:s")
+			time = FormatTime(time / 6000, "m:s");
 			ns.tprint(`Hack Time for ${target.hostname}: ${time}`);
 		}
 	}

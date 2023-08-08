@@ -67,7 +67,7 @@ export async function main(ns) {
 				HelperExec(ns, "hack.js", "home", target, Math.floor(maxThreads * 0.4));
 			}
 		}
-	} else if (ns.args[0] == "one" || ns.args[0] == "target") {
+	} else if (ns.args[0] == "one") {
 		const target = GetTarget(ns);
 
 		let output = "\r\n";
@@ -83,6 +83,8 @@ export async function main(ns) {
 		if (target.length == 1) {
 			[arg2, target] = ns.args;
 		}
+		if(target == "target")
+			target = GetTarget(ns);
 
 		if (false) {
 

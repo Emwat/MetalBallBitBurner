@@ -36,8 +36,8 @@ export async function main(ns) {
 		" g: " + g +
 		" h: " + h +
 		" a: " + a +
-		" c: " + s +
-		" s: " + c +
+		" c: " + c +
+		" s: " + s +
 		""
 	);
 }

@@ -1,5 +1,3 @@
-const forBladeTxt = "forBlade.txt";
-
 /** @param {NS} ns */
 export async function main(ns) {
 
@@ -14,15 +12,10 @@ export async function main(ns) {
 		`)
 
 	}
-	else if (ns.args[0] == "e") {
-		await DistributeSkillPoints(ns);
-	} else if (ns.args[0] == "m") {
-		await DistributeSkillPoints(ns, "Hands of Midas");
-	} else if (ns.args[0] == "o") {
-		await DistributeSkillPoints(ns, "Overclock");
-	} else if (ns.args[0] == "s") {
-		await DistributeSkillPoints(ns, "Cyber's Edge");
-	}
+	else if (ns.args[0] == "e") { await DistributeSkillPoints(ns); }
+	else if (ns.args[0] == "m") { await DistributeSkillPoints(ns, "Hands of Midas"); }
+	else if (ns.args[0] == "o") { await DistributeSkillPoints(ns, "Overclock"); }
+	else if (ns.args[0] == "s") { await DistributeSkillPoints(ns, "Cyber's Edge"); }
 }
 
 /** @param {NS} ns */
@@ -31,8 +24,7 @@ async function DistributeSkillPoints(ns, focusName = "") {
 
 	let bbSkills = skillNames.map(m => { return { name: m, cost: ns.bladeburner.getSkillUpgradeCost(m) } })
 	let bbSkillWithMinCost = bbSkills.sort((a, b) => a.cost - b.cost)[0];
-	if (focusName != "Cyber's Edge")
-	{
+	if (focusName != "Cyber's Edge") {
 		bbSkills = bbSkills.filter(f => f.name != "Cyber's Edge")
 	}
 	// bbSkillWithMinCost = bbSkills.reduce((output, r) => { return r.cost < output.cost ? r : output;});
@@ -42,7 +34,7 @@ async function DistributeSkillPoints(ns, focusName = "") {
 	const maxOverclockCost = 129;
 
 	while (true) {
-		
+
 		myPoints = ns.bladeburner.getSkillPoints();
 		bbSkills = bbSkills.map(m => { return { name: m.name, cost: ns.bladeburner.getSkillUpgradeCost(m.name) } })
 		// bbSkillWithMinCost = bbSkills.sort((a, b) => a.cost - b.cost)[0];
@@ -58,6 +50,10 @@ async function DistributeSkillPoints(ns, focusName = "") {
 
 
 		if (bbSkillWithMinCost.name == "Overclock" && bbSkillWithMinCost.cost == maxOverclockCost) {
+			if (focusName == "Overclock") {
+				BiPrint(ns, "Overclock is maxed out.");
+				// return;
+			}
 			bbSkills = bbSkills.filter(f => f.name != "Overclock");
 
 			bbSkillWithMinCost = bbSkills.reduce((output, r) => {
@@ -69,22 +65,25 @@ async function DistributeSkillPoints(ns, focusName = "") {
 		if (bbSkillWithMinCost.cost > myPoints)
 			break;
 		if (ns.bladeburner.upgradeSkill(bbSkillWithMinCost.name)) {
-			ns.tprint(`Spent ${bbSkillWithMinCost.cost} skill points on ${bbSkillWithMinCost.name}`)
-			if (!focusName) {
-				ns.write(forBladeTxt, bbSkillWithMinCost.cost, "w");
-			}
-
+			BiPrint(ns, `Spent ${bbSkillWithMinCost.cost} skill points on ${bbSkillWithMinCost.name}`);
 		}
 		else {
-			ns.tprint(`Could not upgrade ${bbSkillWithMinCost.name}`);
+			BiPrint(ns, `Could not upgrade ${bbSkillWithMinCost.name}`);
 			break;
 		}
 		await ns.sleep(20);
 	}
 
 	myPoints = ns.bladeburner.getSkillPoints();
-	ns.tprint(`The next skill "${bbSkillWithMinCost.name}" costs ${bbSkillWithMinCost.cost}.` +
+	BiPrint(ns, `The next skill "${bbSkillWithMinCost.name}" costs ${bbSkillWithMinCost.cost}.` +
 		` You have ${myPoints} skill points.`);
+}
+
+function BiPrint(ns, msg) {
+	if (ns.args.includes("quiet"))
+		ns.print(msg);
+	else
+		ns.tprint(msg);
 }
 
 

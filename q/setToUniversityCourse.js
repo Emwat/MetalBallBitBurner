@@ -1,20 +1,24 @@
-let numSleeves;
+let numberOfSleeves;
 
 /** @param {NS} ns */
 export async function main(ns) {
-	numSleeves = ns.args[0];
-	let argParams = ns.args[1];
+	let { numSleeves, argRabbit, argParams } = JSON.parse(ns.args[0]);
+	numberOfSleeves = numSleeves;
 
 	//let takeUni = universities[0];
 	let takeUni = "ZB Institute of Technology";
 	let takeClass = uniClasses.find(f => f[0] == argParams.toUpperCase());
 
 	ns.tprint(`University ${takeUni} ${takeClass}`);
-	loop(ns, ns.sleeve.setToUniversityCourse, [takeUni, takeClass]);
+
+	if (argRabbit || argRabbit == "0")
+		ns.sleeve.setToUniversityCourse(argRabbit, takeUni, takeClass);
+	else
+		loop(ns, ns.sleeve.setToUniversityCourse, [takeUni, takeClass]);
 }
 
 function loop(ns, myFunction, moreArgs) {
-	for (let i = 0; i < numSleeves; i++) {
+	for (let i = 0; i < numberOfSleeves; i++) {
 		if (moreArgs)
 			myFunction(i, ...moreArgs);
 		else
