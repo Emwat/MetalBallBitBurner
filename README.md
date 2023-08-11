@@ -3,6 +3,8 @@ This is my BitBurner backup code.
 
 See man.js for the overview for all of my scripts.
 
+# Beaten every bitnode on 08/08/2023 10:09 AM
+
 ### Tips
 
 If you're copying/pasting scripts, make sure to include the folder named 'im'.
