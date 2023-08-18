@@ -16,8 +16,8 @@ import GetMostAffordableNode from './im/nodeCosts'
 import Get from "get.js"
 
 import tickers from "./static/symbols"
-import augs from "./static/augs"
 import FormatTime from './im/time'
+import ParseNumbers from './im/colon'
 import operations from './static/blackops'
 
 // carat.js
@@ -32,19 +32,44 @@ import operations from './static/blackops'
 // topTarget.js
 // zeroLeft.js
 
+
+/** @param {NS} ns */
+let lotsCostsDebugTxt = "lotsCosts.txt";
+function asdf(ns) {
+	let data = JSON.parse(ns.read(lotsCostsDebugTxt)).flat();
+	let symbols = ns.stock.getSymbols();
+	symbols.map(s => {
+		let filtered = data.filter(d => d.name == s);
+		let profit = (filtered[filtered.length - 1].price / filtered[0].price);
+		return { name: s, profit }
+	}).forEach((v, i, arr) => {
+		ns.tprint(v.name.padStart(5) + " " + v.profit.toFixed(2));
+	})
+}
+
+
 /** @param {NS} ns */
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
-	ns.tprint([200, 2000, 20000].map(t=>FormatTime(t, "m:s")))
-	ns.tprint(ns.bladeburner.getRank());
+	//ns.tprint(ns.exec("tick.js", "home", 1, "OMTK"));
+	// ns.tprint(ns, ["SLRS", "ICRS", "CLRK", "STM", "LXO", "OMTK", "BLD", "OMGA"]
+	// .map(s => { return { s, req: ns.getServer(tickers.find(f => f.ticker == s).hostname).requiredHackingSkill}; }))
+
+	// jtprint(ns, ns.getServer("foodnstuff"));
+	// asdf(ns);
+	//ns.tprint(ParseNumbers(ns, "4"));
+	//ns.tprint(ParseNumbers(ns, "6-11"));
+	//jtprint(ns, ns.sleeve.getSleeve(0));
+	//ns.tprint(ns.bladeburner.getRank());
 	//ns.tprint(ns.bladeburner.getActionEstimatedSuccessChance("BlackOps", "Operation Morpheus"));
 	//ns.tprint(ns.bladeburner.getBlackOpRank());
 	// ns.tprint({shy: ns.args.includes("shy")});
+	//ns.tprint([200, 2000, 20000].map(t=>FormatTime(t, "m:s")))
 	// jtprint(ns, ns.gang.getGangInformation())
 	// ns.tprint(GetTarget(ns));
 	//jtprint(ns, ns.sleeve.getSleeve(1).skills)
 	//ns.tprint(ns.getServer('w0r1d_d43m0n').requiredHackingSkill);
-	 //jtprint(ns, ns);
+	//jtprint(ns, ns);
 	// jtprint(ns, ns.corporation.getMaterialData("Water"));
 	//ns["tprint"](GetTarget(ns));
 	// ns.tprint(StrRight("test", 50) + "x");
@@ -215,23 +240,23 @@ function ftprint(ns, obj) {
 	ns.tprint(output);
 }
 
-function FixAugs(){
+function FixAugs() {
 	let a = [];
 	//ns.tprint( typeof augs); return;
 	// jtprint(ns, augs[0]);return;
 	// ns.tprint(augs.length); return;
-	
-	for(let i = 0; i < augs.length; i++){
+
+	for (let i = 0; i < augs.length; i++) {
 		let aug = augs[i];
 		let bonuses = {};
-		if(aug.bonuses)
-		for(let j = 0; j < aug.bonuses.length; j++){
-			let obj = aug.bonuses[j];
-			let k = Object.keys(obj)[0];
-			let v = Object.values(obj)[0];
-			bonuses[k] = v;
-		}
-		a.push({...aug, bonuses});
+		if (aug.bonuses)
+			for (let j = 0; j < aug.bonuses.length; j++) {
+				let obj = aug.bonuses[j];
+				let k = Object.keys(obj)[0];
+				let v = Object.values(obj)[0];
+				bonuses[k] = v;
+			}
+		a.push({ ...aug, bonuses });
 
 	}
 	ns.tprint(JSON.stringify(a));

@@ -6,8 +6,8 @@ export async function main(ns) {
 	numberOfSleeves = numSleeves;
 
 	//let takeUni = universities[0];
-	let takeUni = "ZB Institute of Technology";
-	let takeClass = uniClasses.find(f => f[0] == argParams.toUpperCase());
+	let takeUni = universities.find(uni => ns.sleeve.getSleeve(argRabbit || 0).city == uni.city).name;
+	let takeClass = uniClasses.find(uniClass => uniClass.name[0] == argParams.toUpperCase());
 
 	ns.tprint(`University ${takeUni} ${takeClass}`);
 
@@ -30,4 +30,8 @@ const uniClasses = ["Computer Science", "Data Structures"
 	, "Networks", "Algorithms", "Management", "Leadership"];
 
 
-const universities = ["Rothman University", "Summit University", "ZB Institute of Technology"];
+const universities = [
+	{ city: "Sector-12", name: "Rothman University"}
+	// ,{ city: "", name: "Summit University"}
+	,{ city: "Aevum", name: "ZB Institute of Technology"}
+	];

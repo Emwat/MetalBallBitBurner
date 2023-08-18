@@ -10,9 +10,9 @@ let maxStanekSize = 5;
 
 function MainHelp(ns, index) {
 	ns.tprint(`You have not entered any arguments. Valid arguments are 
-		list >> print every frag name in frag.txt
+		l >> list, print every frag name in frag.txt
 		s [name] >> save, gets all fragments as NAME and appends to ${fragTxt}
-		l [name] >> load, loads NAME from ${fragTxt} and places it
+		o [name] >> open, loads NAME from ${fragTxt} and places it
 		rm [name] >> delete, deletes NAME
 		b [T/max] >> batch, executes chrg.js with T threads.
 				If T is not provided, default to home's free ram < 64 ? -11 : -40
@@ -24,7 +24,7 @@ function MainHelp(ns, index) {
 /** @param {NS} ns */
 export async function main(ns) {
 	if (ns.args.length == 0) {
-		MainHelp();
+		MainHelp(ns);
 		return;
 	}
 
@@ -41,9 +41,9 @@ async function MainHelper(ns, arg, index) {
 	ns.print({ arg, index });
 	if (false) { }
 	else if (["help"].includes(arg)) { MainHelp(ns, index); }
-	else if (["list", "lsit"].includes(arg)) { MainListFrags(ns, index); }
+	else if (["l", "list"].includes(arg)) { MainListFrags(ns, index); }
 	else if (["s", "save"].includes(arg)) { await MainSaveFrags(ns, index); }
-	else if (["l", "load"].includes(arg)) { MainPlacesFrags(ns, index); }
+	else if (["o", "open"].includes(arg)) { MainPlacesFrags(ns, index); }
 	else if (["rm"].includes(arg)) { MainDeleteFrags(ns, index); }
 	else if (["b"].includes(arg)) { MainBatch(ns, index); }
 	else if (["w", "write"].includes(arg)) {

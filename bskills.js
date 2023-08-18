@@ -31,7 +31,8 @@ async function DistributeSkillPoints(ns, focusName = "") {
 	// ns.tprint(`${bbSkillWithMinCost.name} ${bbSkillWithMinCost.cost}`);
 	// return;
 	//const maxOverclockCost = 258; // bn7
-	const maxOverclockCost = 129;
+	// const maxOverclockCost = 129
+	const maxOverclockCost = 154; // bn9 08/17/2023 02:37 PM wut
 
 	while (true) {
 
@@ -52,6 +53,7 @@ async function DistributeSkillPoints(ns, focusName = "") {
 		if (bbSkillWithMinCost.name == "Overclock" && bbSkillWithMinCost.cost == maxOverclockCost) {
 			if (focusName == "Overclock") {
 				BiPrint(ns, "Overclock is maxed out.");
+				focusName = "Hands of Midas";
 				// return;
 			}
 			bbSkills = bbSkills.filter(f => f.name != "Overclock");

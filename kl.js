@@ -1,7 +1,38 @@
+import servers from "./static/servers"
+
+const alias = {
+	a: "alph"
+	, h: "hack"
+	, w: "weak"
+	, g: "grow"
+	, s: "shar"
+	, c: "chrg"
+	, bb: "blade"
+	, n: "net"
+	, nn: "nnet"
+	, sm: "wse"
+	, y: "wsy"
+}
+
+
 /** @param {NS} ns */
 export async function main(ns) {
-	const arg0 = ns.args[0];
-	if (arg0 == "servers") {
+	let arg0 = ns.args[0];
+	if (alias[arg0]) {
+		arg0 = alias[arg0];
+	}
+	if (ns.args.length == 0) {
+		ns.tprint(`
+			all >> kills all scripts except home
+			servers [ARRAY] >> ARRAY is comma delimited servers. Kills scripts hosted on those servers.
+			others/old [SCRIPT] >> kills all SCRIPT files, except for the newest SCRIPT file
+			[a/h/w/g etc.] >> kills SCRIPT on home. Refer to alias variable.
+		`);
+	}
+	else if (arg0 == "servers") {
+		if (ns.args.length == 1) {
+			ns.tprint(`kl servers needs a second argument.`)
+		}
 		const servers = ns.args[1].split(",");
 		for (let server of servers) {
 			if (ns.killall(server)) {
@@ -10,7 +41,11 @@ export async function main(ns) {
 
 		}
 	}
-	else if (ns.args.includes("others")) {
+	else if (arg0 == "all") {
+		for (let server of servers.filter(s => s != "home"))
+			ns.killall(server);
+	}
+	else if (ns.args.includes("others") || ns.args.includes("old")) {
 		KillAllOtherScripts(ns, arg0);
 	}
 	else {
@@ -22,7 +57,7 @@ export async function main(ns) {
 
 }
 
-function KillAllOtherScripts(ns, arg0) {
+function KillAllOtherScripts(ns, scriptName) {
 	let scripts = ns.ps("home");
 
 	let foundOriginalScript = false;
@@ -32,7 +67,7 @@ function KillAllOtherScripts(ns, arg0) {
 		if (!script)
 			continue;
 
-		if (script.filename != arg0 + ".js")
+		if (script.filename != scriptName + ".js")
 			continue;
 
 		if (foundOriginalScript == false) {

@@ -155,7 +155,7 @@ function HelperExec(ns, myScript, hostServer, scriptTarget, threads) {
 		return;
 	}
 
-	const moneyThresh = ns.getServerMaxMoney(scriptTarget) * 0.75;
+	const moneyThresh = Math.floor(ns.getServerMaxMoney(scriptTarget) * 0.75);
 	const securityThresh = ns.getServerMinSecurityLevel(scriptTarget) + 5;
 	ns.tprint("running" +
 		" " + myScript +

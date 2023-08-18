@@ -77,7 +77,7 @@ export async function main(ns) {
 		AscendBuyAndTrain(ns, members, onlyGangTrain, includeRootkits);
 	}
 	else if (arg0 == "i") { GetInfo(ns, members); }
-	else if (arg0 == "ia") { SeeBeforeAscNotes(ns); }
+	else if (arg0 == "ia") { SeeBeforeAscNotes(ns, members); }
 	else if (arg0 == "it") { SeeDraftAndTraining(ns, members); }
 	else if (["member", "members"].includes(arg0)) { PrintMembers(ns, members); }
 	// else if (arg0 == "br") { await BatchRecruit(ns); }
@@ -485,7 +485,7 @@ function SetMembersToTrain(ns, members) {
 
 	for (let i = 0; i < theArgString.length; i++) {
 		let s = theArgString[i];
-		ns.tprint(s)
+		// ns.tprint(s)
 		if (s !== "0" && !parseInt(s)) {
 			break;
 		}
@@ -533,6 +533,7 @@ function MakeBeforeAscNotes(ns, memberName) {
 		"name": memberName,
 		"hack": memberInfo["hack"],
 		"str": memberInfo.str,
+		"str_asc_mult": memberInfo.str_asc_mult,
 		"def": memberInfo.def,
 		"dex": memberInfo.dex,
 		"agi": memberInfo.agi,
@@ -546,27 +547,43 @@ function MakeBeforeAscNotes(ns, memberName) {
 	ns.tprint(`MoneyGains: ${ToDollars(beforeAsc.money)}`)
 }
 
-function SeeBeforeAscNotes(ns) {
+function SeeBeforeAscNotes(ns, members) {
 	let existingData = JSON.parse(ns.read(gangAscTxt));
 	let output = "\r\n";
-	for (let i = 0; i < existingData.length; i++) {
+	let iStart = existingData.length > 10 ? existingData.length - 10 : 0;
+	for (let i = iStart; i < existingData.length; i++) {
 		let eAscData = existingData[i];
 		output += StrLeft(new Date(eAscData.date).toLocaleString(), 22) +
 			" " + eAscData.name +
 			" " + NumLeft(eAscData["hack"], 13) +
+			" " + NumLeft(eAscData.hack_asc_mult, 13) +
 			" " + NumLeft(eAscData.str, 13) +
+			" " + NumLeft(eAscData.str_asc_mult, 13) +
 			" " + NumLeft(eAscData.upgrades, 13) +
 			" " + NumLeft(eAscData["moneyGain"] || 0, 13) +
 			"\r\n";
 	}
+	const memberInfo = ns.gang.getMemberInformation(members[0].name);
+
 	output = ("\r\n" + StrLeft("Date", 22) +
 		" " + StrLeft("Name", 7) +
 		" " + StrLeft("Hack", 13) +
+		" " + StrLeft("hack_asc_mult", 13) +
 		" " + StrLeft("Str", 13) +
+		" " + StrLeft("str_asc_mult", 13) +
 		" " + StrLeft("Upgrades", 13) +
 		" " + StrLeft("MoneyGain", 13) +
-		output
-	);
+		output +
+		"\r\n" + StrLeft("Current", 22) +
+		" " + StrLeft(members[0].name, 7) +
+		" " + NumLeft(memberInfo["hack"], 13) +
+		" " + NumLeft(memberInfo.hack_asc_mult, 13) +
+		" " + NumLeft(memberInfo.str, 13) +
+		" " + NumLeft(memberInfo.str_asc_mult, 13) +
+		" " + NumLeft(memberInfo.upgrades.length, 13) +
+		" " + StrLeft(ToDollars(memberInfo["moneyGain"]), 13) +
+		"");
+
 	ns.tprint(output);
 }
 

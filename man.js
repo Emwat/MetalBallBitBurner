@@ -29,6 +29,12 @@ CSEC          CyberSec (1 port, hack 59)
 avmnite-02h   NiteSec (2 ports, hack 219)
 I.I.I.I       Black Hand (3 ports, hack 360)
 run4theh111z  Bitrunners (4 ports, hack 550)
+
+    Hacking Level 80
+    Total Hacknet Levels of 100
+    Total Hacknet RAM of 8
+    Total Hacknet Cores of 4
+
 	
 	alph.js [target] [securityThresh] [moneyThresh]
 	swap.js --mv [oldAction: all/c/a/g/w/h/k] [oldTarget] [newAction: c/a/g/w/h/k] [newTarget]

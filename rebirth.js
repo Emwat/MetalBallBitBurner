@@ -12,7 +12,8 @@ export async function main(ns) {
 	// ns.tprint(AfterPriceMultiplier(455000,2));
 
 	let purchasedAugs = ns.singularity.getOwnedAugmentations(true);
-	let augs = factions.map(factionName => {
+	let augs = factions
+		.map(factionName => {
 		return ns
 			.singularity
 			.getAugmentationsFromFaction(factionName)
@@ -25,12 +26,30 @@ export async function main(ns) {
 					repReq: ns.singularity.getAugmentationRepReq(augName),
 					preReq: ns.singularity.getAugmentationPrereq(augName),
 					price: ns.singularity.getAugmentationPrice(augName),
-					...ns.singularity.getAugmentationStats(augName)
+					// price: ns.singularity.getAugmentationBasePrice(augName),
+					...(CleanAugStats(ns.singularity.getAugmentationStats(augName)))
 				}
 			})
-	}).flat(2);
+	})
+	.filter(f => f.faction != "Shadows of Anarchy")
+	.flat(2);
 
-	// augs = augs.filter(f => f.isMember == true);
+	// ns.write("/static/augs.txt", JSON.stringify(augs), "w");
+	// return;
+
+	if (ns.args[0] && !["h", "c", "max"].includes(ns.args[0])) {
+		let foundArg = augs.find(aug => aug.name == ns.args[0]);
+		if (!foundArg) {
+			ns.tprint(`${ns.args[0]} was not found.`)
+			return;
+		}
+		let foundArgOutput = "\r\n";
+		Object.entries(foundArg).forEach(([key, value]) => {
+			foundArgOutput += `${key.padEnd(25)}: ${value}\r\n`
+		});
+		ns.tprint(foundArgOutput);
+		return;
+	}
 
 	function includesArgs(aug) {
 		const argFunctions = [includesCombat, includesHacking];
@@ -73,6 +92,8 @@ export async function main(ns) {
 		return ToDollars(NestedPrice(aug));
 	}
 
+	ns.tprint(`Purple = You don't have enough rep`);
+
 	let output = "\r\n";
 	let names = new Set();
 	for (let aug of augs) {
@@ -87,9 +108,10 @@ export async function main(ns) {
 		// 	continue;
 
 		names.add(name);
+
 		output += "\r\n	" +
 			StrLeft(ns.singularity.getFactionRep(faction) < repReq ? " \u001B[35m> " : " ", 3) +
-			ShtStr(name).padEnd(35) +
+			name.padEnd(52) +
 			StrLeft(ToDollars(price), 10) +
 			//NestedPrice(aug) + 
 			StrLeft(NestedPriceStr(aug), 10) +
@@ -101,13 +123,14 @@ export async function main(ns) {
 			"\u001b[0m";
 	}
 	ns.tprint(`You have \$${ToDollars(ns.getServerMoneyAvailable("home"))}`);
-	if (ns.args.includes("hacker")) {
+	let arg0 = ns.args[0];
+	if (["h"].includes(arg0)) {
 		augs = augs.reverse();
 		CommitToPurchases(ns, augs, true, false)
-	} else if (ns.args.includes("fighter")) {
+	} else if (["c"].includes(arg0)) {
 		augs = augs.reverse();
 		CommitToPurchases(ns, augs, false, true)
-	} else if (ns.args.includes("max")) {
+	} else if (["max"].includes(arg0)) {
 		augs = augs.reverse();
 		CommitToPurchases(ns, augs, true, true)
 	} else {
@@ -127,8 +150,12 @@ function includesCombat(aug) {
 	return (
 		aug.strength > 1 ||
 		aug.strength_exp > 1 ||
+		aug.defense > 1 ||
+		aug.defense_exp > 1 ||
 		aug.dexterity > 1 ||
-		aug.dexterity_exp > 1
+		aug.dexterity_exp > 1 ||
+		aug.agility > 1 ||
+		aug.agility_exp > 1
 	);
 }
 
@@ -144,6 +171,15 @@ function includesHacking(aug) {
 	);
 }
 
+function includesBlade(aug) {
+	return (
+		bladeburner_max_stamina > 1 ||
+		bladeburner_stamina_gain > 1 ||
+		bladeburner_analysis > 1 ||
+		bladeburner_success_chance > 1
+	);
+}
+
 function CommitToPurchases(ns, augs, isBuyingHacks = false, isBuyingCombat = false) {
 	let m = 0;
 	for (let aug of augs) {
@@ -153,7 +189,7 @@ function CommitToPurchases(ns, augs, isBuyingHacks = false, isBuyingCombat = fal
 			continue;
 		if (purchased)
 			continue;
-		if (!(isBuyingCombat && isBuyingHacks)){
+		if (!(isBuyingCombat && isBuyingHacks)) {
 			if (isBuyingHacks && !includesHacking(aug))
 				continue;
 			if (isBuyingCombat && !includesCombat(aug))
@@ -164,7 +200,7 @@ function CommitToPurchases(ns, augs, isBuyingHacks = false, isBuyingCombat = fal
 
 		const closestRepAug = augs
 			.find(f => f.isMember && !f.purchased && f.faction_rep > 1 &&
-			ns.singularity.getFactionRep(f.faction) > f.repReq);
+				ns.singularity.getFactionRep(f.faction) > f.repReq);
 
 		if (closestRepAug) {
 			let afterNextPrice = AfterPriceMultiplier(closestRepAug.preReq, m + 1) + AfterPriceMultiplier(price);
@@ -175,8 +211,6 @@ function CommitToPurchases(ns, augs, isBuyingHacks = false, isBuyingCombat = fal
 				}
 			}
 		}
-
-
 
 		if (ns.singularity.purchaseAugmentation(faction, name)) {
 			ns.tprint(`Bought ${name}`)
@@ -190,5 +224,14 @@ function AfterPriceMultiplier(price, iteration) {
 	for (let i = 0; i < iteration; i++) {
 		output *= 1.9;
 	}
+	return output;
+}
+
+function CleanAugStats(aug) {
+	let output = {};
+	Object.entries(aug).forEach(([key, value]) => {
+		if (value != 1)
+			output[key] = value;
+	})
 	return output;
 }

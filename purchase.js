@@ -86,8 +86,8 @@ async function MakePurchases(ns, ram) {
 	while (i < ns.getPurchasedServerLimit()) {
 		if (ns.getServerMoneyAvailable("home") > ns.getPurchasedServerCost(ram)) {
 			let hostname = ns.purchaseServer("pserv-" + ZeroLeft(i, 2), ram);
-			if (hostname)
-				AlphExec(ns, hostname, target);
+			// if (hostname)
+			// 	AlphExec(ns, hostname, target);
 			++i;
 		}
 		await ns.sleep(waitTime);

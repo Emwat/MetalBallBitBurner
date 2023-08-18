@@ -2,6 +2,8 @@
 let gangTrainTxt = "";
 let gangPowerTaskTxt = "";
 let task;
+const waitTimeA = 18000;
+
 export async function main(ns) {
 	let { members } = JSON.parse(ns.args[0]);
 	({ gangTrainTxt, gangPowerTaskTxt } = JSON.parse(ns.args[0]));
@@ -43,9 +45,8 @@ async function BatchPowerUp(ns, members) {
 			currentPower: Number(ns.gang.getGangInformation().power.toFixed(3))
 		});
 		AssignMembersToTask(ns, task, members, false);
-		await ns.sleep(bonus(ns, 18000));
-		AssignMembersToTask(ns, "tw", members, false);
-		await ns.sleep(bonus(ns, 2000));
+		await ns.sleep(bonus(ns, waitTimeA));
+		await PowerUpUntilNewPower(ns, members);
 	}
 	AssignMembersToTask(ns, task, members, false);
 	ns.toast(`Engaging in warfare!`, "error");
@@ -75,14 +76,29 @@ function AssignMembersToTask(ns, arg, members, disablePrint = false) {
 
 /** @param {NS} ns */
 function bonus(ns, time) {
+
 	let bonusTime = ns.gang.getBonusTime();
-	if (bonusTime > 0) {
+	if (bonusTime > 10000) {
 		bonusTime = Math.floor(time / 25);
 		if (time < 1000)
 			return 2000;
 		return bonusTime;
 	}
 	return time;
+}
+
+async function PowerUpUntilNewPower(ns, members) {
+	ns.disableLog("sleep");
+	AssignMembersToTask(ns, "tw", members, false);
+
+	let currentPower = ns.gang.getGangInformation().power;
+	let newPower = ns.gang.getGangInformation().power;
+
+	while (currentPower.toFixed(3) == newPower.toFixed(3)) {
+		newPower = ns.gang.getGangInformation().power;
+		await ns.sleep(20);
+	}
+	ns.enableLog("sleep");
 }
 
 

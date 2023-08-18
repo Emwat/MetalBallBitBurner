@@ -64,6 +64,8 @@ export async function main(ns) {
 			continue;
 		}
 
+
+
 		if (isAboveMyProgramsLevel) {
 			myBug.note = "isAboveMyProgramsLevel";
 			myBugs.push(myBug);
@@ -90,6 +92,11 @@ export async function main(ns) {
 			target = defaultTarget;
 		}
 
+		if (!target) {
+			target = defaultTarget;
+		}
+
+
 		if (arg0 == "target") {
 			target = defaultTarget;
 		}
@@ -103,7 +110,7 @@ export async function main(ns) {
 
 		myBug.target = target;
 
-
+		// ns.tprint({server, target})
 		if (AlphExec(ns, server, target) > 0) {
 			myBug.alph += 1;
 			myBug.applied += 1;
@@ -143,15 +150,15 @@ export async function main(ns) {
 		if (target.hackDifficulty > target.minDifficulty + 5) {
 			let time = Math.floor(ns.formulas.hacking.weakenTime(target, ns.getPlayer()));
 			time = FormatTime(time / 6000, "m:s");
-			ns.tprint(`Weaken Time for ${target.hostname}: ${time}`);
+			ns.tprint(`	Weaken Time for ${target.hostname}: ${time}`);
 		} else if (target.moneyAvailable < target.moneyMax * 0.75) {
 			let time = Math.floor(ns.formulas.hacking.growTime(target, ns.getPlayer()));
 			time = FormatTime(time / 6000, "m:s");
-			ns.tprint(`Grow Time for ${target.hostname}: ${time}`);
+			ns.tprint(`	Grow Time for ${target.hostname}: ${time}`);
 		} else {
 			let time = Math.floor(ns.formulas.hacking.hackTime(target, ns.getPlayer()));
 			time = FormatTime(time / 6000, "m:s");
-			ns.tprint(`Hack Time for ${target.hostname}: ${time}`);
+			ns.tprint(`	Hack Time for ${target.hostname}: ${time}`);
 		}
 	}
 

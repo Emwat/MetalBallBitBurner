@@ -21,6 +21,9 @@ export async function main(ns) {
 			i++;
 			s++;
 		}
+	} 
+	else if (argRabbit || argRabbit == "0") {
+		ns.sleeve.setToGymWorkout(argRabbit, gym, argParams);
 	} else {
 		loop(ns, ns.sleeve.setToGymWorkout, [gym, stat]);
 	}

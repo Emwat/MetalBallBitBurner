@@ -19,6 +19,7 @@ export async function main(ns) {
 		bp >> batch with priority
 		bpi >> debug priority
 		r >> Report city chaos
+		l >> list BlackOps
 		`);
 		return;
 	}
@@ -39,6 +40,8 @@ export async function main(ns) {
 		PriorityBBActionOrDefault(ns, true);
 	} else if (arg0 == "r") {
 		ns.exec("helperBlade.js", "home", 1, "c");
+	} else if (arg0 == "l") {
+		ns.tprint(ops.map(o => o.rank + " " + o.name).join("\r\n"));
 	}
 	// ns.tprint()
 }
@@ -169,6 +172,7 @@ function PriorityBBActionOrDefault(ns, isDebugging) {
 				"\r\n";
 		});
 		ns.tprint(output);
+		ns.print(output);
 		return null;
 	}
 	ns.print({ smarterAction: smarterActions[0] })
@@ -179,21 +183,24 @@ function GetPriority(ns, x) {
 	let total = 1;
 
 	//ns.tprint({name: x.name, type : x.type == "BlackOps", count: x.count > 0, a: x.successA == 1})
-	if (x.type == "BlackOps" && x.count > 0 && x.successA == 1){
+	if (x.type == "BlackOps" && x.count > 0 && x.successA == 1) {
 		if (ns.bladeburner.getRank() > x.rank)
-			return 100;
+			return 300;
 	}
 
 	if (x.count < 10)
 		return -1;
 
-	total += x.successA * 10;
+
+	total += x.successA * 100;
 	if (x.successB == 1)
 		total += 20;
 
 	total += x.id * 2;
 
-	
+	// if (["Assassination", "Tracking"].includes(x.name)){
+	// 	ns.tprint({name: x.name, successA: x.successA, successA1: x.successA * 100, total})
+	// }
 	// total += 10 ** 6 - x.actionTime;
 
 	return total;

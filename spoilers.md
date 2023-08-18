@@ -18,7 +18,12 @@ I focused on new mechanics and mixed in better stats priorities in mid, because 
 	07 Bladeburners API
 	03 Corporations
 	04 Singularity
-	06 Bladeburners (current)
+	06 Bladeburners (beat all of the bitnodes now)
+	12 Recursion
+	09 Hacknet
+	09 Hacknet
+	08 Free TIX
+
 
 I redid 1 (3x), 2, 10 somewhere in there.
 
@@ -86,7 +91,6 @@ Also, they need to slap you in the face with how to access ns.otherLibraries.fun
 
 #### BitNode-2: Gangs.
 
-Gangs do not really match the theme of the game. There's just no dialogue or consequences to the crimes. Your victories are mainly just better stats. I didn't really feel engaged fighting other gangs or doing crimes.
 
 #### BitNode-3: Corporations
 
@@ -97,6 +101,8 @@ Closing a division should refund you 90% of its costs.
 There should be Corporation augmentations.
 
 #### BitNode-4: Singularity
+
+
 
 What if Singularity rewarded you with cores at random servers?
 

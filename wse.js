@@ -40,7 +40,7 @@ export async function main(ns) {
 			info [pcs] >> purchase cost short
 			info [me] >> me
 			s >> SellsEverything
-			s [x] >> SellsEverything but skip the symbols with most bought shares a number of x times
+			s [X] >> SellsEverything except the most bought X shares
 			k >> Kills wse.js b
 			l >> SeeLogs
 			x >> Reset files. Does not sell anything.

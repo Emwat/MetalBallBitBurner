@@ -1,2 +1,18 @@
 06/22/2023 11:27 AM
 MetalBall
+
+{
+	Title: "I beat every bitnode. Now I'm on BN12 for the second time.",
+	Date: "08/09/2023 02:09 PM",
+	Current Version: "Bitburner v2.4.0 (fc86895c3)",
+	"Since last Augmentation installation" :                  "11 minutes 22 seconds",
+	"Since last Bitnode destroyed" :            "1 day 4 hours 15 minutes 24 seconds",
+	"Total" :                                 "97 days 3 hours 25 minutes 12 seconds"
+}
+
+
+
+
+
+
+

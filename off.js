@@ -9,6 +9,7 @@ export async function main(ns) {
 		ns.bladeburner.stopBladeburnerAction();
 		ns.scriptKill("blade.js", "home");
 		ns.scriptKill("chrg.js", "home");
+		ns.scriptKill("shar.js", "home");
 		ns.scriptKill("gabr.js", "home");
 		ns.scriptKill("gabp.js", "home");
 		ns.exec("chll.js", "home", 1, "k");

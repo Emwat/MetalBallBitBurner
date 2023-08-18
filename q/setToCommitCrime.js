@@ -2,7 +2,7 @@ let numberOfSleeves;
 
 /** @param {NS} ns */
 export async function main(ns) {
-	let {numSleeves, argRabbit, argParams} = JSON.parse(ns.args[0]);
+	let { numSleeves, argRabbit, argParams } = JSON.parse(ns.args[0]);
 	numberOfSleeves = numSleeves;
 
 	let crimeType = crimeTypes.find(f => f[0] == argParams.toUpperCase());
@@ -10,7 +10,7 @@ export async function main(ns) {
 		crimeType = "Heist";
 
 	ns.tprint(`Crime ${crimeType}`);
-	if (argRabbit|| argRabbit == "0")
+	if (argRabbit || argRabbit == "0")
 		ns.sleeve.setToIdle(argRabbit, crimeType);
 	else
 		loop(ns, ns.sleeve.setToCommitCrime, [crimeType]);

@@ -1,21 +1,32 @@
+
+const keys = {
+	"0": "returns scripts"
+	, c: "commitCrime.js"
+	, crime: "commitCrime.js"
+	, d: "purchaseTor.js"
+	, tor: "purchaseTor.js"
+	, s: "stopAction.js"
+	, r: "travelToCity.js"
+}
+
 /** @param {NS} ns */
 export async function main(ns) {
 	let sinArgs = ns.args.slice(1);
 	let folder = "/qsin/";
 	let arg0 = ns.args[0];
 	let home = "home";
-	if (false) { }
-	else if (["c", "crime"].includes(arg0)) {
-		ns.exec(folder + "commitCrime.js", home, 1, ...sinArgs);
-	} else if (["d", "tor"].includes(arg0)) {
-		ns.exec(folder + "purchaseTor.js", home, 1, ...sinArgs);
-	} else if (["r", "travel"].includes(arg0)) {
+
+	let script = folder + keys[arg0];
+	if (script == "travel.js") {
 		const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ishima"];
 		let city = cities.find(f => f.toLowerCase()[0] == sinArgs[0]);
-		ns.exec(folder + "travelToCity.js", home, 1, city);
+		sinArgs = [city];
 	}
 
-	ns.exec(folder + arg0 + ".js", home, 1, ...sinArgs);
+	if (!ns.exec(script, home, 1, ...sinArgs)) {
+		ns.tprint(`Could not run ${script}.`);
+	}
+
 }
 
 // applyToCompany(companyName, field) 	Apply for a job at a company.

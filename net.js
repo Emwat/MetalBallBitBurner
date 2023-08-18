@@ -16,29 +16,29 @@ let numberOfNodes = 0;
 let fs = 0;
 let failSafeCap = 999;
 
-let lrc = {
-	l : {
-		text: "level",
-		med: 100,
-		max: 200,
-		cost: "getLevelUpgradeCost",
-		upgrade: "upgradeLevel"
-	},
-	r : {
-		text: "ram",
-		med: 64,
-		max: 8192,
-		cost: "getRamUpgradeCost",
-		upgrade: "upgradeRam"
-	},
-	c : {
-		text: "core",
-		med: 8,
-		max: 8,
-		cost: "getCoreUpgradeCost",
-		upgrade: "upgradeCore",
-	}, 
-}
+// let lrc = {
+// 	l : {
+// 		text: "level",
+// 		med: 100,
+// 		max: 200,
+// 		cost: "getLevelUpgradeCost",
+// 		upgrade: "upgradeLevel"
+// 	},
+// 	r : {
+// 		text: "ram",
+// 		med: 64,
+// 		max: 8192,
+// 		cost: "getRamUpgradeCost",
+// 		upgrade: "upgradeRam"
+// 	},
+// 	c : {
+// 		text: "core",
+// 		med: 8,
+// 		max: 8,
+// 		cost: "getCoreUpgradeCost",
+// 		upgrade: "upgradeCore",
+// 	}, 
+// }
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -73,11 +73,15 @@ export async function main(ns) {
 		// 	await PurchaseNodes(ns, numberOfNodes);
 		// else
 		await PurchaseNodes(ns, number);
+		numberOfNodes = ns.hacknet.numNodes();
+
 	}
 
 	let actions = "lrc".split("");
-	for (let i = 0; i < actions.length; i++) {
-		let action = actions[i];
+	for (let i = 0; i < ns.args.length; i++) {
+		let action = ns.args[i];
+		if (!actions.includes(action))
+			continue;
 		let index = ns.args.indexOf(action);
 		if (index > -1) {
 			let number = ns.args[index + 1];
@@ -102,7 +106,7 @@ async function PurchaseNodes(ns, numberOfNodesToBuy) {
 	ns.tprint(`Purchasing ${numberOfNodesToBuy} nodes...`)
 
 	while (ns.hacknet.numNodes() < numberOfNodesToBuy) {
-		fs++; if (fs >= failSafeCap) { failSafely(ns); break; }
+		fs++; if (fs >= failSafeCap) { FailSafely(ns); break; }
 		let newNodeIndex = ns.hacknet.purchaseNode();
 		if (newNodeIndex != -1) {
 			ns.print("Purchased hacknet Node with index " + newNodeIndex);
@@ -173,7 +177,7 @@ async function UpgradeNodes(ns, arg, maxAmount) {
 			}
 		}
 	}
-	ns.tprint(`All ${numberOfNodes} nodes upgraded to ${maxAmount}`);
+	ns.tprint(`All ${numberOfNodes} nodes upgraded to ${maxAmount} ${GetNodeText(arg)}`);
 }
 
 function GetNodeArg(node, arg) {
@@ -185,7 +189,19 @@ function GetNodeArg(node, arg) {
 	else if (arg == "c")
 		return node.cores;
 
-	throw (`error -> GetNodeArg(i: ${node}, arg: ${arg})`);
+	throw (`error -> GetNodeArg(node: ${node}, arg: ${arg})`);
+}
+
+function GetNodeText(arg) {
+	if (false) { }
+	else if (arg == "l")
+		return "level";
+	else if (arg == "r")
+		return "ram";
+	else if (arg == "c")
+		return "cores";
+
+	throw (`error -> GetNodeText(arg: ${arg})`);
 }
 
 function GetUpgradeCost(ns, i, arg) {
@@ -258,6 +274,6 @@ async function BuyMaxNodes(arg) {
 	}
 }
 
-function failSafely(ns, location) {
+function FailSafely(ns, location) {
 	ns.tprint({ loc: location, error: "Failed safely." });
 }

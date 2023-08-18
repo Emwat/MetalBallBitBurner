@@ -1,59 +1,77 @@
+import GetProgramLevel from "./im/files"
 
+// class Milestone {
+// 	constructor(portsReq, hackReq, server, name) {
+// 		this.portsReq = portsReq;
+// 		this.hackReq = hackReq;
+// 		this.server = server;
+// 		this.name = name;
+// 	}
+// }
 
-// 07/26/2023 08:00 AM asked for help. Got told to get rid of power and stopper.
+let stopGoing = false;
+let collection = [];
 
 /** @param {NS} ns */
 export async function main(ns) {
-	const stopper = 15;
-	ns.tail();
-	ns.disableLog("scan");
-	GetAllServers(ns, ns.args[0], 0, stopper);
-}
-let alreadyScanned = [];
+	let milestones = [
+		"CSEC",
+		"avmnite-02h",
+		"I.I.I.I",
+		"run4theh111z",
+		"fulcrumassets",
+		"w0r1d_d43m0n"
+	];
 
-function GetAllServers(ns, target, power, stopper) {
-	if (power + 1 == stopper)
+	if (ns.args[0]) {
+		milestones = [ns.args[0]];
+	}
+	
+
+	let output = "\r\n";
+	const myProgramsLevel = GetProgramLevel(ns);
+	const myHackingLevel = ns.getHackingLevel();
+	collection = [];
+	for (let i = 0; i < milestones.length; i++) {
+		let server = ns.getServer(milestones[i]);
+		let extra = "";
+		if (!server.backdoorInstalled &&
+			myHackingLevel >= server.requiredHackingSkill &&
+			myProgramsLevel > server.numOpenPortsRequired)
+			extra = "backdoor;"
+
+		KeepGoing(ns, "home", ["home"], [], milestones[i]);
+		stopGoing = false;
+		let path = collection[i];
+		if (server.backdoorInstalled) {
+			continue;
+		}
+		if (!path) {
+			collection.push(path);
+		}
+		if (path) {
+			output += (`	connect ${path.join("; connect ")}; ${extra} \r\n`);
+		}
+	}
+	ns.tprint(output);
+
+}
+
+function KeepGoing(ns, currentServer, scanned, array, target) {
+	const servers = ns.scan(currentServer);
+	array.push(currentServer);
+	if (target == currentServer) {
+		collection.push(array);
+		stopGoing = true;
 		return;
-
-	// if (target == "home") {
-	// 	return;
-	// }
-
-	// if (alreadyScanned.indexOf(target) > -1)
-	// 	return;
-
-	const servers = ns.scan(target);
-	alreadyScanned.push(target);
-
-	for (var i = 0; i < servers.length; i++) {
+	}
+	if (stopGoing)
+		return;
+	for (let i = 0; i < servers.length; i++) {
 		const server = servers[i];
-		if (server.substr(0, "pserv-".length) == "pserv-")
-			continue;
-		if (server.substr(0, "hacknet-".length) == "hacknet-")
-			continue;
-
-		if (alreadyScanned.indexOf(server) == -1) {
-			ns.tprint(power + " " + padd(ns, server, power));
-			ns.print(power + " " + padd(ns, server, power));
-			alreadyScanned.push(server);
+		if (!scanned.includes(server)) {
+			scanned.push(server);
+			KeepGoing(ns, server, scanned, [...array], target);
 		}
-		GetAllServers(ns, server, power + 1, stopper)
-
 	}
-
-	return servers;
-}
-
-function padd(ns, str, newLength) {
-	try {
-		let output = ">" + str;
-		for (let i = str.length; i < newLength + str.length; i++) {
-			output = "-" + output;
-		}
-		return output;
-	} catch {
-		ns.print({ error: "padd", str, newLength })
-	}
-	return output;
-
 }

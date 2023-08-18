@@ -41,7 +41,9 @@ function emptyArgsError() {
 		r [city: s/a/v/c/n/i] >> travel 
 		s >> shock recovery
 		u [c/d/n/a m/l] >> university
-		i [all] >> idle
+		aug >> purchase sleeve augs
+
+		i >> idle
 	
 	argRabbit: 0/1/2/3/4/5/6
 	`;
@@ -54,18 +56,22 @@ export async function main(ns) {
 	let argRabbit;
 	let toAllSleeves = true; // argRabbit == "max";
 
-	if (!argAction) {
+	if (!argAction && argAction != "0") {
 		ns.tprint(emptyArgsError());
 		return;
 	}
 
 	if (!isNaN(ns.args[0])) {
 		argRabbit = ns.args[0];
-		([argRabbit, argAction, argParams] = ns.args);
+		([argRabbit, argAction, ...argParams] = ns.args);
 	} else if (!isNaN(ns.args[1])) {
 		([argAction, argRabbit] = ns.args);
 	} else if (!isNaN(ns.args[2])) {
 		([argAction, argParams, argRabbit] = ns.args);
+	}
+
+	if (argParams && Array.isArray(argParams) && argParams.length == 1) {
+		argParams = argParams[0];
 	}
 
 	argParams = JSON.stringify({ numSleeves, argRabbit: argRabbit, argAction, argParams });
@@ -147,12 +153,14 @@ export async function main(ns) {
 	else if (argAction == "u") {
 
 		//let takeUni = universities[0];
-		let takeUni = "ZB Institute of Technology";
-		let takeClass = uniClasses.find(f => f[0] == argParams.toUpperCase());
+		// let takeUni = "ZB Institute of Technology";
+		// let takeClass = uniClasses.find(f => f[0] == argParams.toUpperCase());
 
-		ns.tprint(`University ${takeUni} ${takeClass}`);
-		if (toAllSleeves) loop(ns, ns.sleeve.setToUniversityCourse, [takeUni, takeClass]);
-		else ns.sleeve.setToUniversityCourse(argRabbit);
+		// ns.tprint(`University ${takeUni} ${takeClass}`);
+		// if (toAllSleeves) loop(ns, ns.sleeve.setToUniversityCourse, [takeUni, takeClass]);
+		// else ns.sleeve.setToUniversityCourse(argRabbit);
+		ns.exec(`${folder}setToUniversityCourse.js`, "home", 1, numSleeves);
+
 	} else if (argAction == "b") {
 		let actions = [
 			"Field Analysis"
@@ -177,17 +185,31 @@ export async function main(ns) {
 			return;
 		}
 
-		let [ignoreMe, action, contract] = ns.args;
-		action = actions.find(f => f[0] == action?.toUpperCase());
-		contract = contracts.find(f => f[0] == contract?.toUpperCase());
-		ns.tprint({ action, contract: contract || "" })
+		// let [action, contract] = argParams.argParams;
+		// action = actions.find(f => f[0] == action?.toUpperCase());
+		// contract = contracts.find(f => f[0] == contract?.toUpperCase());
+		// ns.tprint({ action, contract: contract || "" })
 
-		if (contract) {
-			loop(ns, ns.sleeve.setToBladeburnerAction, ["Support main sleeve"]);
-			ns.sleeve.setToBladeburnerAction(1, action, contract);
+		// if (argRabbit || argRabbit == "0") {
+		// 	//loop(ns, ns.sleeve.setToBladeburnerAction, ["Support main sleeve"]);
+		// 	ns.sleeve.setToBladeburnerAction(1, action, contract);
+		// }
+		// else {
+		// 	loop(ns, ns.sleeve.setToBladeburnerAction, [action]);
+		// }
+		ns.exec(`${folder}setToBladeburnerAction.js`, "home", 1, argParams);
+	} else if (argAction == "b123") {
+		let scriptArgs = [
+			{ ...argParams, argRabbit: 0, argParams: ["t", "t"] }
+			, { ...argParams, argRabbit: 1, argParams: ["t", "b"] }
+			, { ...argParams, argRabbit: 2, argParams: ["t", "r"] }
+			, { ...argParams, argRabbit: 3, argParams: ["h"] }
+			, { ...argParams, argRabbit: 4, argParams: ["f"] }
+		];
+
+		for (const scriptArg of scriptArgs) {
+			ns.exec(`${folder}setToBladeburnerAction.js`, "home", 1, JSON.stringify(scriptArg));
 		}
-		else
-			loop(ns, ns.sleeve.setToBladeburnerAction, [action]);
 	} else if (argAction == "i") {
 		// ns.tprint("idling...");
 		// if (argParams == "all")
@@ -195,6 +217,9 @@ export async function main(ns) {
 		// else
 		// ns.sleeve.setToIdle(0);
 		ns.exec(`${folder}setToIdle.js`, "home", 1, argParams);
+	} else if (argAction == "aug") {
+
+		ns.exec(`${folder}purchaseSleeveAug.js`, "home", 1, argParams);
 	}
 
 	else {
@@ -235,10 +260,3 @@ function loop(ns, myFunction, moreArgs) {
 
 	}
 }
-
-// getSleeveAugmentationPrice(augName) 	Get price of an augmentation.
-// getSleeveAugmentationRepReq(augName) 	Get reputation requirement of an augmentation.
-// getSleeveAugmentations(sleeveNumber) 	Get augmentations installed on a sleeve.
-// getSleevePurchasableAugs(sleeveNumber) 	List purchasable augs for a sleeve.
-// purchaseSleeveAug(sleeveNumber, augName) 	Purchase an aug for a sleeve.
-// setToBladeburnerAction(sleeveNumber, action, contract) 	Set a sleeve to perform Bladeburner actions.

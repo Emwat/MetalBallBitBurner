@@ -6,6 +6,9 @@ import ZeroLeft from './im/zeroLeft'
 /** @param {NS} ns */
 export async function main(ns) {
 	ns.killall("home");
+	ns.exec("cct.js", "home", 1, "a");
+	// ns.exec("off.js", "home", 1);
+
 	ns.exec("wse.js", "home", 1, "l"); await ns.sleep(200);
 	ns.exec("wse.js", "home", 1, "k"); await ns.sleep(200);
 	ns.exec("wse.js", "home", 1, "s"); await ns.sleep(200);
@@ -13,7 +16,6 @@ export async function main(ns) {
 	ns.exec("wse.js", "home", 1, "xl");
 	
 	ns.exec("wse.js", "home", 1, "s"); await ns.sleep(200);
-	ns.exec("cct.js", "home", 1, "a");
 	ns.exec("power.js", "home", 1, "reset");
 	ns.scriptKill("gli.js", "home");
 	const install = ns.getMoneySources().sinceInstall;
@@ -21,6 +23,7 @@ export async function main(ns) {
 	
 	ns.tprint("--------------------------------------------");
 	ns.tprint(" Did you...");
+	ns.tprint("		equip your gang");
 	ns.tprint("		ascend your gang");
 	ns.tprint("		upgrade home server");
 	ns.tprint("		spend hashnet points");

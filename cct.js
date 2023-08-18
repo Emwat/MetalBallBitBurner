@@ -1,10 +1,10 @@
-/** @param {NS} ns */
+
 import GetAllServers from './im/servers'
 import NumLeft from "./im/numLeft"
 import StrLeft from "./im/strLeft"
 import StrRight from "./im/strRight"
 
-
+/** @param {NS} ns */
 export async function main(ns) {
 	if (ns.args[0] == "a") {
 		TakeTreasures(ns);
@@ -25,6 +25,10 @@ export async function main(ns) {
 	// CompressionIExamples(ns);
 	// ns.tprint("lllllllllzz => " + CompressionI(ns, "lllllllllzz"));
 	// ns.tprint(CompressionI(ns, "uuuuuuuu2zzclllllllllzzfddddddddcccc444444LLbbbbbbbbb33K666HHxNN6UUUUUUUibyyyyy3"));
+
+	// ns.tprint(CompressionIIExample());
+	// ns.tprint(CompressionII(ns, "5aaabb450723abb"));
+	// ns.tprint(CompressionII(ns, "5aaabb450723abb") == "aaabbaaababababaabb");
 
 	//  ["QUEUE FRAME ARRAY POPUP PRINT", 18]
 
@@ -66,10 +70,19 @@ export async function main(ns) {
 	//  "(a)())()" -> ["(a)()()", "(a())()"]
 	//  ")(" -> [""]
 	// `);
-	// ns.tprint(SanitizeParenthesesInExpression(ns, "()())()"));
-	// ns.tprint(SanitizeParenthesesInExpression(ns, "(a)())()"));
+
+	// let sPiETests = ["()())()","(a)())()",")(","(()))))a()(","((aa()a"]
+	// ns.tprint("\r\n" + sPiETests.map(test => 
+	// 	`	${test} -> ${SanitizeParenthesesInExpression(ns, test).join(", ")}`)
+	// .join("\r\n"));
+	// ns.tprint(["()())()", SanitizeParenthesesInExpression(ns, "()())()")]);
+	// ns.tprint(["(a)())()"), SanitizeParenthesesInExpression(ns, "(a)())()")]);
 	// ns.tprint(SanitizeParenthesesInExpression(ns, ")("));
 	// ns.tprint(SanitizeParenthesesInExpression(ns, "(()))))a()("));
+	// ns.tprint(SanitizeParenthesesInExpression(ns, "((aa()a"));
+
+	
+
 
 	// ns.tprint(TotalWaysToSumII(ns, 177, [1, 2, 4, 6, 7, 8, 9, 12, 13]));
 	// ns.tprint(`
@@ -79,37 +92,37 @@ export async function main(ns) {
 	ns.tprint(`cct.js ended; ${new Date().toLocaleString()}`)
 }
 
-const contractDictionary = [
-	["Find Largest Prime Factor", null]
-	, ["Subarray with Maximum Sum", null]
-	, ["Total Ways to Sum", null]
-	, ["Total Ways to Sum II", null]
-	, ["Spiralize Matrix", null]
-	, ["Array Jumping Game", ArrayJumpingGame]
-	, ["Array Jumping Game II", null]
-	, ["Merge Overlapping Intervals", null]
-	, ["Generate IP Addresses", GenerateIPAddresses]
-	, ["Algorithmic Stock Trader I", AlgoStockTraderI]
-	, ["Algorithmic Stock Trader II", null]
-	, ["Algorithmic Stock Trader III", null]
-	, ["Algorithmic Stock Trader IV", null]
-	, ["Minimum Path Sum in a Triangle", MinimumPathSumInATriangle]
-	, ["Unique Paths in a Grid I", null]
-	, ["Unique Paths in a Grid II", null]
-	, ["Shortest Path in a Grid", null]
-	, ["Sanitize Parentheses in Expression", null]
-	, ["Find All Valid Math Expressions", null]
-	, ["HammingCodes: Integer to Encoded Binary", null]
-	, ["HammingCodes: Encoded Binary to Integer", null]
-	, ["Proper 2-Coloring of a Graph", null]
-	, ["Compression I: RLE Compression", CompressionI]
-	, ["Compression II: LZ Decompression", null]
-	, ["Compression III: LZ Compression", null]
-	, ["Encryption I: Caesar Cipher", EncryptionI]
-	, ["Encryption II: Vigenère Cipher", EncryptionII]
+const contractDictionary = {
+	"Find Largest Prime Factor": null
+	, "Subarray with Maximum Sum": null
+	, "Total Ways to Sum": null
+	, "Total Ways to Sum II": null
+	, "Spiralize Matrix": null
+	, "Array Jumping Game": ArrayJumpingGame
+	, "Array Jumping Game II": null
+	, "Merge Overlapping Intervals": null
+	, "Generate IP Addresses": GenerateIPAddresses
+	, "Algorithmic Stock Trader I": AlgoStockTraderI
+	, "Algorithmic Stock Trader II": null
+	, "Algorithmic Stock Trader III": null
+	, "Algorithmic Stock Trader IV": null
+	, "Minimum Path Sum in a Triangle": MinimumPathSumInATriangle
+	, "Unique Paths in a Grid I": null
+	, "Unique Paths in a Grid II": null
+	, "Shortest Path in a Grid": null
+	, "Sanitize Parentheses in Expression": null
+	, "Find All Valid Math Expressions": null
+	, "HammingCodes: Integer to Encoded Binary": null
+	, "HammingCodes: Encoded Binary to Integer": null
+	, "Proper 2-Coloring of a Graph": null
+	, "Compression I: RLE Compression": CompressionI
+	, "Compression II: LZ Decompression": CompressionII
+	, "Compression III: LZ Compression": null
+	, "Encryption I: Caesar Cipher": EncryptionI
+	, "Encryption II: Vigenère Cipher": EncryptionII
+};
 
-];
-
+/** @param {NS} ns */
 function TakeTreasures(ns) {
 	const servers = GetAllServers(ns);
 	let skippedTreasures = 0;
@@ -128,7 +141,7 @@ function TakeTreasures(ns) {
 			// let description = ns.codingcontract.getDescription(file, server);
 			// ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
 
-			let program = contractDictionary.find(f => f[0] == contractType)[1];
+			let program = contractDictionary[contractType];
 			// ns.tprint(`${server} ${file} ${contractType}`);
 
 			if (program == null) {
@@ -138,8 +151,8 @@ function TakeTreasures(ns) {
 
 			// ns.tprint(`${server} ${file} ${contractType} data: ${data}`);
 
-			let output = program(ns, data);
-			const reward = ns.codingcontract.attempt(output, file, server);
+			let answer = program(ns, data);
+			const reward = ns.codingcontract.attempt(answer, file, server);
 			if (reward) {
 				ns.tprint(`${StrRight(contractType, 43)} Reward: ${reward}`)
 			} else {
@@ -302,6 +315,89 @@ function CompressionI(ns, str) {
 
 	}
 	return output;
+}
+
+//Compression II: LZ Decompression
+
+// Lempel-Ziv (LZ) compression is a data compression technique
+// which encodes data using references to earlier parts of the data. 
+// In this variant of LZ, data is encoded in two types of chunk. 
+// Each chunk begins with a length L, encoded as a single ASCII digit from 1 to 9, 
+// followed by the chunk data, which is either:
+//
+// 1. Exactly L characters, which are to be copied directly into the uncompressed data.
+// 2. A reference to an earlier part of the uncompressed data. 
+// To do this, the length is followed by a second ASCII digit X: each of the L output
+// characters is a copy of the character X places before it in the uncompressed data.
+// 
+// For both chunk types, a length of 0 instead means the chunk ends immediately, 
+// and the next character is the start of a new chunk. The two chunk types alternate,
+// starting with type 1, and the final chunk may be of either type.
+//
+// You are given the following LZ-encoded string:
+//    4JhZJ935isSEo768hJj7777v980999EhEh136dA4244tr1895wRsKW82
+// Decode it and output the original string.
+
+function CompressionIIExample() {
+	return (`
+ Example: decoding '5aaabb450723abb' chunk-by-chunk
+     5aaabb           ->  aaabb
+     5aaabb45         ->  aaabbaaab
+     5aaabb450        ->  aaabbaaab
+     5aaabb45072      ->  aaabbaaababababa
+     5aaabb450723abb  ->  aaabbaaababababaabb
+`);
+}
+
+// "abcdefg".slice(3, 5) // outputs "de"
+function CompressionII(ns, str) {
+	let output = "";
+	let flag = "type1";
+	let chunk = "";
+
+	function type1(L, str, j) {
+		//ns.tprint({L: Number(L) + 1, str, j: j + 1, answer: str.slice(j + 1, Number(L) + 1)})
+		return str.slice(j + 1, j + Number(L) + 1);
+	}
+
+	function type2(L, X, str) {
+		let output = "";
+		let pos = 0;
+		let reference = str.slice(str.length - Number(X));
+		//ns.tprint({str, reference, X});
+		for (let k = 0; k < Number(L); ++k) {
+			output += reference[pos];
+			pos++;
+			if (pos >= reference.length)
+				pos = 0;
+		}
+		return output;
+	}
+
+	for (let i = 0; i < str.length;) {
+		//if (i >= 8) return output;
+		let L = str[i];
+		let X = flag == "type2" ? str[i + 1] : " ";
+		//ns.tprint(Color({ i, L, X, flag, chunk, output }));
+		if (L == "0") {
+			i += 1;
+		} else if (flag == "type1") {
+			chunk = type1(L, str, i);
+			output += chunk;
+			i += chunk.length + 1;
+		} else if (flag == "type2") {
+			output += type2(L, X, output);
+			i += 2;
+		}
+		// ns.tprint(Color({ i, L, X, flag, chunk, output }));
+
+		flag = (flag == "type1" ? "type2" : "type1");
+
+	}
+	return output;
+
+
+
 }
 
 // Compression III: LZ Compression
@@ -957,14 +1053,10 @@ function SanitizeParenthesesInExpression(ns, str) {
 		}
 	}
 
-
-
 	// Declare Valid String
 	for (let i = 0; i < str.length; i++) {
 		cleanStr += (!marks.includes(i) ? str[i] : "");
 	}
-
-
 
 	output.push(cleanStr);
 
@@ -1056,4 +1148,27 @@ function TotalWaysToSumII(ns, goal, arr) {
 
 function UniquePathsInGrid() {
 
+}
+
+function Color(object1) {
+	const white = "\u001b[37m";
+	const yellow = "\u001b[33m";
+	const brightGreen = "\u001b[32;1m";
+	const red = "\u001b[31m";
+	const black = "\u001b[30m";
+	const brightBlack = "\u001b[30;1m";
+	const cyan = "\u001b[36m";
+	const green = "\u001b[32m"; // is slightly brighter than reset green
+	const reset = "\u001b[0m";
+
+	let colors = [red, cyan, green, yellow]
+	let i = 0;
+	let output = "";
+	for (const [key, value] of Object.entries(object1)) {
+		output += ` ${white}${key}: ${colors[i]}${value} `;
+		i++;
+		if (i >= colors.length)
+			i = 0;
+	}
+	return output;
 }

@@ -48,7 +48,7 @@ export async function main(ns) {
 
 function MoveAction(ns, iMv) {
 
-	if (iMv + 4 > ns.args.length) {
+	if (iMv + 4 > ns.args.length && ns.args[iMv + 3] != "k") {
 		ns.tprint(`-mv must have 4 following arguments. oldAction/oldTarget/newAction/newTarget`)
 	}
 	let actions = {
