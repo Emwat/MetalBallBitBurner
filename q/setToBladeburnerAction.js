@@ -36,6 +36,7 @@ export async function main(ns) {
 			ns.tprint(`- Fail - Sleeve ${argRabbit} ${action} ${contract} - Fail -`)
 	}
 	else {
+		ns.tprint(action);
 		loop(ns, ns.sleeve.setToBladeburnerAction, [action]);
 	}
 }

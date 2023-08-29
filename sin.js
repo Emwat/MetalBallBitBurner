@@ -1,22 +1,35 @@
+import trcString from './im/strTrunc'
 
 const keys = {
-	"0": "returns scripts"
+	"no args": "returns this help text"
 	, c: "commitCrime.js"
 	, crime: "commitCrime.js"
 	, d: "purchaseTor.js"
 	, tor: "purchaseTor.js"
 	, s: "stopAction.js"
 	, r: "travelToCity.js"
+	, j: "applyToCompany.js"
+	, job: "applyToCompany.js"
+	, u: "upgradeHome.js"
 }
 
 /** @param {NS} ns */
 export async function main(ns) {
+	if (ns.args.length == 0){
+		let output = "\r\n";
+		Object.entries(keys).forEach(([key, value]) => {
+			output += (`	${key.padEnd(10)} ${value} \r\n`)
+		});
+		ns.tprint(output);
+		return;
+	}
 	let sinArgs = ns.args.slice(1);
 	let folder = "/qsin/";
 	let arg0 = ns.args[0];
 	let home = "home";
 
 	let script = folder + keys[arg0];
+
 	if (script == "travel.js") {
 		const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ishima"];
 		let city = cities.find(f => f.toLowerCase()[0] == sinArgs[0]);
@@ -29,7 +42,6 @@ export async function main(ns) {
 
 }
 
-// applyToCompany(companyName, field) 	Apply for a job at a company.
 // b1tflum3(nextBN, callbackScript) 	b1t_flum3 into a different BN.
 // checkFactionInvitations() 	List all current faction invitations.
 // commitCrime(crime, focus) 	Commit a crime.
@@ -71,11 +83,8 @@ export async function main(ns) {
 // isBusy() 	Check if the player is busy.
 // isFocused() 	Check if the player is focused.
 // joinFaction(faction) 	Join a faction.
-// manualHack() 	Run the hack command in the terminal.
 // purchaseAugmentation(faction, augmentation) 	Purchase an augmentation
-// purchaseProgram(programName) 	Purchase a program from the dark web.
 // purchaseTor() 	Purchase the TOR router.
-// quitJob(companyName) 	Quit jobs by company.
 // setFocus(focus) 	Set the players focus.
 // softReset(cbScript) 	Soft reset the game.
 // stopAction() 	Stop the current action.

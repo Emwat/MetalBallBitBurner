@@ -929,57 +929,6 @@ function MinimumPathSumInATriangle(ns, triangle) {
 	return minimumSum;
 }
 
-// Never got this to work. Tried really hard to visualize it.
-function MinimumPathSumInATriangleB(ns, triangle) {
-	let miniSum = 999;
-	let allPossiblePaths = [
-		"0000", // LLL
-		"0001", // LLR
-		"0011", // LRL
-		"0012", // LRR
-		"0111", // RLL
-		"0112", // RLR
-		"0122", // RRL
-		"0123"  // RRR
-	];
-
-	// allPossiblePaths = [];
-	// let leftMostPathway = "";
-	// let rightMostPathway = "";
-	// for (let i = 0; i < triangle.length; i++) {
-	// 	leftMostPathway += "0";
-	// }
-	// for (let i = 0; i < triangle.length; i++) {
-	// 	rightMostPathway += i.toString();
-	// }
-
-	// let currentPathway = rightMostPathway;
-	// for (let i = 0; i < triangle.length; i++) {
-	// 	for (let j = 0; j < triangle.length; j++) {
-	// 		currentPathway[i] = "0";
-	// 	}
-	// 	allPossiblePaths.push(currentPathway);
-	// }
-
-	// ftprint(ns, allPossiblePaths);
-
-	for (let i = 0; i < allPossiblePaths.length; i++) {
-		let app = allPossiblePaths[i];
-		let sum = 0;
-		// const layer1 = triangle[0];
-		// const layer2 = triangle[1];
-		// const layer3 = triangle[2];
-		// const layer4 = triangle[3];
-		// let sum = layer1[app[0]] + layer2[app[1]] + layer3[app[2]] + layer4[app[3]];
-		for (let j = 0; j < triangle.length; j++) {
-			sum += triangle[j][app[j]];
-		}
-		if (sum < miniSum)
-			miniSum = sum;
-	}
-	return miniSum;
-}
-
 // Proper 2-Coloring of a Graph
 //
 // You are given the following data, representing a graph:

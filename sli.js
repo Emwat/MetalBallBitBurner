@@ -20,7 +20,6 @@ const cities = ["Sector-12", "Aevum", "Volhaven", "Chongqing", "New Tokyo", "Ish
 const uniClasses = ["Computer Science", "Data Structures"
 	, "Networks", "Algorithms", "Management", "Leadership"];
 
-
 const universities = ["Rothman University", "Summit University", "ZB Institute of Technology"];
 
 const folder = "/q/";
@@ -35,9 +34,15 @@ function emptyArgsError() {
 		c [crime: s/m/l/h/heist... ]>> commit crime
 		g [all/str/def/dex/agi] >> gym
 		WIP f >> faction
-		WIP >> j >> job
-		b >> bladeburner
-		b [f/r/d/h/i/s/t] [t/b/r]>> bladeburner
+		j >> job
+		b [field analysis
+			 recruitment
+			 diplomacy
+			 Hyperbolic Regeneration Chamber
+			 infiltrate synthoids
+			 support main sleeve
+			 take on contracts
+			 		t/b/r] >> bladeburner
 		r [city: s/a/v/c/n/i] >> travel 
 		s >> shock recovery
 		u [c/d/n/a m/l] >> university
@@ -83,6 +88,9 @@ export async function main(ns) {
 		// else ns.sleeve.getTask(argRabbit);
 		ns.exec(`${folder}getTask.js`, "home", 1, argParams);
 	}
+	else if (argAction == "info") {
+		ns.exec(`${folder}getSleeve.js`, "home", 1, argParams);
+	}
 	else if (argAction == "c") {
 		// let crimeType = crimeTypes.find(f => f[0] == argParams.toUpperCase());
 		// if (argParams.toLowerCase() == "heist")
@@ -95,10 +103,8 @@ export async function main(ns) {
 
 	}
 	else if (argAction == "j") {
-		ns.tprint(`Company Time`);
-		ns.tprint(`TO DO`);
 		// setToCompanyWork(sleeveNumber, companyName) 	Set a sleeve to work for a company.
-
+		ns.exec(`${folder}setToCompanyWork.js`, "home", 1, argParams);
 	}
 	else if (argAction == "r") {
 		// let myCity = argParams.toUpperCase();

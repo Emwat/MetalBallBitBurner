@@ -5,12 +5,12 @@ import ToDollars from "./im/carat"
 import GetTarget from "./im/target"
 import Visual from "./im/visual"
 
-/** @param {NS} ns */
 
 let RedTarget;
 let MyHackingSkill;
 const white = "\u001b[37m";
 
+/** @param {NS} ns */
 export async function main(ns) {
 	await ns.sleep(200);
 	ns.disableLog("scan");
@@ -46,6 +46,7 @@ export async function main(ns) {
 	ns.tprint(`length.js ended. ${new Date().toLocaleString()}`);
 }
 
+/** @param {NS} ns */
 function MainHelper(ns, stats) {
 
 	PrintHeaders(ns);
@@ -69,6 +70,7 @@ function MainHelper(ns, stats) {
 	ns.tprint(PrintInfo(totals));
 }
 
+/** @param {NS} ns */
 function DeclareTotals() {
 	return {
 		moneyAvailable: 0,
@@ -107,6 +109,7 @@ function AddToTotal(totals, server) {
 	totals.count += 1;
 }
 
+/** @param {NS} ns */
 function GetStats(ns) {
 	const hosts = GetServers(ns).sort();
 	// const hosts = ["home"].concat(GetServers(ns)).sort();

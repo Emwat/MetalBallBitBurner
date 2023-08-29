@@ -26,11 +26,9 @@ export async function main(ns) {
 	} else if (arg0 == "kh") {
 		KillCharge(ns, servers, true);
 	} else if (arg0 == "h") {
-		await TestFragments(ns, JSON.parse(fragJSON));
-		await ChargeServers(ns, servers, fragJSON, stats, false);
+		await ChargeServers(ns, servers, fragJSON, stats, false); // false avoidHacknet
 	} else {
-		await TestFragments(ns, JSON.parse(fragJSON));
-		await ChargeServers(ns, servers, fragJSON, stats, true);
+		await ChargeServers(ns, servers, fragJSON, stats, true); // true avoidHacknet
 	}
 
 

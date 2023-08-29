@@ -1,8 +1,11 @@
-/** @param {NS} ns */
 import ZeroLeft from './im/zeroLeft'
 import StrLeft from './im/strLeft'
 
+// never finished 08/20/2023 01:48 AM
+
+/** @param {NS} ns */
 export async function main(ns) {
+	return;
 	let output = "\r\n";
 	let files = ns.ls("home");
 	files = files.map(m => {

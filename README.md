@@ -7,6 +7,8 @@ See man.js for the overview for all of my scripts.
 
 If you're copying/pasting scripts, make sure to include my folder named 'im'.
 
+It's probably worth using an external editor for the amount of time that I've spent in the game...
+
 You can create folders with the mv command in the terminal.
 
     mv myScript.js newFolder/myScript.js

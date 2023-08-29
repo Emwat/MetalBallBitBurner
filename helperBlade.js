@@ -1,9 +1,9 @@
-/** @param {NS} ns */
 import Cities from './static/cities'
 import StrLeft from './im/strLeft'
 import StrRight from './im/strRight'
 import NumLeft from './im/numLeft'
 
+/** @param {NS} ns */
 export async function main(ns) {
 	let arg0 = ns.args[0];
 
@@ -18,6 +18,18 @@ export async function main(ns) {
 		PrintCities(ns);
 	} else if (arg0 == "cm") {
 		ns.tprint(GetCityWithMinChaos(ns));
+	} else if (arg0 == "r") {
+		let destination = "";
+		for (let arg of ns.args) {
+			//ns.tprint({includ: Cities.includes(arg), arg})
+			if (Cities.includes(arg))
+				destination = arg;
+		}
+		if(!destination)
+			return;
+		ns.bladeburner.switchCity(destination);
+		if (!ns.args.includes("quiet"))
+			ns.tprint(`#### ${destination}`)
 	}
 }
 
@@ -36,10 +48,10 @@ function PrintCities(ns) {
 
 	let cities = intel.sort((a, b) => a.chaos - b.chaos);
 	output += (StrRight("name", 10) +
-			" " + StrLeft("chaos", 5) +
-			" " + StrLeft("community", 10) +
-			" " + StrLeft("est. Pop", 12) +
-			"\r\n");
+		" " + StrLeft("chaos", 5) +
+		" " + StrLeft("community", 10) +
+		" " + StrLeft("est. Pop", 12) +
+		"\r\n");
 	for (const c in cities) {
 		let city = cities[c];
 		output += (StrRight(city.name, 10) +

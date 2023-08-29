@@ -3,6 +3,7 @@ import ToDollars from "./im/carat"
 import StrLeft from "./im/strLeft"
 import NumLeft from "./im/numLeft"
 import ZeroLeft from "./im/zeroLeft"
+import InterpretString from "./im/colon"
 
 // https://github.com/bitburner-official/bitburner-src/blob/dev/markdown/bitburner.gang.md
 
@@ -20,37 +21,37 @@ const maxRep = 5830000;
 export async function main(ns) {
 	if (ns.args.length == 0) {
 		ns.tprint(`You haven't entered any arguments. Acceptable args are ...
-			k >> kill all gli.js scripts
+	k >> kill all gli.js scripts
 
-			m >> Mug People
-			s >> strongarm civilians
-			f >> traffick illegal arms
-			h >> human trafficking
-			v >> vigilante justice
-			t >> train combat
-			th >> train hacking
-			tc >> train charisma
-			tw >> Territorial Warfare
-			p >> Terrorism (power)
-			q >> quick vigilante justice and then train
+	m >> Mug People
+	s >> strongarm civilians
+	f >> traffick illegal arms
+	h >> human trafficking
+	v >> vigilante justice
+	t >> train combat
+	th >> train hacking
+	tc >> train charisma
+	tw >> Territorial Warfare
+	p >> Terrorism (power)
+	q >> quick vigilante justice and then train
 
-			ba >> WHILE LOOP, batch ascend
-			ba [X] >> WHILE LOOP, batch ascend every 10 * X seconds
-			br >> WHILE LOOP, batch recruit
-			bp [m/s/h/v/f/t] >> WHILE LOOP, train and power up
+	ba >> WHILE LOOP, batch ascend
+	ba [X] >> WHILE LOOP, batch ascend every 10 * X seconds
+	br >> WHILE LOOP, batch recruit
+	bp [m/s/h/v/f/t] >> WHILE LOOP, train and power up
 
-			a >> ascend (excludes ${gangTrainTxt})
-			an >> ascend only the members in ${gangTrainTxt}
-			e >> weaponmizeMember
-			eh >> weaponmizeMember w/ combat gear and rootkits
-			qa >> quick vigilante justice and ascend
-			q [m/h/v/t] >> quick vigilante justice and then action
-			i >> info
-			ia >> see ${gangAscTxt}
-			it >> see ${gangTrainTxt}
-			member >> print all member names
-			draft [44-48/all] >> subtracts from ${gangTrainTxt}
-			train [44-48/44+] >> overwrites ${gangTrainTxt}
+	a >> ascend (excludes ${gangTrainTxt})
+	an >> ascend only the members in ${gangTrainTxt}
+	e >> weaponmizeMember
+	eh >> weaponmizeMember w/ combat gear and rootkits
+	qa >> quick vigilante justice and ascend
+	q [m/h/v/t] >> quick vigilante justice and then action
+	i [X] >> info, X index member
+	ia >> see ${gangAscTxt}
+	it >> see ${gangTrainTxt}
+	member >> print all member names
+	draft [44-48/all] >> filters ${gangTrainTxt}
+	train [44-48/44+] >> overwrites ${gangTrainTxt}
 		`);
 		return;
 	}
@@ -317,8 +318,15 @@ async function quickGetUnwanted(ns, members, nextAction) {
 }
 
 function AscendBuyAndTrain(ns, members, onlyNewRecruits = false, includeRootkits = false) {
-	const toBuyList = GetEquipmentCost(ns, members, includeRootkits);
 	const stayInTraining = JSON.parse(ns.read(gangTrainTxt));
+	
+	if (onlyNewRecruits) {
+		members = members.filter(m => !stayInTraining.includes(m.name))
+	}
+	// ns.tprint(members);
+	// return;
+
+	const toBuyList = GetEquipmentCost(ns, members, includeRootkits);
 
 	if (toBuyList.length < equips.length)
 		ns.tprint(`You can afford ${members.length} ${toBuyList[toBuyList.length - 1]}`);
@@ -328,17 +336,11 @@ function AscendBuyAndTrain(ns, members, onlyNewRecruits = false, includeRootkits
 		return;
 	}
 
-	if (onlyNewRecruits && stayInTraining.length > 0)
-		MakeBeforeAscNotes(ns, stayInTraining[0]);
-	else
-		MakeBeforeAscNotes(ns, members[0].name);
+	MakeBeforeAscNotes(ns, members[0].name);
 
 	// let ascData = JSON.parse(ns.read("asc.txt"));
 
 	for (let i = 0; i < members.length; i++) {
-		if (onlyNewRecruits && !stayInTraining.includes(members[i].name)) {
-			continue;
-		}
 		AscendBuyAndTrainHelper(ns, members[i], toBuyList);
 	}
 	// ns.write(ascTxt, JSON.stringify(ascData), "w");
@@ -383,12 +385,7 @@ function WeaponizeMemberToSpeed(ns, members) {
 }
 
 function GetInfo(ns, members) {
-	GetInfoHelper(ns, members[0]);
-	// for (let i = 0; i < members.length; i++) {
-	// 	const member = members[i];
-	// 	GetInfoHelper(ns, member);
-	// 	ns.tprint("----- ----- ----- ----- ----- -----")
-	// }
+	GetInfoHelper(ns, members[ns.args[1] ?? 0]);
 }
 
 function GetInfoHelper(ns, member) {
@@ -408,67 +405,37 @@ function PrintMembers(ns, members) {
 
 // Expecting args[1] to be something like 
 // "44-48"
+function ArgToMen(ns, theArgString, members) {
+	let lastMemberNumber = members[members.length - 1].name;
+	lastMemberNumber = lastMemberNumber.replace("man", "");
+	lastMemberNumber = parseInt(lastMemberNumber);
+
+	return (InterpretString(ns, theArgString, lastMemberNumber)
+		.map(i => "man" + String(i).padStart(4, "0")));
+}
+
 function SetMembersToDraft(ns, members) {
 	let theArgString = String(ns.args[1] || "");
 	let parsedStringA = "";
 	let parsedStringB = "";
 	let x;
+	let membersToDraft = ArgToMen(ns, theArgString, members);
+	let membersToTrain = ns.read(gangTrainTxt);
+	if (membersToTrain === "")
+		membersToTrain = "[]";
+
+	membersToTrain = JSON.parse(membersToTrain);
+
 	if (theArgString == "all") {
-		let membersToTrain = [];
-		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
-		ns.tprint(gangTrainTxt + ": " + ns.read(gangTrainTxt));
-		return;
+		membersToTrain = [];
 	}
 
+	membersToTrain = membersToTrain.filter(f => !membersToDraft.includes(f));
 
-	for (let i = 0; i < theArgString.length; i++) {
-		let s = theArgString[i];
-		if (s !== "0" && !parseInt(s))
-			break;
-		parsedStringA += s;
-	}
-	x = parseInt(parsedStringA);
-
-	let connector = theArgString[parsedStringA.length];
-	if (!connector) {
-		let membersToTrain = JSON.parse(ns.read(gangTrainTxt) || "[]");
-		membersToTrain = membersToTrain.filter(f => f != "man" + x.padStart(4, "0"));
-		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
-	}
-	else if (connector == "-") {
-		let membersToDraft = [];
-		function GetY() {
-			for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
-				let s = theArgString[i];
-				if (s != "0" && !parseInt(s))
-					break;
-				parsedStringB += s;
-			}
-			return parseInt(parsedStringB)
-		}
-		let y = GetY();
-
-		ns.tprint({ x, y })
-
-		for (let i = x; i <= y; i++) {
-			membersToDraft.push("man" + String(i).padStart(4, "0"));
-		}
-		let membersToTrain = JSON.parse(ns.read(gangTrainTxt) || "[]");
-		membersToTrain = membersToTrain.filter(f => !membersToDraft.includes(f));
-		ns.tprint(membersToDraft);
-		// ns.tprint(membersToTrain);
-		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
-	} else {
-		let membersToTrain = JSON.parse(ns.read(gangTrainTxt) || "[]");
-		membersToTrain = membersToTrain.filter(f => f != "man" + x.padStart(4, "0"));
-		ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
-	}
-
+	ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
 	ns.tprint(gangTrainTxt + ": " + ns.read(gangTrainTxt));
 }
 
-// Expecting args[1] to be something like 
-// "44-48"
 function SetMembersToTrain(ns, members) {
 	if (ns.args.length == 1) {
 		ns.write(gangTrainTxt, "[]", "w");
@@ -476,52 +443,11 @@ function SetMembersToTrain(ns, members) {
 		return;
 	}
 
-	let membersToTrain = [];
 	let theArgString = String(ns.args[1] || "");
-	let parsedStringA = "";
-	let parsedStringB = "";
-	let x;
+	let membersToTrain = ArgToMen(ns, theArgString, members);
 
-
-	for (let i = 0; i < theArgString.length; i++) {
-		let s = theArgString[i];
-		// ns.tprint(s)
-		if (s !== "0" && !parseInt(s)) {
-			break;
-		}
-		parsedStringA += String(s);
-	}
-	x = parseInt(parsedStringA);
-
-	let connector = theArgString[parsedStringA.length];
-	// ns.tprint({ x, parsedStringA, connector })
-	if (!connector) {
-		membersToTrain.push("man" + ZeroLeft(x, 4));
-	}
-	else if (connector == "-") {
-		let y;
-		for (let i = parsedStringA.length + 1; i < theArgString.length; i++) {
-			let s = theArgString[i];
-			if (s != "0" && !parseInt(s))
-				break;
-			parsedStringB += s;
-		}
-		y = parseInt(parsedStringB)
-
-		ns.tprint({ x, y })
-		for (let i = x; i <= y; i++) {
-			membersToTrain.push("man" + ZeroLeft(i, 4));
-		}
-	} else if (connector == "+") {
-		let xIndex = members.map(m => m.name).indexOf("man" + ZeroLeft(x, 4));
-		// ns.tprint(x + " " + xIndex);
-		for (let i = xIndex; i < members.length; i++) {
-			membersToTrain.push(members[i].name);
-		}
-	}
-
-	ns.tprint("Members To Train: " + JSON.stringify(membersToTrain));
 	ns.write(gangTrainTxt, JSON.stringify(membersToTrain), "w");
+	ns.tprint(gangTrainTxt + ": " + ns.read(gangTrainTxt));
 }
 
 function MakeBeforeAscNotes(ns, memberName) {

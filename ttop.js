@@ -28,45 +28,64 @@ export async function main(ns) {
 
 }
 
-function PrintProcesses(ns) {
-	const processes = ns.ps("home").sort((a, b) => {
+/** @param {NS} ns */
+function PrintProcesses(ns, host = "home") {
+	const processes = ns.ps(host).sort((a, b) => {
 		return a.filename.localeCompare(b.filename);
 	});
-
+	let poppers = new Set();
 	let output = "\r\n";
 	output += ""
 		+ " " + "Script".padEnd(50)
 		+ " " + "PID".padStart(10)
 		+ " " + "Threads".padStart(16)
-		+ " " + "RAM Usage".padStart(13)
+		+ " " + "RAM Usage".padStart(16)
 		+ "\r\n";
 	for (let i = 0; i < processes.length; i++) {
 		const process = processes[i];
+		// helperScripts[process.filename]?.forEach(p => {
+		// 	poppers.add(p);
+		// })
 
-		let mem = myScripts.find(scr => (scr.name == process.filename));
-		mem = mem ? (mem.mem * process.threads).toFixed(1) : "-1";
-		output += (""
-			+ " " + StrRight(`${process.filename} [${Shorten(process.args)}]`, 50)
-			+ " " + NumLeft(process.pid, 10)
-			+ " " + NumLeft(process.threads, 16)
-			+ " " + StrRight(mem.padStart(10) + " GB", 20)
+		output += outputFormat(process);
+	}
+	function outputFormat({ filename, args = "", pid = "", threads = 1, mem = "" }) {
+		//let mem = myScripts.find(scr => (scr.name == process.filename));
+		if (filename.includes("js") && !mem) {
+			mem = ns.getScriptRam(filename) * threads;
+		}
+		return (""
+			+ " " + StrRight(`${filename} [${Shorten(args)}]`, 50)
+			+ " " + NumLeft(pid, 10)
+			+ " " + NumLeft(threads, 16)
+			+ " " + StrRight(mem.toFixed(1).padStart(13) + " GB", 20)
 			+ "\r\n"
 		);
-
 	}
 
-	output += Free(ns);
+	output += Free(ns) + "\r\n";
+	// let totalPoppersRam = 0;
+	// poppers.forEach(p => {
+	// 	output += outputFormat({ filename: p });
+	// 	totalPoppersRam += ns.getScriptRam(p);
+	// });
+	// output += outputFormat({ filename: "Total", mem: totalPoppersRam })
 	ns.tprint(output);
+}
 
+const helperScripts = {
+	"blade.js": ["helperBlade.js", "helperBlackOps.js", "bskills.js"]
+	, "gli.js": ["helperGang.js"]
+	, "wsy.js": ["clock.js", "tick.js", "tock.js"]
 }
 
 /** @param {NS} ns */
 function Free(ns) {
 	let server = ns.getServer("home");
 	return ("".padEnd(6)
-		+ " " + StrLeft("Used " + (server.ramUsed - 3.8).toFixed(1), 5)
+		+ " " + StrLeft("Used " + (server.ramUsed - ns.getScriptRam("ttop.js")).toFixed(1), 5)
 		+ " " + "".padStart(6)
-		+ " " + StrLeft("Free " +(server.maxRam - (server.ramUsed - 3.8)).toFixed(1), 5)
+		+ " " + StrLeft("Free " + (server.maxRam - (server.ramUsed - 3.8)).toFixed(1), 5)
 		+ " " + "".padStart(6)
 		+ " " + "total"
 		+ " " + server.maxRam.toFixed(1)
@@ -76,7 +95,7 @@ function Free(ns) {
 function Shorten(scriptArgs) {
 	function haha(x) {
 		if (Array.isArray(x)) {
-			return `[${haha(x[0])}...]`;
+			return `[${haha(x[0])}...]len=${x.length}`;
 		}
 		if (typeof x == "object") {
 			return "{" + Object.keys(x).slice(0, 3).join(", ") + "}"
@@ -84,26 +103,10 @@ function Shorten(scriptArgs) {
 		return x;
 	}
 
-	return scriptArgs.map(sa => {
-		try { sa = JSON.parse(sa); } catch { }
-		return haha(sa);
-	});
+	if (Array.isArray(scriptArgs))
+		return scriptArgs.map(sa => {
+			try { sa = JSON.parse(sa); } catch { }
+			return haha(sa);
+		});
+	return scriptArgs;
 }
-
-const myScripts = [
-	{ mem: 27.90, name: "blade.js" }
-	, { mem: 5.60, name: "gabp.js" }
-	, { mem: 5.60, name: "gabr.js" }
-	, { mem: 5.70, name: "net.js" }
-	, { mem: 6.30, name: "nnet.js" }
-	, { mem: 5.90, name: "off.js" }
-	, { mem: 8.50, name: "purchase.js" }
-	, { mem: 12.8, name: "sg.js" }
-	, { mem: 1.75, name: "weak.js" }
-	, { mem: 1.75, name: "grow.js" }
-	, { mem: 1.70, name: "hack.js" }
-	, { mem: 2.20, name: "alph.js" }
-	, { mem: 2.00, name: "chrg.js" }
-	, { mem: 4.00, name: "shar.js" }
-	, { mem: 1.80, name: "ttop.js" }
-]

@@ -34,7 +34,7 @@ async function BatchPowerUp(ns, members) {
 	AssignMembersToTask(ns, "tw", members);
 	await ns.sleep(bonus(ns, 4000));
 
-	ns.enableLog("sleep");
+	//ns.enableLog("sleep");
 
 	while (!ns.gang.getGangInformation().territoryWarfareEngaged) {
 		task = ns.read(gangPowerTaskTxt);
@@ -88,7 +88,7 @@ function bonus(ns, time) {
 }
 
 async function PowerUpUntilNewPower(ns, members) {
-	ns.disableLog("sleep");
+	// ns.disableLog("sleep");
 	AssignMembersToTask(ns, "tw", members, false);
 
 	let currentPower = ns.gang.getGangInformation().power;
@@ -98,7 +98,7 @@ async function PowerUpUntilNewPower(ns, members) {
 		newPower = ns.gang.getGangInformation().power;
 		await ns.sleep(20);
 	}
-	ns.enableLog("sleep");
+	// ns.enableLog("sleep");
 }
 
 

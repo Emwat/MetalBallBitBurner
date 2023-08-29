@@ -3,35 +3,25 @@ import StrLeft from "./im/strLeft"
 import ToDollars from "./im/carat"
 import FormatTime from "./im/time"
 
+
 // stock.getOrders: You must either be in BitNode-8 or have Source-File 8 Level 3.
 // const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] = ns.stock.getPosition(sym);
 
-// 08/21/2023 07:52 AM
-// Now featuring shorts!
+// 08/21/2023 07:54 AM
+// Now obsolete b/c I unlocked shorts
 
-
-function ForecastSymbol(forecast) {
-	if (forecast <= 29) return "---"
-	if (forecast <= 36) return "--"
-	if (forecast <= 45) return "-"
-	if (forecast <= 59) return "+"
-	if (forecast <= 64) return "++"
-	return "+++"
-}
-
-function isBullish(forecast) {
-	if (forecast === void 0)
-		throw new Error("forecast is not defined");
-	return forecast > 51;
-}
+// Forecast
+// --- <=29
+// --  <=32
+// -   <=45
+// +   >=51, <=59
+// ++  >=60
+// +++ >=65
 
 const portfolioTxt = "portfolio.txt";
 const profitsTxt = "profits.txt";
-let ReqAbvForecast = 59;
-const reqAbvForecastRich = 57;
-const reqAbvForecastPoor = 59;
-const ratRaceValue = 10 ** 9; // 1 billion
-let ReqSubForecast = 36;
+const reqAbvForecast = 57;
+const reqBelForecast = reqAbvForecast - 2;
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -51,7 +41,6 @@ export async function main(ns) {
 			info [v] >> volatility
 			info [pcl] >> purchase cost long
 			info [pcs] >> purchase cost short
-			info [pwr] >> special priority
 			info [me] >> me
 			s >> SellsEverything
 			s [X] >> SellsEverything except the most bought X shares
@@ -78,18 +67,17 @@ export async function main(ns) {
 	else if (["i", "info"].includes(arg0)) {
 		if (!HasApiAccess) return;
 		let symbols = ns.stock.getSymbols();
-		let myPortfolio = JSON.parse(ns.read(portfolioTxt));
 
 		if (false) { }
 		else if (arg1 == "abc") symbols = symbols.sort();
-		//else if (arg1 == "a") symbols = symbols.sort((a, b) => ns.stock.getAskPrice(a) - ns.stock.getAskPrice(b));
+		else if (arg1 == "a") symbols = symbols.sort((a, b) => ns.stock.getAskPrice(a) - ns.stock.getAskPrice(b));
 		else if (arg1 == "f") symbols = symbols.sort((a, b) => ns.stock.getForecast(a) - ns.stock.getForecast(b));
 		else if (arg1 == "p") symbols = symbols.sort((a, b) => ns.stock.getPrice(a) - ns.stock.getPrice(b));
 		else if (arg1 == "v") symbols = symbols.sort((a, b) => ns.stock.getVolatility(a) - ns.stock.getVolatility(b));
-		//else if (arg1 == "pcl") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Long") - ns.stock.getPurchaseCost(b, 1, "Long"));
-		//else if (arg1 == "pcs") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Short") - ns.stock.getPurchaseCost(b, 1, "Short"));
-		else if (arg1 == "pwr") symbols = symbols.sort((a, b) => GetPriority(ns, a, myPortfolio) - GetPriority(ns, b, myPortfolio));
-		else if (arg1 == "me") symbols = symbols.filter(s => FilterForMyPosition(ns, s));
+		else if (arg1 == "pcl") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Long") - ns.stock.getPurchaseCost(b, 1, "Long"));
+		else if (arg1 == "pcs") symbols = symbols.sort((a, b) => ns.stock.getPurchaseCost(a, 1, "Short") - ns.stock.getPurchaseCost(b, 1, "Short"));
+		else if (arg1 == "pwr") symbols = symbols.sort((a, b) => GetPriority(ns, a) - GetPriority(ns, b));
+		else if (arg1 == "me") symbols = symbols.filter(f => ns.stock.getPosition(f)[0] > 0);
 
 		PrintInfo(ns, symbols);
 	}
@@ -128,11 +116,11 @@ function HasApiAccess() {
 	const iHasData = ns.stock.has4SDataTIXAPI();
 
 	if (!iHasAccess) {
-		// ns.tprint("I don't have access to the stock market api yet.");
+		ns.tprint("I don't have access to the stock market api yet.");
 		return false;
 	}
 	if (!iHasData) {
-		// ns.tprint("I don't have access to the data yet.");
+		ns.tprint("I don't have access to the data yet.");
 		return false;
 	}
 	return true;
@@ -142,22 +130,22 @@ function getMoney(ns) {
 	return ns.getServerMoneyAvailable("home");
 }
 
-/** @param {NS} ns */
+
 function PrintInfo(ns, symbols) {
 
 	ns.tprint("" +
 		" " + LeftStr(5, "sym") +
-		//" " + LeftStr(25, "Organization") +
-		//" " + LeftStr(6, "Ask") +
-		//" " + LeftStr(6, "Bid") +
+		" " + LeftStr(25, "Organization") +
+		" " + LeftStr(6, "Ask") +
+		" " + LeftStr(6, "Bid") +
 		" " + LeftStr(6, "Price") +
-		// " " + LeftStr(10, "Pos") +
+		//" " + LeftStr(10, "Pos") +
 		" " + LeftStr(6, "4cast") +
 		" " + LeftStr(6, "vola") +
 		" " + LeftStr(7, "Short") +
 		" " + LeftStr(7, "Long") +
-		//" " + LeftStr(8, "Short") +
-		//" " + LeftStr(8, "Long") +
+		" " + LeftStr(8, "Short") +
+		" " + LeftStr(8, "Long") +
 		" " + LeftStr(8, "Priority") +
 		""
 	);
@@ -168,22 +156,23 @@ function PrintInfo(ns, symbols) {
 
 		ns.tprint("" +
 			" " + LeftStr(5, sym) +
-			//" " + LeftStr(25, ns.stock.getOrganization(sym)) +
-			//" " + LeftNum(6, ns.stock.getAskPrice(sym)) +
-			//" " + LeftNum(6, ns.stock.getBidPrice(sym)) +
+			" " + LeftStr(25, ns.stock.getOrganization(sym)) +
+			" " + LeftNum(6, ns.stock.getAskPrice(sym)) +
+			" " + LeftNum(6, ns.stock.getBidPrice(sym)) +
 			" " + LeftNum(6, ns.stock.getPrice(sym)) +
-			// " " + LeftStr(10, ns.stock.getPosition(sym)) +
+			//" " + LeftStr(10, ns.stock.getPosition(sym)) +
 			" " + LeftNum(6, ns.stock.getForecast(sym) * 100) +
 			" " + LeftNum(6, ns.stock.getVolatility(sym) * 10000) +
-			//" " + LeftNum(7, ns.stock.getPurchaseCost(sym, 1, "Short")) +
-			//" " + LeftNum(7, ns.stock.getPurchaseCost(sym, 1, "Long")) +
-			//" " + LeftNum(8, ns.stock.getSaleGain(sym, 1, "Short")) +
-			//" " + LeftNum(8, ns.stock.getSaleGain(sym, 1, "Long")) +
-			" " + GetPriority(ns, sym, [], true) +
+			" " + LeftNum(7, ns.stock.getPurchaseCost(sym, 1, "Short")) +
+			" " + LeftNum(7, ns.stock.getPurchaseCost(sym, 1, "Long")) +
+			" " + LeftNum(8, ns.stock.getSaleGain(sym, 1, "Short")) +
+			" " + LeftNum(8, ns.stock.getSaleGain(sym, 1, "Long")) +
+			" " + GetPriority(ns, sym, true) +
 			""
 		);
 	}
 }
+
 
 function LeftStr(a, b) {
 	return StrLeft(b, a);
@@ -191,6 +180,20 @@ function LeftStr(a, b) {
 
 function LeftNum(a, b) {
 	return NumLeft(b, a);
+}
+
+function jtprint(ns, obj) {
+	Object.entries(obj).forEach(entry => {
+		const [key, value] = entry;
+		ns.tprint("   " + key + ": " + value);
+	});
+}
+
+function ftprint(ns, obj) {
+	for (let i = 0; i < obj.length; i++) {
+		const o = obj[i];
+		ns.tprint(o);
+	}
 }
 
 function PrintActivity(ns, shares, iSym, price, iForecast, iData) {
@@ -212,7 +215,6 @@ function PrintActivity(ns, shares, iSym, price, iForecast, iData) {
 	ns.tprint(str);
 }
 
-/** @param {NS} ns */
 function SellThings(ns, mySymbols, myPortfolio, myLogs) {
 	if (mySymbols.length != myPortfolio.length) {
 		let err = `SellThings()` +
@@ -228,20 +230,15 @@ function SellThings(ns, mySymbols, myPortfolio, myLogs) {
 
 	for (let i = 0; i < mySymbols.length; i++) {
 		const iSym = mySymbols[i];
-		const iData = myPortfolio.find(f => f.iSym == iSym);
-		const currentForecast = Math.floor(ns.stock.getForecast(iSym) * 100);
-		const isNoLongerBullish = isBullish(iData.iForecast) && currentForecast < ReqAbvForecast - 2;
-		const isNoLongerBearish = !isBullish(iData.iForecast) && currentForecast > ReqSubForecast + 2;
+		const iData = myPortfolio.filter(f => f.iSym == iSym)[0];
+		const iForecast = Math.floor(ns.stock.getForecast(iSym) * 100);
 
-		if (isNoLongerBullish || isNoLongerBearish) {
-			const sellPrice = isBullish(iData.iForecast) ?
-				ns.stock.sellStock(iSym, iData.myShares) :
-				ns.stock.sellShort(iSym, iData.myShares);
-
+		if (iForecast < reqBelForecast) {
+			const sellPrice = ns.stock.sellStock(iSym, iData.myShares);
 			if (sellPrice > 0) {
-				PrintActivity(ns, iData.myShares, iSym, sellPrice, iData.iForecast, iData);
+				PrintActivity(ns, iData.myShares, iSym, sellPrice, iForecast, iData);
 				myPortfolio = myPortfolio.filter(f => f.iSym != iSym);
-				const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast: iData.iForecast, date: new Date() };
+				const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast, date: new Date() };
 				myLogs.push(newRow);
 			}
 		}
@@ -250,9 +247,8 @@ function SellThings(ns, mySymbols, myPortfolio, myLogs) {
 	return [myPortfolio, myLogs];
 }
 
-/** @param {NS} ns */
 function SellEverything(ns, offset) {
-	let mySymbols = ns.stock.getSymbols().filter(s => FilterForMyPosition(ns, s));
+	let mySymbols = ns.stock.getSymbols().filter(f => ns.stock.getPosition(f)[0] > 0);
 	let myPortfolio = JSON.parse(ns.read(portfolioTxt));
 	let myLogs = JSON.parse(ns.read(profitsTxt));
 
@@ -285,12 +281,10 @@ function SellEverything(ns, offset) {
 	for (let i = 0 + offset; i < mySymbols.length; i++) {
 		const iSym = mySymbols[i];
 		const iData = myPortfolio.filter(f => f.iSym == iSym)[0];
-		// const currentForecast = Math.floor(ns.stock.getForecast(iSym) * 100);
-		const sellPrice = isBullish(iData.iForecast) ?
-			ns.stock.sellStock(iSym, iData.myShares) :
-			ns.stock.sellShort(iSym, iData.myShares);
+		const iForecast = Math.floor(ns.stock.getForecast(iSym) * 100);
+		const sellPrice = ns.stock.sellStock(iSym, iData.myShares);
 		if (sellPrice > 0) {
-			PrintActivity(ns, iData.myShares, iSym, sellPrice, iData.iForecast, iData);
+			PrintActivity(ns, iData.myShares, iSym, sellPrice, iForecast, iData);
 			myPortfolio = myPortfolio.filter(f => f.iSym != iSym);
 			const newRow = { iSym, myShares: iData.myShares, sellPrice, iForecast: iData.iForecast, date: new Date() };
 			myLogs.push(newRow);
@@ -301,9 +295,8 @@ function SellEverything(ns, offset) {
 	ns.tprint(`After profits, you have \$${ToDollars(getMoney(ns))}`);
 }
 
-/** @param {NS} ns */
 function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
-	symbols = symbols.sort((a, b) => GetPriority(ns, b, myPortfolio) - GetPriority(ns, a, myPortfolio));
+	symbols = symbols.sort((a, b) => GetPriority(ns, b) - GetPriority(ns, a));
 	for (let i = 0; i < symbols.length; i++) {
 		let myMoney = getMoney(ns);
 		const iSym = symbols[i];
@@ -321,8 +314,7 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 			newShares = maxShares;
 
 		let doNotOwn = myShares == 0;
-		let isGoodForecast = (isBullish(iForecast) && iForecast >= ReqAbvForecast) ||
-			(!isBullish(iForecast) && iForecast <= ReqSubForecast);
+		let isGoodForecast = iForecast >= reqAbvForecast;
 		let isBuying = newShares > 0;
 		let isFeePlus = newShares * price > fee;
 		// ns.print(`doNotOwn ${doNotOwn ? 1 : 0}` +
@@ -333,9 +325,7 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 		// );
 
 		if (doNotOwn && isGoodForecast && isBuying && isFeePlus) {
-			const buyPrice = isBullish(iForecast) ?
-				Math.ceil(ns.stock.buyStock(iSym, newShares)) :
-				Math.ceil(ns.stock.buyShort(iSym, newShares));
+			const buyPrice = Math.ceil(ns.stock.buyStock(iSym, newShares));
 			if (buyPrice > 0) {
 				// Runs GROW
 				// ns.exec("w1.js", "home", 1000, iSym);
@@ -358,9 +348,8 @@ function BuyThings(ns, symbols, fee, myPortfolio, myLogs) {
 	return [myPortfolio, myLogs];
 }
 
-/** @param {NS} ns */
 function FixMismatch(ns) {
-	let mySymbols = ns.stock.getSymbols().filter(s => FilterForMyPosition(ns, s));
+	let mySymbols = ns.stock.getSymbols().filter(f => ns.stock.getPosition(f)[0] > 0);
 	let myPortfolio = JSON.parse(ns.read(portfolioTxt));
 	// let myLogs = JSON.parse(ns.read(profitsTxt));
 
@@ -370,8 +359,8 @@ function FixMismatch(ns) {
 	return myPortfolio;
 }
 
-/** @param {NS} ns */
 async function BatchBuyAndSell(ns, waitTime) {
+
 	if (ns.read(portfolioTxt) == "") ns.write(portfolioTxt, "[]", "w");
 	if (ns.read(profitsTxt) == "") ns.write(profitsTxt, "[]", "w");
 
@@ -380,17 +369,12 @@ async function BatchBuyAndSell(ns, waitTime) {
 	let failSafeCap = 9999;
 	while (w < failSafeCap) {
 		w++;
-		let mySymbols = symbols.filter(s => FilterForMyPosition(ns, s));
+		let mySymbols = symbols.filter(f => ns.stock.getPosition(f)[0] > 0);
 		let myPortfolio = JSON.parse(ns.read(portfolioTxt));
 		let myLogs = JSON.parse(ns.read(profitsTxt));
-		let currentPortfolioValue = myPortfolio.reduce((a, c) => a += c.myShares * c.buyPrice, 0);
-		ReqAbvForecast = currentPortfolioValue < ratRaceValue ? reqAbvForecastPoor : reqAbvForecastRich;
-		const fee = 10 ** 7;
-
 		// Start selling
 		[myPortfolio, myLogs] = SellThings(ns, mySymbols, myPortfolio, myLogs);
-
-		ns.exec("clock.js", "home", 1, JSON.stringify(myPortfolio));
+		const fee = 10 ** 7;
 
 		if (getMoney(ns) < fee) {
 			await ns.sleep(waitTime);
@@ -515,7 +499,16 @@ function SeeLogs(ns) {
 
 }
 
-function GetPriority(ns, iSym, myPortfolio, isDebugging) {
+function ForecastSymbol(forecast) {
+	if (forecast <= 29) return "---"
+	if (forecast <= 32) return "--"
+	if (forecast <= 45) return "-"
+	if (forecast <= 59) return "+"
+	if (forecast <= 64) return "++"
+	return "+++"
+}
+
+function GetPriority(ns, iSym, isDebugging) {
 	let forecast = ns.stock.getForecast(iSym) * 100;
 	let price = ns.stock.getPrice(iSym);
 	let volatility = ns.stock.getVolatility(iSym) * 10000;
@@ -525,24 +518,14 @@ function GetPriority(ns, iSym, myPortfolio, isDebugging) {
 	let p = 0;
 	let pCap = 15;
 	let pointsVolatility = 0;
+	let pointsVolatilityIncrement = 5;
 
-	if (isBullish(forecast) && forecast < ReqAbvForecast)
+	if (forecast < reqAbvForecast)
 		return 0;
 
-	if (!isBullish(forecast) && forecast > ReqSubForecast)
-		return 0;
-
-	// 29, 36, 45, 59, 64
-	if (isBullish(forecast)) {
-		while (forecast > 40) {
-			forecast -= 2;
-			pointsForecast += 10;
-		}
-	} else {
-		while (forecast < 50) {
-			forecast += 2;
-			pointsForecast += 10;
-		}
+	while (forecast > 40) {
+		forecast -= 5;
+		pointsForecast += 15;
 	}
 
 	if (price > benchPrice) {
@@ -560,10 +543,9 @@ function GetPriority(ns, iSym, myPortfolio, isDebugging) {
 		}
 	}
 
-	// 40% 60% 80% 100% 200%
-	while (volatility > 50) {
-		volatility -= 5;
-		pointsVolatility += 5;
+	while (volatility > reqAbvForecast) {
+		volatility -= pointsVolatilityIncrement;
+		pointsVolatility += pointsVolatilityIncrement;
 	}
 	let total = Math.floor(pointsForecast + pointsPrice + pointsVolatility);
 
@@ -575,9 +557,4 @@ function GetPriority(ns, iSym, myPortfolio, isDebugging) {
 			" total: " + total;
 	return total;
 
-}
-
-function FilterForMyPosition(ns, sym) {
-	const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] = ns.stock.getPosition(sym);
-	return sharesLong > 0 || sharesShort > 0;
 }

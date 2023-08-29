@@ -208,10 +208,10 @@ function PrintPServCalc(ns) {
 		ns.tprint(
 			" " + NumLeft(i + 1, 3) +
 			" " + NumLeft(costs[i], 13) +
-			" " + NumLeft(cost, 20) +
-			" " + NumLeft(costAllServers, 20) +
+			" " + StrLeft(ToDollars(cost), 10) +
+			// " " + NumLeft(costAllServers, 20) +
 			// " " + readableCostAllServers +
-			" " + readableCostMaxServers
+			" " + StrLeft(readableCostMaxServers, 10)
 		);
 	}
 }

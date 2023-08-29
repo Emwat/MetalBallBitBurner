@@ -2,6 +2,7 @@
 
 import StrLeft from './im/strLeft'
 import StrRight from './im/strRight'
+import ParseNumbers from './im/colon'
 
 const fragTxt = "frag.txt"; // Contains all saved fragment batches
 const lastGiftTxt = "forStanek1.txt"; // Stores the last saved fragment batch
@@ -16,6 +17,7 @@ function MainHelp(ns, index) {
 		rm [name] >> delete, deletes NAME
 		b [T/max] >> batch, executes chrg.js with T threads.
 				If T is not provided, default to home's free ram < 64 ? -11 : -40
+		w [ID] >> write to ${fragTxt}
 		k >> kill all chrg.js
 		upgrade >> imports var savedFrags inside this js file to frag.txt
 		`);
@@ -48,6 +50,17 @@ async function MainHelper(ns, arg, index) {
 	else if (["b"].includes(arg)) { MainBatch(ns, index); }
 	else if (["w", "write"].includes(arg)) {
 		let myOldFrag = GetFrags(ns);
+		let onlyThisFragId = ns.args[index + 1];
+
+		if (onlyThisFragId !== void 0 && String(onlyThisFragId)
+			.split("")
+			.some(o => "-+,".split("").includes(o))) {
+			let parsed = ParseNumbers(ns, onlyThisFragId);
+			myOldFrag = myOldFrag.filter(mof => parsed.includes(mof.id));
+		}
+		else if (onlyThisFragId !== void 0 && !isNaN(onlyThisFragId)) {
+			myOldFrag = myOldFrag.filter(mof => mof.id == onlyThisFragId);
+		}
 		WriteMostRecentFrag(ns, myOldFrag);
 	}
 	else if (["k"].includes(arg)) {
@@ -68,6 +81,7 @@ function PlacesFrags(ns, frags) {
 	}
 }
 
+/** @param {NS} ns */
 function GetFrags(ns) {
 	maxStanekSize = ns.stanek.giftWidth();
 	let myFrags = [];
@@ -214,7 +228,7 @@ function MainPlacesFrags(ns, index) {
 	PlacesFrags(ns, fragData.frag);
 	WriteMostRecentFrag(ns, fragData.frag);
 
-	ns.exec("chrg.js", "home", 1, JSON.stringify(fragData.frag));
+	//ns.exec("chrg.js", "home", 1, JSON.stringify(fragData.frag));
 }
 
 function MainBatch(ns, index) {

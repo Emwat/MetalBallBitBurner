@@ -4,15 +4,19 @@ import StrRight from "./im/strRight"
 import ToDollars from "./im/carat"
 import FormatTime from "./im/time"
 import tickers from './static/symbols'
-import GetProgramLevel from "./im/files"
+// import GetProgramLevel from "./im/files"
 
 const Fee = 10 ** 7;
 let LotsArray = [];
 let LotsCostsDebugTxt = "lotsCosts.txt";
 let LotsPortfolioTxt = "lotsPortfolio.txt";
+let ForStockTxt = "forStock.txt";
+let LastClockTime = new Date();;
 const Cap = 20;
 const SellRatioCeiling = 1.07;
 const SellRatioFloor = 0.93;
+let myMoneyCeiling = 10 ** 8 * 5;
+let myMoneyFloor = 10 ** 6 * 2.5;
 
 // ticker
 // hostname
@@ -22,19 +26,29 @@ const SellRatioFloor = 0.93;
 export async function main(ns) {
 	let arg0 = ns.args[0];
 	if (ns.args.length == 0) {
+		myMoneyCeiling = SimpleNumber(getMoney(ns)) / 5;
+		myMoneyFloor = SimpleNumber(getMoney(ns)) / 10;
+		
+		ns.tprint(`MoneyFloor: ${ToDollars(myMoneyFloor)} MoneyCeiling: ${ToDollars(myMoneyCeiling)}`)
 		LotsArray = [];
 		ns.tprint(`You started with ${ToDollars(getMoney(ns))} at ${new Date().toLocaleTimeString()}`)
 		ns.disableLog("sleep");
 		ns.disableLog("getServerMoneyAvailable");
 		ns.disableLog("getHackingLevel");
+		ns.disableLog("exec");
 
 		ns.write(LotsCostsDebugTxt, "[]", "w");
+		ns.write(ForStockTxt, JSON.stringify({
+			"dateCreated": new Date(),
+			initialMoney: getMoney(ns),
+			profit: 0, g: 0, l: 0
+		}), "w");
 		// ns.write(LotsPortfolioTxt, "[]", "w");
 		ns.tprint("measuring...");
-		await StartRecording(ns);
+		await RecordSellTickBuy(ns);
 		ns.tprint("commiting...");
 		while (true) {
-			await StartRecording(ns, true);
+			await RecordSellTickBuy(ns, true);
 		}
 
 	} else if (arg0 == "S") {
@@ -50,20 +64,27 @@ export async function main(ns) {
 			await PeekAtThings(ns);
 			await ns.sleep(6000);
 		}
+	} else if (arg0 == "la") {
+		await PeekAtThings(ns, true);
+	} else if (arg0 == "txt") {
+		ReadForStockTxt(ns);
 	} else if (arg0 == "x") {
 		ns.write(LotsPortfolioTxt, "[]", "w");
+		ns.tprint(`${LotsPortfolioTxt} is now empty.`)
+	} else {
+		ns.tprint(`Invalid command.`)
 	}
 
 }
 
 /** @param {NS} ns */
-async function StartRecording(ns, doBuy = false) {
+async function RecordSellTickBuy(ns, part2 = false) {
 	let i = 0;
 	while (i < Cap) {
 		let symbols = ns.stock.getSymbols()
 			.map(sym => {
 				return {
-					name: sym,
+					iSym: sym,
 					date: new Date(),
 					price: ns.stock.getPrice(sym)
 					// bear: ns.stock.getPurchaseCost(sym, 100, "Short"),
@@ -76,7 +97,7 @@ async function StartRecording(ns, doBuy = false) {
 		}
 
 		ns.write(LotsCostsDebugTxt, JSON.stringify(LotsArray), "w");
-		if (doBuy) {
+		if (part2) {
 			SellThings(ns);
 			TickTockThings(ns);
 			BuyThings(ns);
@@ -93,14 +114,15 @@ async function StartRecording(ns, doBuy = false) {
 function SellThings(ns, ratioCallback = false) {
 	let portfolio = JParse(ns, LotsPortfolioTxt);
 	for (let row of portfolio) {
-		let currentPrice = ns.stock.getPrice(row.name);
+		let currentPrice = ns.stock.getPrice(row.iSym);
 		let ratio = currentPrice / row.price;
-		// let longCost = ns.stock.getPurchaseCost(row.name, 100, "Long");
-		// let shortCost = ns.stock.getPurchaseCost(row.name, 100, "Short");
+		// let longCost = ns.stock.getPurchaseCost(row.iSym, 100, "Long");
+		// let shortCost = ns.stock.getPurchaseCost(row.iSym, 100, "Short");
 		if (row.isLong === false) {
 			ratio = row.price / currentPrice;
 		}
-		let wouldSell = ratio > SellRatioCeiling || ratio < SellRatioFloor;
+		let isRecent = (new Date() - new Date(row.date)) < 60000 * 5;
+		let wouldSell = (!isRecent && ratio > SellRatioCeiling) || ratio < SellRatioFloor;
 		let soldShares = 0;
 
 		if (ratioCallback)
@@ -110,12 +132,21 @@ function SellThings(ns, ratioCallback = false) {
 			continue;
 
 		if (row.isLong) {
-			soldShares = ns.stock.sellStock(row.name, row.purchasingShares)
+			soldShares = ns.stock.sellStock(row.iSym, row.purchasingShares)
 		} else {
-			soldShares = ns.stock.sellShort(row.name, row.purchasingShares)
+			soldShares = ns.stock.sellShort(row.iSym, row.purchasingShares)
 		}
+		if (soldShares == 0)
+			continue;
+
+		if (row.isLong) {
+			IncrementSell(ns, (currentPrice * soldShares) - (row.price * soldShares));
+		} else {
+			IncrementSell(ns, (row.price * soldShares) - (currentPrice * soldShares));
+		}
+
 		let output = "Selling"
-			+ " " + row.name.padEnd(4) + " "
+			+ " " + row.iSym.padEnd(4) + " "
 			+ " " + NumLeft(soldShares, 13) + " "
 			+ " " + (row.isLong ? "Stocks" : "Shorts")
 			+ " " + " for " + StrLeft(row.price.toFixed(2), 13)
@@ -124,41 +155,20 @@ function SellThings(ns, ratioCallback = false) {
 			+ " " + " ratio: " + ratio.toFixed(2)
 			//+ " " + (row.isLong ? row.iLotBull : row.iLotBear)
 			;
-		ns.tprint(output);
-		portfolio = portfolio.filter(p => p.name != row.name);
+		// ns.tprint(output);
+		portfolio = portfolio.filter(p => p.iSym != row.iSym);
 	}
 	ns.write(LotsPortfolioTxt, JSON.stringify(portfolio), "w");
 }
 
+
 /** @param {NS} ns */
 function TickTockThings(ns) {
+	if (new Date() - new Date(LastClockTime) < 60000 * 5)
+		return;
 	let portfolio = JParse(ns, LotsPortfolioTxt);
-	let homeServer = ns.getServer("home");
-	const myProgramsLevel = GetProgramLevel(ns);
-	const myHackingLevel = ns.getHackingLevel();
-	const tickRam = 1.75;
-	const tockRam = 1.7;
-
-	for (let row of portfolio) {
-		let targetTicker = row.name;
-		let target = tickers.find(f => f.ticker == targetTicker)?.hostname;
-		let homeRam = (homeServer.maxRam - homeServer.ramUsed) / portfolio.length;
-
-		target = ns.getServer(target);
-
-		if (myProgramsLevel < target.numOpenPortsRequired)
-			continue;
-		if (myHackingLevel < target.requiredHackingSkill)
-			continue;
-		if (ns.ps("home").find(p => p.args.includes(targetTicker)))
-			continue;
-
-		if (row.isLong) {
-			ns.exec("tick.js", "home", Math.floor(homeRam / tickRam), targetTicker);
-		} else {
-			ns.exec("tock.js", "home", Math.floor(homeRam / tockRam), targetTicker);
-		}
-	}
+	ns.exec("clock.js", "home", 1, JSON.stringify(portfolio));
+	LastClockTime = new Date();
 }
 
 /** @param {NS} ns */
@@ -169,43 +179,46 @@ function BuyThings(ns) {
 	for (let i = 0; i < lotsToBuy.length; i++) {
 		const iLot = lotsToBuy[i];
 		let newRow = BuyThingsHelper(ns, iLot, portfolio, i)
-		if (newRow) {
-			let output = "Buying "
-				+ " " + newRow.name.padEnd(4) + " "
-				+ " " + NumLeft(newRow.purchasingShares, 13) + " "
-				+ " " + (newRow.isLong ? "Stocks" : "Shorts")
-				+ " " + " for " + StrLeft(newRow.price.toFixed(2), 13)
-				+ " " + " b/c " + (newRow.isLong ? "bull" : "bear")
-				//+ " " + (newRow.isLong ? newRow.iLotBull : newRow.iLotBear)
-				;
-			ns.tprint(output);
-			portfolio.push(newRow);
-		}
+		if (newRow == null)
+			continue;
+		let output = "Buying "
+			+ " " + newRow.iSym.padEnd(4) + " "
+			+ " " + NumLeft(newRow.purchasingShares, 13) + " "
+			+ " " + (newRow.isLong ? "Stocks" : "Shorts")
+			+ " " + " for " + StrLeft(newRow.price.toFixed(2), 13)
+			+ " " + " b/c " + (newRow.isLong ? "bull" : "bear")
+			//+ " " + (newRow.isLong ? newRow.iLotBull : newRow.iLotBear)
+			;
+		//ns.tprint(output);
+		portfolio.push(newRow);
+
 	}
 	ns.write(LotsPortfolioTxt, JSON.stringify(portfolio), "w");
 
 }
 
+/** @param {NS} ns */
 function BuyThingsHelper(ns, iLot, portfolio, i) {
-	let dist = 3 - i;
-	if (dist <= 1)
-		dist = 1;
-	if (portfolio.length > 2)
-		dist = 1;
+	let myMoney = getMoney(ns);
+	if (myMoney > myMoneyCeiling)
+		myMoney = myMoneyCeiling;
 
-	let myMoney = getMoney(ns) / dist;
-	let myShares = portfolio.filter(p => p.name == iLot.name).length;
+	if (myMoney < myMoneyFloor)
+		return null;
+
+	let myShares = portfolio.filter(p => p.iSym == iLot.iSym).length;
 	if (myShares !== 0)
 		return null;
 
-	let price = ns.stock.getPrice(iLot.name);
+	let price = ns.stock.getPrice(iLot.iSym);
 	let isLong = iLot.profit > 1;
-	// let longCost = ns.stock.getPurchaseCost(iLot.name, 100, "Long");
-	// let shortCost = ns.stock.getPurchaseCost(iLot.name, 100, "Short");
+	// let longCost = ns.stock.getPurchaseCost(iLot.iSym, 100, "Long");
+	// let shortCost = ns.stock.getPurchaseCost(iLot.iSym, 100, "Short");
 	//let isLong = iLot.bull > iLot.bear;
 	//let iCost = isLong ? iLot.bull : iLot.bear;
 	//let cost = isLong ? longCost : shortCost;
 	let purchasingShares = Math.floor((myMoney - Fee) / price);
+	purchasingShares = Math.floor(purchasingShares * 0.9);
 	let stockPriceAtPurchase = 0;
 	// purchasingShares = SimpleNumber(purchasingShares);
 
@@ -213,16 +226,17 @@ function BuyThingsHelper(ns, iLot, portfolio, i) {
 		return null;
 
 	if (isLong)
-		stockPriceAtPurchase = ns.stock.buyStock(iLot.name, purchasingShares);
+		stockPriceAtPurchase = ns.stock.buyStock(iLot.iSym, purchasingShares);
 	else
-		stockPriceAtPurchase = ns.stock.buyShort(iLot.name, purchasingShares);
+		stockPriceAtPurchase = ns.stock.buyShort(iLot.iSym, purchasingShares);
 
 	if (stockPriceAtPurchase <= 0) {
-		ns.tprint(`Fail.`);
+		ns.print(`Fail. Tried to buy ${purchasingShares} with ${myMoney - Fee}`);
+		return null;
 	}
 
 	let newRow = {
-		name: iLot.name
+		iSym: iLot.iSym
 		, date: new Date()
 		, purchasingShares
 		, isLong: isLong
@@ -235,8 +249,8 @@ function BuyThingsHelper(ns, iLot, portfolio, i) {
 }
 
 function SimpleNumber(num) {
-	let input = String(num);
-	return Number((input[0] + "").padEnd(input.length, "0"))
+	let input = String(Math.floor(num));
+	return Number(input[0].padEnd(input.length, "0"))
 }
 
 function GetPriority(lotsToBuy) {
@@ -245,92 +259,20 @@ function GetPriority(lotsToBuy) {
 }
 
 function GetLotsToBuy(ns) {
-	function DeviationReduce(accumulator, currentValue, currentIndex, array) {
-		if (currentIndex == 0)
-			return 1;
-
-		let thisDeviation = currentValue.price / array[currentIndex - 1].price;
-		thisDeviation = (thisDeviation + accumulator) / 2;
-		ns.tprint({ a: accumulator, cur: currentValue.price, thisDeviation });
-		return thisDeviation;
-	}
-
 	return ns.stock.getSymbols()
 		.map((s, i, arr) => {
-			let filtered = LotsArray.flat().filter(lc => lc.name == s);
+			let filtered = LotsArray.flat().filter(lc => lc.iSym == s);
 			return {
-				name: s,
+				iSym: s,
 				profit: (filtered[filtered.length - 1].price / filtered[0].price)
-				//bull: lotsCosts.filter(l => l.name == s).reduce((a, c) => a += c.bull, 0),
-				//bear: lotsCosts.filter(l => l.name == s).reduce((a, c) => a += c.bear, 0)
+				//bull: lotsCosts.filter(l => l.iSym == s).reduce((a, c) => a += c.bull, 0),
+				//bear: lotsCosts.filter(l => l.iSym == s).reduce((a, c) => a += c.bear, 0)
 			};
 		});
 }
 
-function GetLotsToBuyB(ns) {
-	// let lotsOngoing = {};
-
-	// for (let i = 0; i < lotsCosts.length; i++) {
-	// 	let iLot = lotsCosts[i];
-	// 	if (!lotsOngoing[iLot.name])
-	// 		lotsOngoing[iLot.name] = {
-	// 			a: 0, // add
-	// 			s: 0 // subtract
-	// 		}
-	// 	lotsOngoing[iLot.name].a += iLot.bull;
-	// 	lotsOngoing[iLot.name].s += iLot.bear;
-	// }
-
-
-}
-
 function getMoney(ns) {
 	return ns.getServerMoneyAvailable("home");
-}
-
-/** @param {NS} ns */
-function BuyThingsB(ns, myPortfolio, myLogs) {
-
-	for (let i = 0; i < symbols.length; i++) {
-		let myMoney = getMoney(ns);
-		const price = ns.stock.getPrice(iSym);
-		let myShares = 0;
-
-		let newShares = Math.floor(((myMoney - Fee) * 0.98) / price);
-
-		let doNotOwn = myShares == 0;
-		let isGoodForecast = iForecast >= reqAbvForecast;
-		let isBuying = newShares > 0;
-		let isFeePlus = newShares * price > Fee;
-		// ns.print(`doNotOwn ${doNotOwn ? 1 : 0}` +
-		// 	` isGoodForecast: ${isGoodForecast ? 1 : 0}` +
-		// 	` isBuying: ${isBuying ? 1 : 0}` +
-		// 	` fee+:${isFeePlus ? 1 : 0}` +
-		// 	` = ${doNotOwn + isGoodForecast + isBuying + isFeePlus}`
-		// );
-
-		if (doNotOwn && isGoodForecast && isBuying && isFeePlus) {
-			const buyPrice = Math.ceil(ns.stock.buyStock(iSym, newShares));
-			if (buyPrice > 0) {
-				// Runs GROW
-				// ns.exec("w1.js", "home", 1000, iSym);
-				PrintActivity(ns, newShares, iSym, buyPrice, iForecast, null);
-				const newRow = { iSym, myShares: newShares, buyPrice, iForecast, date: new Date() };
-				myPortfolio.push(newRow);
-				myLogs.push(newRow);
-			}
-			else {
-				ns.print(`Fail Buy ${iSym}
-					myMoney: ${NumLeft(myMoney, 13)}
-					Assumed: ${NumLeft(newShares * price, 13)}
-					newShares: ${newShares}
-					price: ${price}
-					`);
-			}
-		}
-	}
-
-	return [myPortfolio, myLogs];
 }
 
 function JParse(ns, filename) {
@@ -341,8 +283,8 @@ function JParse(ns, filename) {
 }
 
 function PeekHelper(row, currentPrice, ratio, wouldSell) {
-	let { name, date, purchasingShares, isLong, price, stockPriceAtPurchase } = row;
-	return (name.padEnd(6)
+	let { iSym, date, purchasingShares, isLong, price, stockPriceAtPurchase } = row;
+	return (iSym.padEnd(6)
 		+ " " + StrRight(new Date(date).toLocaleTimeString(), 14)
 		+ " " + StrLeft(String(purchasingShares), 13)
 		+ " " + (isLong ? "Bull" : "Bear")
@@ -350,23 +292,24 @@ function PeekHelper(row, currentPrice, ratio, wouldSell) {
 		+ " " + StrLeft(ToDollars(stockPriceAtPurchase), 7)
 		+ " " + StrLeft(ratio.toFixed(2), 7)
 		+ " " + StrLeft(ToDollars(currentPrice), 7)
-		+ " " + (name.includes("Total") ? StrLeft(ToDollars(currentPrice), 7) : StrLeft(ToDollars(currentPrice * purchasingShares), 7))
+		+ " " + (iSym.includes("Total") ? StrLeft(ToDollars(currentPrice), 7) : StrLeft(ToDollars(currentPrice * purchasingShares), 7))
 		+ " " + wouldSell
 		+ "\r\n"
 	);
 }
 
-async function PeekAtThings(ns) {
+async function PeekAtThings(ns, doTPrint = false) {
 	let output = "\r\n";
 	let portfolio = JParse(ns, LotsPortfolioTxt);
 	let totalA = {
-		name: "TotalA", date: new Date(),
+		iSym: "TotalA", date: new Date(),
 		purchasingShares: 0, isLong: true, price: 0, stockPriceAtPurchase: 0,
 		currentPrice: 0, ratio: 1
 	};
-	let totalB = { ...totalA, name: "TotalB", isLong: false };
+	let totalB = { ...totalA, iSym: "TotalB", isLong: false };
+	let totalC = { ...totalA, iSym: "TotalC"};
 	for (let row of portfolio) {
-		let currentPrice = ns.stock.getPrice(row.name);
+		let currentPrice = ns.stock.getPrice(row.iSym);
 		let ratio = currentPrice / row.price;
 		if (row.isLong === false) {
 			ratio = row.price / currentPrice;
@@ -383,6 +326,8 @@ async function PeekAtThings(ns) {
 		} else {
 			PeekTotalHelper(totalB);
 		}
+		PeekTotalHelper(totalC);
+
 
 		// TO DO: Need to calculate shorts into total.currentPrice
 		output += PeekHelper(row, currentPrice, ratio, wouldSell);
@@ -393,8 +338,9 @@ async function PeekAtThings(ns) {
 	}
 	output += PeekTotalHelper(totalA);
 	output += PeekTotalHelper(totalB);
+	output += PeekTotalHelper(totalC);
 
-	output = ("\r\n" + "name".padEnd(6)
+	output = ("\r\n" + "iSym".padEnd(6)
 		+ " " + StrRight("date", 14)
 		+ " " + StrRight("ownedShares", 13)
 		+ " " + StrLeft("isL", 4)
@@ -405,7 +351,14 @@ async function PeekAtThings(ns) {
 		+ " " + StrLeft("value", 7)
 		+ " " + StrRight("isSelling", 7)
 	) + output;
-	await tailPrint(ns, output);
+
+	if (doTPrint) {
+		ns.tprint(PeekTotalHelper(totalA));
+		ns.tprint(PeekTotalHelper(totalB));
+		ns.tprint(PeekTotalHelper(totalC));
+	} else {
+		await tailPrint(ns, output);
+	}
 }
 
 async function tailPrint(ns, output) {
@@ -423,16 +376,47 @@ async function tailPrint(ns, output) {
 }
 
 function SellWinners({ isLong, ratio }) {
-	if (ratio > 1.01)
+	if (ratio > 1.02)
+		return true;
+
+	return false;
+}
+
+function SellStale({ isLong, ratio }) {
+	if (ratio < 1.04 && ratio > 0.97)
 		return true;
 
 	return false;
 }
 
 function SellLosers({ isLong, ratio }) {
-	if (ratio < 0.99)
+	if (ratio < 0.97)
 		return true;
 
 	return false;
+}
+
+/** @param {NS} ns */
+function IncrementSell(ns, profit) {
+	let forStock = JSON.parse(ns.read(ForStockTxt));
+	forStock.profit += profit;
+	if (profit > 0)
+		forStock.g += 1;
+	else
+		forStock.l += 1;
+	forStock.lastUpdated = new Date();
+	ns.write(ForStockTxt, JSON.stringify(forStock), "w");
+}
+
+/** @param {NS} ns */
+function ReadForStockTxt(ns) {
+	let forStock = JSON.parse(ns.read(ForStockTxt));
+	let output = `
+	${new Date(forStock.dateCreated).toLocaleTimeString()} - ${new Date(forStock.lastUpdated).toLocaleTimeString()}
+	initialMoney: \$ ${ToDollars(forStock.initialMoney)}
+	 gains: ${forStock.g}
+	 losses: ${forStock.l}
+	`
+	ns.tprint(output);
 }
 

@@ -1,30 +1,41 @@
 import StrLeft from './im/strLeft'
 import NumLeft from './im/numLeft'
+import StrRight from './im/strRight'
 import ToDollars from './im/carat'
 import ZeroLeft from './im/zeroLeft'
 
 /** @param {NS} ns */
 export async function main(ns) {
 	ns.killall("home");
+	let install = ns.getMoneySources().sinceInstall;
+
 	ns.exec("cct.js", "home", 1, "a");
 	// ns.exec("off.js", "home", 1);
+	if (install.gang > 0)
+		ns.exec("gli.js", "home", 1, "t");
+	ns.exec("sli.js", "home", 1, "i");
 
-	ns.exec("wse.js", "home", 1, "l"); await ns.sleep(200);
-	ns.exec("wse.js", "home", 1, "k"); await ns.sleep(200);
+	ns.exec("wse.js", "home", 1, "l");
+	ns.exec("wse.js", "home", 1, "k");
 	ns.exec("wse.js", "home", 1, "s"); await ns.sleep(200);
 	ns.exec("wse.js", "home", 1, "xp");
 	ns.exec("wse.js", "home", 1, "xl");
-	
-	ns.exec("wse.js", "home", 1, "s"); await ns.sleep(200);
-	ns.exec("power.js", "home", 1, "reset");
-	ns.scriptKill("gli.js", "home");
-	const install = ns.getMoneySources().sinceInstall;
+
+	// ns.exec("power.js", "home", 1, "reset");
+	if (install.gang > 0) {
+		ns.scriptKill("gabr.js", "home");
+		ns.scriptKill("gabp.js", "home");
+	}
+	install = ns.getMoneySources().sinceInstall;
 	jtprintd(ns, install);
-	
+
 	ns.tprint("--------------------------------------------");
 	ns.tprint(" Did you...");
-	ns.tprint("		equip your gang");
-	ns.tprint("		ascend your gang");
+	if (install.gang > 0) {
+		ns.tprint("		equip your gang");
+		ns.tprint("		ascend your gang");
+	}
+	ns.tprint("		donate to servers");
 	ns.tprint("		upgrade home server");
 	ns.tprint("		spend hashnet points");
 	ns.tprint("		install augments for sleeves");
@@ -36,7 +47,7 @@ export async function main(ns) {
 function jtprintd(ns, obj) {
 	Object.entries(obj).forEach(entry => {
 		const [key, value] = entry;
-		ns.tprint("   " + strRight(key,22) + " " + StrLeft(ToDollars(value), 9));
+		ns.tprint("   " + StrRight(key, 22) + " " + StrLeft(ToDollars(value), 9));
 	});
 }
 
@@ -59,11 +70,3 @@ function jtprintd(ns, obj) {
 // test.js:    servers: -33000000
 // test.js:    other: -314400000
 // test.js:    augmentations: -18750000000
-
-function strRight(str, length) {
-	let output = str.toString();
-	for (var i = 0; i < length - str.length; i++) {
-		output = output + " ";
-	}
-	return output;
-}

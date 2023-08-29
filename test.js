@@ -19,7 +19,7 @@ import tickers from "./static/symbols"
 import FormatTime from './im/time'
 import ParseNumbers from './im/colon'
 import operations from './static/blackops'
-
+import cities from './static/cities'
 // carat.js
 // exec.js
 // files.js
@@ -51,6 +51,42 @@ function asdf(ns) {
 /** @param {NS} ns */
 export async function main(ns) {
 	ns.tprint("start test " + new Date().toLocaleString());
+	ns.tprint(ToDollars(10 ** 4 * 3))
+	
+	// ns.tprint(String("01").split(""))
+	// ns.tprint(String("01").split("").some(o => ns.tprint(o)))
+	// ns.tprint(String("0,1").split("").some(o => "-+,".split("").includes(o)))
+
+	// ns.tprint(ParseNumbers(ns, "1,22,333,4444,55555"));
+	// ns.tprint(ParseNumbers(ns, "3-22"));
+	// ns.tprint(ParseNumbers(ns, "4+", 10));
+	// ns.tprint(ParseNumbers(ns, "0,1"));
+	// ns.tprint(ToDollars(1234567890, true))
+	// ns.tprint(ToDollars(1234567890, false))
+	// ns.tprint(ToDollars(123456789, true))
+	// ns.tprint(ToDollars(123456789, false))
+	// ns.tprint(ToDollars(12345678, true))
+	// ns.tprint(ToDollars(12345678, false))
+	// ns.tprint(abc(ns.sleeve.getSleeveAugmentations(0)));
+	// await ns.singularity.manualHack();
+
+	// jtprint(ns, ns.getPlayer())
+	// let lcities = { "Sector-12": "Sector12", "New Tokyo": "NewTokyo" }
+
+	// let locations = Object.entries(ns.enums.LocationName).map(([key, value]) => {
+	// 	let city = cities.reduce((a, c) => {
+	// 		if (key.indexOf(c) == 0)
+	// 			return c;
+	// 		if (lcities[c] && key.indexOf(lcities[c]))
+	// 			return c;
+	// 		return a;
+	// 	}, "");
+
+	// 	return { city, location: value }
+	// });
+	//abc(JSON.stringify(locations));
+	// abc(ns.enums.LocationName);
+	//ns.tprint(ns.getScriptRam("wse.js"));
 	//ns.tprint(ns.exec("tick.js", "home", 1, "OMTK"));
 	// ns.tprint(ns, ["SLRS", "ICRS", "CLRK", "STM", "LXO", "OMTK", "BLD", "OMGA"]
 	// .map(s => { return { s, req: ns.getServer(tickers.find(f => f.ticker == s).hostname).requiredHackingSkill}; }))
@@ -176,6 +212,8 @@ export async function main(ns) {
 	// await testPrompt(ns);
 
 	ns.tprint("end test.");
+
+
 }
 
 // function GetTickersAndOrganizations(ns){
@@ -224,23 +262,23 @@ function getRandomInt(max) {
 	return Math.floor(Math.random() * (max + 1));
 }
 
-function jtprint(ns, obj) {
-	Object.entries(obj).forEach(entry => {
-		const [key, value] = entry;
-		ns.tprint("   " + key + ": " + value);
-	});
+function abc(x) {
+	if (Array.isArray(x))
+		return strArray(x);
+	if (typeof x == "object")
+		return strObject(x);
+	return x;
 }
 
-function ftprint(ns, obj) {
-	let output = "\r\n	"
-	for (let i = 0; i < obj.length; i++) {
-		const o = obj[i];
-		output += o + "\r\n	";
-	}
-	ns.tprint(output);
+function strObject(x) {
+	return Object.entries(x).map(([key, value]) => `	${key}: ${abc(value)}`);
 }
 
-function FixAugs() {
+function strArray(arr) {
+	return "\r\n	" + arr.map(a => abc(a)).join("\r\n	")
+}
+
+function FixAugs(augs) {
 	let a = [];
 	//ns.tprint( typeof augs); return;
 	// jtprint(ns, augs[0]);return;

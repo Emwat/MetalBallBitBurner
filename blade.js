@@ -1,10 +1,14 @@
 import StrRight from './im/strRight'
 import NumLeft from './im/numLeft'
+import cities from './static/cities'
 
 const successReq = 0.98;
 
 let fs = 0;
 const failSafeCap = 9000;
+let ttc = 0;
+const travelCap = 20;
+let currentCity = ""; // only for debug purposes
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -14,10 +18,11 @@ export async function main(ns) {
 	// [t/f/r/d/h/i] 
 	if (!arg0 || arg0 == "help") {
 		ns.tprint(`No arguments found. Available arguments are
-		ba >> Do Current Action until success is not guaranteed
-		bb [t/b/r | i/u/s/raid/stealth/a] >> Flip between Training/FieldAnalysis and argument
+		ba [t/b/r/i/u/s/raid/stealth/a] >> Do Action until success is not guaranteed
+		bb [t/b/r/i/u/s/raid/stealth/a] >> Flip between Training/FieldAnalysis and argument
 		bp >> batch with priority
 		bpi >> debug priority
+		bpir >> debug priority everywhere
 		r >> Report city chaos
 		l >> list BlackOps
 		`);
@@ -26,7 +31,11 @@ export async function main(ns) {
 
 	if (false) { }
 	else if (arg0 == "ba") {
+		let action = GetActionOrDefault(ns.args[1]);
+		ns.exec("kl.js", "home", 1, "blade", "others");
+		StartBladeburnerAction(ns, action);
 		await SleepWhile(ns);
+		StartBladeburnerAction(ns, healing[0]);
 	} else if (arg0 == "bb") {
 		let action = GetActionOrDefault(ns.args[1]);
 		ns.tprint(`Flipper (ns, ${action.name})`);
@@ -35,13 +44,29 @@ export async function main(ns) {
 	} else if (arg0 == "bp") {
 		ns.tprint(`PriorityBB`);
 		ns.exec("kl.js", "home", 1, "blade", "others");
-		await PriorityBB(ns);
+		await Flipper(ns, PriorityBBActionOrDefault, "isWillingToTravel")
 	} else if (arg0 == "bpi") {
-		PriorityBBActionOrDefault(ns, true);
+		PriorityBBActionOrDefault(ns, "isDebugging");
+	} else if (arg0 == "bpir") {
+		await GoToBestCity(ns);
 	} else if (arg0 == "r") {
-		ns.exec("helperBlade.js", "home", 1, "c");
+		ns.exec("helperBlade.js", "home", 1, "c"); //print cities
 	} else if (arg0 == "l") {
-		ns.tprint(ops.map(o => o.rank + " " + o.name).join("\r\n"));
+		let nextOp = ops.find(op => ns.bladeburner.getActionCountRemaining("BlackOps", op.name));
+		ns.tprint(ops
+			.map(o => "	" + o.rank + " " + o.name
+				+ (o == nextOp ? " *" : "")).join("\r\n"));
+	} else if (arg0 == "test") {
+		let nextOperation = ops.map(m => {
+			let [successA, successB] = ns.bladeburner.getActionEstimatedSuccessChance(m.type, m.name);
+			let actionTime = ns.bladeburner.getActionTime(m.type, m.name);
+			let count = ns.bladeburner.getActionCountRemaining(m.type, m.name);
+			return { id: m.id, name: m.name, type: m.type, successA, successB, actionTime, count, rank: m.rank };
+		}).find(op => ns.bladeburner.getActionCountRemaining("BlackOps", op.name));
+
+		ns.tprint(`Priority: ${GetPriorityTest(ns, nextOperation)}`);
+	} else {
+		ns.tprint(`${arg0} is not a valid argument.`)
 	}
 	// ns.tprint()
 }
@@ -59,7 +84,7 @@ async function SleepWhile(ns, name) {
 	while (true) {
 		fs++; if (fs >= failSafeCap) { FailSafely(ns, "SleepWhile"); break; }
 
-		let [successA, successB] = ns.bladeburner.getActionEstimatedSuccessChance(type, name);
+		let [successA] = ns.bladeburner.getActionEstimatedSuccessChance(type, name);
 		let ms = ns.bladeburner.getActionTime(type, name);
 		if (successA < successReq) {
 			ns.tprint(`BREAK - ${name} has a Success rate of ${successA}`)
@@ -79,12 +104,14 @@ async function SleepWhile(ns, name) {
 }
 
 /** @param {NS} ns */
-async function Flipper(ns, actionArgument) {
+async function Flipper(ns, actionArgument, isWillingToTravel = false) {
 	let successA, successB, general;
 	let action = actionArgument;
 	while (true) {
 		fs++; if (fs >= failSafeCap) { FailSafely(ns, "SleepWhile"); break; }
-
+		if (isWillingToTravel) {
+			ttc++; if (ttc >= travelCap) { await GoToBestCity(ns, "isQuiet") }
+		}
 		if (typeof actionArgument == "function")
 			action = actionArgument(ns);
 
@@ -101,28 +128,25 @@ async function Flipper(ns, actionArgument) {
 			if (typeof actionArgument == "function")
 				action = actionArgument(ns);
 
-			let [currentStamina, maxStamina] = ns.bladeburner.getStamina();
-			if (currentStamina / maxStamina < 0.70) {
-				while (currentStamina / maxStamina < 0.70) {
-					general = healing.find(heal => heal.name == "Hyperbolic Regeneration Chamber")
-					BladeburningAction(ns, general);
 
-					let ms = ns.bladeburner.getActionTime(general.type, general.name);
-					await ns.sleep(bonus(ns, ms));
-					([currentStamina, maxStamina] = ns.bladeburner.getStamina());
-				}
+			while (isHealthy(ns) == false) {
+				general = healing.find(heal => heal.name == "Hyperbolic Regeneration Chamber")
+				StartBladeburnerAction(ns, general);
+
+				let ms = ns.bladeburner.getActionTime(general.type, general.name);
+				await ns.sleep(bonus(ns, ms));
 			}
 
 			general = healing.find(f => f.name == ((successA == successB) ? "Training" : "Field Analysis"));
 
-			BladeburningAction(ns, general);
+			StartBladeburnerAction(ns, general);
 
 			let ms = ns.bladeburner.getActionTime(general.type, general.name);
 			await ns.sleep(bonus(ns, ms));
 			([successA, successB] = ns.bladeburner.getActionEstimatedSuccessChance(action.type, action.name));
 		}
 
-		BladeburningAction(ns, action);
+		StartBladeburnerAction(ns, action);
 		let ms = ns.bladeburner.getActionTime(action.type, action.name);
 		await ns.sleep(bonus(ns, ms));
 		UpgradeBSkills(ns);
@@ -130,12 +154,8 @@ async function Flipper(ns, actionArgument) {
 	}
 }
 
-async function PriorityBB(ns) {
-	await Flipper(ns, PriorityBBActionOrDefault)
-}
-
 /** @param {NS} ns */
-function PriorityBBActionOrDefault(ns, isDebugging) {
+function PriorityBBActionOrDefault(ns, isDebugging, isPrintingDebug = true) {
 	let nextOperation = ops.find(op => ns.bladeburner.getActionCountRemaining("BlackOps", op.name));
 
 	let smarterActions = [...actions, nextOperation]
@@ -147,33 +167,34 @@ function PriorityBBActionOrDefault(ns, isDebugging) {
 		});
 	smarterActions = smarterActions.sort((a, b) => GetPriority(ns, b) - GetPriority(ns, a));
 	if (isDebugging) {
-		let output = "\r\n	" +
-			"type".padEnd(12) +
-			"name".padEnd(33) +
-			"id".padStart(3) +
-			"Clr%".padStart(5) +
-			"Clr%".padStart(5) +
-			"Count".padStart(6) +
-			"Priority".padStart(10) +
-			"Time".padStart(7) +
-			"Rank".padStart(7) +
-			"\r\n";
+		let output = "\r\n	"
+			+ "type".padEnd(12)
+			+ "name".padEnd(33)
+			+ "id".padStart(3)
+			+ "Clr%".padStart(5)
+			+ "Clr%".padStart(5)
+			+ "Count".padStart(6)
+			+ "Priority".padStart(10)
+			+ "Time".padStart(7)
+			+ "Rank".padStart(7)
+			+ "\r\n";
 		smarterActions.forEach(a => {
-			output += "	" +
-				a.type.padEnd(12) +
-				a.name.padEnd(33) +
-				NumLeft(a.id, 3) +
-				NumLeft(a.successA * 100, 4) + "%" +
-				NumLeft(a.successB * 100, 4) + "%" +
-				NumLeft(a.count, 6) +
-				NumLeft(GetPriority(ns, a), 10) +
-				NumLeft(a.actionTime, 7) +
-				NumLeft(a.rank, 7) +
-				"\r\n";
+			output += "	"
+				+ a.type.padEnd(12)
+				+ a.name.padEnd(33)
+				+ NumLeft(a.id, 3)
+				+ NumLeft(a.successA * 100, 4) + "%"
+				+ NumLeft(a.successB * 100, 4) + "%"
+				+ NumLeft(a.count, 6)
+				+ NumLeft(GetPriority(ns, a), 10)
+				+ NumLeft(a.actionTime, 7)
+				+ NumLeft(a.rank, 7)
+				+ "\r\n";
 		});
-		ns.tprint(output);
+		if (isPrintingDebug)
+			ns.tprint(output);
 		ns.print(output);
-		return null;
+		return smarterActions;
 	}
 	ns.print({ smarterAction: smarterActions[0] })
 	return smarterActions[0];
@@ -183,7 +204,7 @@ function GetPriority(ns, x) {
 	let total = 1;
 
 	//ns.tprint({name: x.name, type : x.type == "BlackOps", count: x.count > 0, a: x.successA == 1})
-	if (x.type == "BlackOps" && x.count > 0 && x.successA == 1) {
+	if (x.type == "BlackOps" && x.count > 0 && x.successB == 1) {
 		if (ns.bladeburner.getRank() > x.rank)
 			return 300;
 	}
@@ -192,7 +213,38 @@ function GetPriority(ns, x) {
 		return -1;
 
 
-	total += x.successA * 100;
+	// total += x.successA * 100;
+	if (x.successB == 1)
+		total += 20;
+
+	total += x.id * 2;
+
+	// if (["Assassination", "Tracking"].includes(x.name)){
+	// 	ns.tprint({name: x.name, successA: x.successA, successA1: x.successA * 100, total})
+	// }
+	// total += 10 ** 6 - x.actionTime;
+
+	return total;
+}
+
+
+function GetPriorityTest(ns, x) {
+	let total = 1;
+
+	//ns.tprint({name: x.name, type : x.type == "BlackOps", count: x.count > 0, a: x.successA == 1})
+	ns.tprint({ myRank: ns.bladeburner.getRank(), xRank: x.rank, xType: x.type });
+
+	if (x.type == "BlackOps" && x.count > 0 && x.successB == 1) {
+		ns.tprint({ myRank: ns.bladeburner.getRank(), xRank: x.rank });
+		if (ns.bladeburner.getRank() > x.rank)
+			return 300;
+	}
+
+	if (x.count < 10)
+		return -1;
+
+
+	// total += x.successA * 100;
 	if (x.successB == 1)
 		total += 20;
 
@@ -231,7 +283,7 @@ function bonus(ns, time) {
 }
 
 /** @param {NS} ns */
-function BladeburningAction(ns, action) {
+function StartBladeburnerAction(ns, action) {
 	let { name, type } = ns.bladeburner.getCurrentAction();
 	if (name == action.name)
 		return
@@ -241,24 +293,69 @@ function BladeburningAction(ns, action) {
 function FailSafely(ns, location) {
 	ns.tprint({ line: location, error: "failSafeCap" });
 	ns.toast(`Blade FailSafe`, "error");
-	BladeburningAction(ns, healing[0])
+	StartBladeburnerAction(ns, healing[0])
 }
 
+/** @param {NS} ns */
 function UpgradeBSkills(ns) {
 	let script = "bskills.js";
 	let scriptArgs = []
 	let ass = actions.find(action => action.name == "Assassination")
-	let [successA, successB] = ns.bladeburner.getActionEstimatedSuccessChance(ass.type, ass.name);
+	let nextOp = ops.find(op => ns.bladeburner.getActionCountRemaining("BlackOps", op.name));
+	let [, successAssB] = ns.bladeburner.getActionEstimatedSuccessChance(ass.type, ass.name);
+	let [, successOpB] = ns.bladeburner.getActionEstimatedSuccessChance(nextOp.type, nextOp.name);
+	let hasRank = ns.bladeburner.getRank() > nextOp.rank;
+	let readyForAss = successAssB >= successReq;
+	let readyForOp = successOpB >= successReq;
 
-	if (successB >= successReq)
+	if (hasRank && !readyForOp)
+		scriptArgs.push("e");
+	else if (readyForAss)
 		scriptArgs.push("o");
 	else
 		scriptArgs.push("e");
 
 	scriptArgs.push("quiet");
+	// ns.print({hasRank, readyForOp, readyForAss, scriptArgs})
 
 	if (!ns.args.includes("shy"))
 		ns.exec(script, "home", 1, ...scriptArgs);
+}
+
+async function GoToBestCity(ns, isQuiet = false) {
+	let cityTracker = [];
+	let myTravelScript = (city) => ns.exec("helperBlade.js", "home", 1, "r", city ?? "", isQuiet ? "quiet" : "");
+	for (let city of cities) {
+		if (myTravelScript() == 0) {
+			ns.tprint(`Could not run helperBlade.js. Check your home RAM.`);
+			return;
+		}
+		await ns.sleep(200);
+		let sumSuccess = PriorityBBActionOrDefault(ns, true, false).reduce((a, c) => a + c.successB, 0);
+		cityTracker.push({ city, sumSuccess });
+	}
+	let bestCity = cityTracker.reduce((a, c) => a.sumSuccess > c.sumSuccess ? a : c).city;
+	if (!isQuiet)
+		ns.tprint("## ## ## ## ## ## ##")
+	// ns.tprint(`BestCity: ${bestCity}`)
+	if (!isQuiet && currentCity != bestCity) {
+		ns.tprint({ "0": "Traveling to ", currentCity, bestCity });
+	}
+	if (myTravelScript(bestCity) > 0) {
+		currentCity = bestCity;
+		// ns.tprint(`Traveled to ${bestCity}`);
+	} else {
+		ns.tprint(`Could not run helperBlade.js. Check your home RAM.`);
+		return;
+	}
+}
+
+function isHealthy(ns) {
+	let [currentStamina, maxStamina] = ns.bladeburner.getStamina();
+	if (currentStamina > 300)
+		return true;
+	let abovePercentage = currentStamina / maxStamina > 0.70;
+	return abovePercentage;
 }
 
 const healing = [

@@ -1,14 +1,44 @@
 
 06/21/2023 02:51 PM
-	go through formulas.hacking
+	go through formulas.hacking/pi.js
+		I just know my hacking can be more efficient
 
-06/24/2023 10:31 AM
-	develop something that doesn't require 4s data for stocks
+08/20/2023 01:18 AM
+  beforeaugs.js needs to be renamed
+	beforeaugs.js needs to incorporate singularity
+	blade.js in endgame doesn't spend all points
+	blade.js calculate how long it will take to get to midgame without augs
+	blade.js automatically travel
+	bskills.js Overtime upgrade is hardcorded.
+	cct.js do more contracts
+	corps.js never started
+	dir.js never finished
+	fill.js needs to be merged with fwll.js
+	gli.js automate gangs to ascend and purchase augs and territory warfare
+	kl.js ...look at every script that has "k" arg and clean up
+	intel.js highlight optimal strats
+	man.js figure out control.js, hx.js
+	net.js calculate a reasonable number or max for lrc and nodes
+	net/nnet.js come up with a better name for net and nnet
+	rebirth.js prerequisite augs need more tuning. I want to buy I, II, III in that order
+	rebirth.js augs need to show multiple factions
+	rebirth.js maybe merge beforeaugs and rebirth
+	sg.js there's a bug somewhere in writing after saving
+	sin.js automate the whole game lol.
+	sin.js list jobs
+	sin.js work at job
+	sin.js quit job
+	sin.js list faction rep
+	sli.js [argRabbit] need to apply im/colon.js to arguments and q/ scripts
+	sli.js [aug] needs less augs purchased
+	sli.js [aug] maybe make it more flexible on which sleeves get combat and hack?
+	sli.js factions
+	sli.js companies
+	sli.js list stats
+	wse.js Sell if profitable and Time Bought was 5 minutes ago
+	wse.js SeeLogs() shorts
+	wse.js test if reqAboveForecast is working
+	wsy.js S [TICKER] sell only that symbol
 
-06/26/2023 10:20 AM
-	make better use of scripts
-
-08/05/2023 06:59 AM
-	blade bp is freezing the game
 
 
